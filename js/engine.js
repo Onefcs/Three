@@ -597,11 +597,13 @@ const Engine = (() => {
 
       gs.monsterX -= 130 * dt;
 
-      if (gs.monster && gs.monsterX <= playerX + 55) {
+      const isRanged = CHARACTERS[gs.selectedChar]?.type === 'ranged';
+      const combatTrigger = isRanged ? playerX + 320 : playerX + 60;
+      if (gs.monster && gs.monsterX <= combatTrigger) {
         gs.phase = 'combat';
         gs.combatTimer = 0;
         gs.attackCooldown = 0.5;
-        gs.monsterAttackCooldown = 1.2;
+        gs.monsterAttackCooldown = 1.5;
         gs.monsterHp    = gs.monster.hp;
         gs.monsterMaxHp = gs.monster.hp;
         gs.buffState    = {};
@@ -621,8 +623,16 @@ const Engine = (() => {
       gs.combatTimer = (gs.combatTimer || 0) + dt;
 
       const stats = gs.computedStats;
-      const monX  = gs.monsterX;
       const monY  = groundY;
+
+      // Ranged: monster keeps walking toward player until melee range
+      const isRangedCombat = CHARACTERS[gs.selectedChar]?.type === 'ranged';
+      const meleeStop = playerX + 120;
+      if (isRangedCombat && gs.monsterX > meleeStop) {
+        gs.monsterX -= 55 * dt;
+      }
+
+      const monX  = gs.monsterX;
 
       // Player attack cooldown → start attack animation
       const atkInterval = Math.max(0.5, 2.8 - (stats.speed / 100) * 2.0);
@@ -656,7 +666,8 @@ const Engine = (() => {
         }
       }
 
-      drawMonster(ctx, gs.monster, monX, monY, 1, false, runTime);
+      const monMoving = isRangedCombat && gs.monsterX > meleeStop;
+      drawMonster(ctx, gs.monster, monX, monY, 1, monMoving, runTime);
       drawHPBar(ctx, monX, monY - gs.monster.size - 10, gs.monsterHp, gs.monsterMaxHp);
       ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center';
       ctx.fillText(gs.monster.name, monX, monY - gs.monster.size - 22);
