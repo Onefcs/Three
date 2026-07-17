@@ -452,32 +452,49 @@ const Engine = (() => {
     ctx.restore();
   }
 
-  function drawTornado(ctx, x, y, rot) {
+  function drawIceBall(ctx, x, y, rot) {
     ctx.save(); ctx.translate(x, y);
-    const rings = [
-      { r: 18, w: 9,  col: '#4488ffcc' },
-      { r: 12, w: 7,  col: '#88bbffcc' },
-      { r:  6, w: 5,  col: '#ccddffee' }
-    ];
-    for (let i = 0; i < rings.length; i++) {
-      const rg = rings[i];
-      ctx.save(); ctx.rotate(rot + i * 1.3); ctx.scale(1, 0.4);
-      ctx.beginPath(); ctx.arc(0, 0, rg.r, 0, Math.PI * 2);
-      ctx.strokeStyle = rg.col; ctx.lineWidth = rg.w; ctx.stroke();
-      ctx.restore();
+    // Outer glow
+    const outerGlow = ctx.createRadialGradient(0, 0, 4, 0, 0, 22);
+    outerGlow.addColorStop(0, '#a8eeffcc');
+    outerGlow.addColorStop(0.5, '#44aaff66');
+    outerGlow.addColorStop(1, '#0066ff00');
+    ctx.fillStyle = outerGlow;
+    ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI * 2); ctx.fill();
+    // Core sphere
+    const core = ctx.createRadialGradient(-3, -3, 1, 0, 0, 11);
+    core.addColorStop(0, '#eeffffff');
+    core.addColorStop(0.4, '#88ddff');
+    core.addColorStop(1, '#0055cc');
+    ctx.fillStyle = core;
+    ctx.beginPath(); ctx.arc(0, 0, 11, 0, Math.PI * 2); ctx.fill();
+    // Ice crystal spikes (6 rotating spikes)
+    ctx.strokeStyle = '#cceefffF';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 6; i++) {
+      const a = rot + (i / 6) * Math.PI * 2;
+      const r1 = 11, r2 = 20;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * r1, Math.sin(a) * r1);
+      ctx.lineTo(Math.cos(a) * r2, Math.sin(a) * r2);
+      ctx.stroke();
+      // Side barbs
+      const bA = a + 0.4, bR = r1 + 4;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * (r1 + 5), Math.sin(a) * (r1 + 5));
+      ctx.lineTo(Math.cos(bA) * bR, Math.sin(bA) * bR);
+      ctx.stroke();
     }
-    // core
-    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 9);
-    g.addColorStop(0, '#ffffffee'); g.addColorStop(1, '#4488ff00');
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill();
+    // Specular highlight
+    ctx.fillStyle = '#ffffffaa';
+    ctx.beginPath(); ctx.arc(-3, -3, 4, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
 
   function drawProjectiles(ctx) {
     for (const p of projectiles) {
       if (p.type === 'arrow') drawArrow(ctx, p.x, p.y, p.vx, p.vy);
-      else drawTornado(ctx, p.x, p.y, p.rotation);
+      else drawIceBall(ctx, p.x, p.y, p.rotation);
     }
   }
 
@@ -580,7 +597,7 @@ const Engine = (() => {
 
       gs.monsterX -= 130 * dt;
 
-      if (gs.monster && gs.monsterX <= playerX + 160) {
+      if (gs.monster && gs.monsterX <= playerX + 55) {
         gs.phase = 'combat';
         gs.monsterX = w * 0.64;
         gs.combatTimer = 0;
