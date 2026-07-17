@@ -285,6 +285,7 @@ const UI = (() => {
   function renderCharSelect() {
     const el = document.getElementById('char-list');
     if (!el) return;
+    el.innerHTML = ''; // clear before re-render
     let selectedId = Object.keys(CHARACTERS)[0];
     const render = (charId) => {
       selectedId = charId;

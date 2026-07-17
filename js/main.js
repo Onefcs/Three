@@ -1,5 +1,5 @@
 const State = (() => {
-  const SAVE_KEY = 'dungeon_warriors_v1';
+  const SAVE_KEY = 'dungeon_warriors_v3';
   let state = null;
 
   function defaultState() {
@@ -296,8 +296,10 @@ const State = (() => {
     state.selectedChar = null;
     state.phase = 'idle';
     Engine.stop();
+    save();
     document.getElementById('main-screen').classList.remove('active');
     document.getElementById('char-select-screen').classList.add('active');
+    UI.renderCharSelect();
   }
 
   function init() {
