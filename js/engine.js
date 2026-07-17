@@ -340,8 +340,8 @@ const Engine = (() => {
     const totalFrames = sd.frames[animName] || sd.frames.idle;
     const f = Math.floor(frame) % totalFrames;
     const dw = fw * scale, dh = fh * scale;
-    // Sprites have ~8% empty padding at bottom — shift down to plant feet on ground
-    const footFix = fh * 0.08 * scale;
+    // Sprites have ~40% empty transparent space below the character feet
+    const footFix = fh * 0.42 * scale;
     ctx.drawImage(img, f * fw, 0, fw, fh, x - dw / 2, y - dh + footFix, dw, dh);
   }
 
@@ -690,13 +690,15 @@ const Engine = (() => {
     // ── DRAW PLAYER ──────────────────────────────────────────────
     const drawAnim  = atkAnim.active ? 'attack' : anim.player.anim;
     const drawFrame = atkAnim.active ? atkAnim.frame : anim.player.frame;
-    drawPlayer(ctx, charId, drawAnim, drawFrame, playerX, groundY, PLAYER_SCALE);
+    const playerDrawScale = atkAnim.active ? PLAYER_SCALE * 2 : PLAYER_SCALE;
+    drawPlayer(ctx, charId, drawAnim, drawFrame, playerX, groundY, playerDrawScale);
 
-    // Player HP bar
+    // Player HP bar (always at regular scale position so it doesn't jump during attack)
     const stats2 = gs.computedStats;
     if (stats2) {
-      const sprH = (sd?.frameHeight || 64) * PLAYER_SCALE;
-      drawHPBar(ctx, playerX, groundY - sprH + (sd?.frameHeight || 64) * 0.08 * PLAYER_SCALE - 14,
+      const fh2 = sd?.frameHeight || 64;
+      const sprH = fh2 * PLAYER_SCALE * (1 - 0.42);
+      drawHPBar(ctx, playerX, groundY - sprH - 14,
         gs.currentHp || stats2.maxHp, stats2.maxHp, 80);
     }
 
