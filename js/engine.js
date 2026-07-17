@@ -31,9 +31,12 @@ const Engine = (() => {
 
   // Animation state
   const anim = {
-    player: { anim: 'run', frame: 0, timer: 0, fps: 10 },
-    monster: { frame: 0, timer: 0, fps: 8 }
+    player: { anim: 'run', frame: 0, timer: 0, fps: 10 }
   };
+  // Separate one-shot attack animation
+  const atkAnim = { active: false, frame: 0, timer: 0, fps: 7, fired: false };
+  // Projectiles (arrow / tornado)
+  const projectiles = [];
 
   // Game state (set from outside)
   let gs = null;
@@ -327,7 +330,7 @@ const Engine = (() => {
   }
 
   // Draw player sprite
-  function drawPlayer(ctx, charId, animName, frame, x, y, scale = 2.5) {
+  function drawPlayer(ctx, charId, animName, frame, x, y, scale) {
     const sd = SPRITE_DATA[charId];
     if (!sd) return;
     const file = sd.files[animName] || sd.files.idle;
@@ -337,7 +340,9 @@ const Engine = (() => {
     const totalFrames = sd.frames[animName] || sd.frames.idle;
     const f = Math.floor(frame) % totalFrames;
     const dw = fw * scale, dh = fh * scale;
-    ctx.drawImage(img, f * fw, 0, fw, fh, x - dw / 2, y - dh, dw, dh);
+    // Sprites have ~8% empty padding at bottom — shift down to plant feet on ground
+    const footFix = fh * 0.08 * scale;
+    ctx.drawImage(img, f * fw, 0, fw, fh, x - dw / 2, y - dh + footFix, dw, dh);
   }
 
   // HP bar above entity
@@ -404,6 +409,114 @@ const Engine = (() => {
     }
   }
 
+  // ── PROJECTILES ──────────────────────────────────────────────
+  function spawnProjectile(charId, x, y, tx, ty, dmg, isCrit, onHit) {
+    const isArcher = charId === 'archer';
+    const dx = tx - x, dy = ty - y;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const speed = isArcher ? 600 : 320;
+    projectiles.push({ type: isArcher ? 'arrow' : 'tornado',
+      x, y, tx, ty, vx: dx / dist * speed, vy: dy / dist * speed,
+      dmg, isCrit, onHit, rotation: 0 });
+  }
+
+  function updateProjectiles(dt) {
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+      const p = projectiles[i];
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.rotation += dt * 10;
+      // Arrived when we overshoot the dot-product toward target
+      const dx = p.tx - p.x, dy = p.ty - p.y;
+      if (dx * p.vx + dy * p.vy <= 0) {
+        p.onHit && p.onHit(p.dmg, p.isCrit);
+        projectiles.splice(i, 1);
+      }
+    }
+  }
+
+  function drawArrow(ctx, x, y, vx, vy) {
+    const angle = Math.atan2(vy, vx);
+    ctx.save();
+    ctx.translate(x, y); ctx.rotate(angle);
+    // shaft
+    ctx.strokeStyle = '#8b5e3c'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(8, 0); ctx.stroke();
+    // head
+    ctx.fillStyle = '#d0d0d0';
+    ctx.beginPath(); ctx.moveTo(8, 0); ctx.lineTo(1, -4); ctx.lineTo(1, 4); ctx.closePath(); ctx.fill();
+    // feathers
+    ctx.fillStyle = '#ffffff99';
+    ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(-8, -6); ctx.lineTo(-5, 0); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(-8,  6); ctx.lineTo(-5, 0); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawTornado(ctx, x, y, rot) {
+    ctx.save(); ctx.translate(x, y);
+    const rings = [
+      { r: 18, w: 9,  col: '#4488ffcc' },
+      { r: 12, w: 7,  col: '#88bbffcc' },
+      { r:  6, w: 5,  col: '#ccddffee' }
+    ];
+    for (let i = 0; i < rings.length; i++) {
+      const rg = rings[i];
+      ctx.save(); ctx.rotate(rot + i * 1.3); ctx.scale(1, 0.4);
+      ctx.beginPath(); ctx.arc(0, 0, rg.r, 0, Math.PI * 2);
+      ctx.strokeStyle = rg.col; ctx.lineWidth = rg.w; ctx.stroke();
+      ctx.restore();
+    }
+    // core
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 9);
+    g.addColorStop(0, '#ffffffee'); g.addColorStop(1, '#4488ff00');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawProjectiles(ctx) {
+    for (const p of projectiles) {
+      if (p.type === 'arrow') drawArrow(ctx, p.x, p.y, p.vx, p.vy);
+      else drawTornado(ctx, p.x, p.y, p.rotation);
+    }
+  }
+
+  // Deal hit: called on penultimate attack frame
+  function doAttackHit(gs, stats, charId, playerX, groundY) {
+    if (!gs.monster || gs.phase !== 'combat') return;
+    const char = CHARACTERS[charId];
+    const sd   = SPRITE_DATA[charId];
+    const monX = gs.monsterX;
+
+    const isCrit = Math.random() < (stats.crit + (gs.buffState?.crit_bonus || 0));
+    let dmg = stats.atk * (isCrit ? stats.critDmg : 1);
+    dmg = Math.max(1, dmg - gs.monster.def * 0.5);
+    if (gs.buffState?.evade) dmg = 0;
+    dmg = Math.round(dmg * (0.85 + Math.random() * 0.3));
+
+    const applyDmg = (damage, crit) => {
+      if (!gs.monster) return;
+      gs.monsterHp = Math.max(0, gs.monsterHp - damage);
+      spawnDmgNumber(monX + (Math.random() - 0.5) * 30,
+        groundY - gs.monster.size * 0.8, damage, crit);
+      spawnEffect('hit', monX, groundY - gs.monster.size * 0.5);
+      const vamp = stats.vamp + (gs.buffState?.vamp_bonus || 0);
+      if (vamp > 0) {
+        const heal = Math.round(damage * vamp);
+        gs.currentHp = Math.min(stats.maxHp, (gs.currentHp || stats.maxHp) + heal);
+        spawnEffect('heal', playerX, groundY - 80);
+      }
+    };
+
+    if (char && char.type === 'ranged') {
+      const py = groundY - (sd?.frameHeight || 64) * PLAYER_SCALE * 0.6;
+      const my = groundY - gs.monster.size * 0.55;
+      spawnProjectile(charId, playerX + 20, py, monX, my, dmg, isCrit, applyDmg);
+    } else {
+      applyDmg(dmg, isCrit);
+    }
+  }
+
   // Main loop
   function loop(ts) {
     animId = requestAnimationFrame(loop);
@@ -428,88 +541,98 @@ const Engine = (() => {
 
     const groundY = h * GROUND_Y_RATIO;
     const playerX = w * PLAYER_X_RATIO;
-    const charId = gs.selectedChar;
+    const charId  = gs.selectedChar;
+    const sd      = SPRITE_DATA[charId];
 
-    // Update player animation
-    anim.player.timer += dt;
-    if (anim.player.timer >= 1 / anim.player.fps) {
-      anim.player.timer = 0;
-      anim.player.frame++;
+    // ── IDLE/RUN ANIMATION (loops) ──────────────────────────────
+    if (!atkAnim.active) {
+      anim.player.timer += dt;
+      if (anim.player.timer >= 1 / anim.player.fps) {
+        anim.player.timer = 0;
+        const tot = sd ? (sd.frames[anim.player.anim] || 4) : 4;
+        anim.player.frame = (anim.player.frame + 1) % tot;
+      }
     }
 
-    // Phase logic
+    // ── ATTACK ANIMATION (one-shot, fires on penultimate frame) ─
+    if (atkAnim.active) {
+      atkAnim.timer += dt;
+      if (atkAnim.timer >= 1 / atkAnim.fps) {
+        atkAnim.timer -= 1 / atkAnim.fps;
+        atkAnim.frame++;
+        const tot = sd ? (sd.frames.attack || 6) : 6;
+        if (atkAnim.frame >= tot - 1 && !atkAnim.fired) {
+          atkAnim.fired = true;
+          const stats = gs.computedStats;
+          if (stats) doAttackHit(gs, stats, charId, playerX, groundY);
+        }
+        if (atkAnim.frame >= tot) {
+          atkAnim.active = false;
+          atkAnim.frame  = 0;
+        }
+      }
+    }
+
+    // ── PHASE LOGIC ──────────────────────────────────────────────
     if (gs.phase === 'running') {
       anim.player.anim = 'run';
-      if (gs.monsterX === undefined) gs.monsterX = w * 1.05;
+      if (gs.monsterX === undefined) gs.monsterX = w * 1.1;
 
-      // Move monster toward player
-      gs.monsterX -= 120 * dt;
+      gs.monsterX -= 130 * dt;
 
-      // Check collision
       if (gs.monster && gs.monsterX <= playerX + 160) {
         gs.phase = 'combat';
-        gs.monsterX = w * 0.62;
+        gs.monsterX = w * 0.64;
         gs.combatTimer = 0;
-        gs.attackCooldown = 0;
-        gs.monsterAttackCooldown = 0;
-        gs.monsterHp = gs.monster.hp * Math.pow(1.08, (gs.playerLevel || 1) - 1);
-        gs.monsterMaxHp = gs.monsterHp;
-        gs.buffState = {};
+        gs.attackCooldown = 0.5;
+        gs.monsterAttackCooldown = 1.2;
+        gs.monsterHp    = gs.monster.hp;
+        gs.monsterMaxHp = gs.monster.hp;
+        gs.buffState    = {};
+        atkAnim.active  = false;
+        atkAnim.frame   = 0;
+        projectiles.length = 0;
       }
 
-      // Draw monster running toward player
       if (gs.monster) {
-        const monY = groundY;
-        drawMonster(ctx, gs.monster, gs.monsterX, monY, 1, true, runTime);
-        drawHPBar(ctx, gs.monsterX, monY - gs.monster.size - 10, gs.monsterHp || gs.monster.hp, gs.monster.hp);
+        drawMonster(ctx, gs.monster, gs.monsterX, groundY, 1, true, runTime);
+        drawHPBar(ctx, gs.monsterX, groundY - gs.monster.size - 10,
+          gs.monsterHp || gs.monster.hp, gs.monster.hp);
       }
 
     } else if (gs.phase === 'combat') {
-      anim.player.anim = 'idle';
+      anim.player.anim = atkAnim.active ? 'attack' : 'idle';
       gs.combatTimer = (gs.combatTimer || 0) + dt;
 
       const stats = gs.computedStats;
-      const monY = groundY;
-      const monX = gs.monsterX;
+      const monX  = gs.monsterX;
+      const monY  = groundY;
 
-      // Player auto-attack
-      const atkInterval = Math.max(0.3, 2.5 - (stats.speed / 100) * 1.8);
+      // Player attack cooldown → start attack animation
+      const atkInterval = Math.max(0.5, 2.8 - (stats.speed / 100) * 2.0);
       gs.attackCooldown = (gs.attackCooldown || 0) - dt;
-      if (gs.attackCooldown <= 0 && !(gs.buffState?.stun)) {
+      if (gs.attackCooldown <= 0 && !atkAnim.active && !(gs.buffState?.stun)) {
         gs.attackCooldown = atkInterval;
-        anim.player.anim = 'attack';
-        setTimeout(() => { anim.player.anim = 'idle'; }, 400);
-        const isCrit = Math.random() < (stats.crit + (gs.buffState?.crit_bonus || 0));
-        let dmg = stats.atk * (isCrit ? stats.critDmg : 1);
-        dmg = Math.max(1, dmg - gs.monster.def * 0.5);
-        if (gs.buffState?.evade) dmg = 0;
-        dmg = Math.round(dmg * (0.85 + Math.random() * 0.3));
-        gs.monsterHp -= dmg;
-        spawnDmgNumber(monX + (Math.random()-0.5)*30, monY - gs.monster.size * 0.8, dmg, isCrit);
-        spawnEffect('hit', monX, monY - gs.monster.size * 0.5);
-        // Vampirism
-        const vamp = stats.vamp + (gs.buffState?.vamp_bonus || 0);
-        if (vamp > 0) {
-          const heal = Math.round(dmg * vamp);
-          gs.currentHp = Math.min(stats.maxHp, (gs.currentHp || stats.maxHp) + heal);
-          spawnEffect('heal', playerX, groundY - 80);
-        }
+        atkAnim.active = true;
+        atkAnim.frame  = 0;
+        atkAnim.timer  = 0;
+        atkAnim.fired  = false;
       }
 
       // Monster auto-attack
       gs.monsterAttackCooldown = (gs.monsterAttackCooldown || 0) - dt;
       if (gs.monsterAttackCooldown <= 0) {
-        gs.monsterAttackCooldown = 1.8;
+        gs.monsterAttackCooldown = 1.6;
         if (!gs.buffState?.evade) {
-          const monDmg = Math.max(1, gs.monster.atk - stats.def * 0.4 * (1 + (gs.buffState?.def_bonus || 0)));
+          const monDmg = Math.max(1, gs.monster.atk - stats.def * 0.35 * (1 + (gs.buffState?.def_bonus || 0)));
           const dmg = Math.round(monDmg * (0.85 + Math.random() * 0.3));
           gs.currentHp = Math.max(0, (gs.currentHp || stats.maxHp) - dmg * (gs.buffState?.shield ? 0.5 : 1));
-          spawnDmgNumber(playerX + (Math.random()-0.5)*30, groundY - 80, dmg, false);
+          spawnDmgNumber(playerX + (Math.random() - 0.5) * 30, groundY - 80, dmg, false);
           spawnEffect('hit', playerX, groundY - 60);
         }
       }
 
-      // Update buff timers
+      // Buff timers
       for (const k of Object.keys(gs.buffState || {})) {
         if (typeof gs.buffState[k] === 'number') {
           gs.buffState[k] -= dt;
@@ -517,46 +640,51 @@ const Engine = (() => {
         }
       }
 
-      // Draw monster (idle in combat)
       drawMonster(ctx, gs.monster, monX, monY, 1, false, runTime);
       drawHPBar(ctx, monX, monY - gs.monster.size - 10, gs.monsterHp, gs.monsterMaxHp);
-
-      // Draw monster name
       ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center';
       ctx.fillText(gs.monster.name, monX, monY - gs.monster.size - 22);
       ctx.textAlign = 'left';
 
-      // Check results
       if (gs.monsterHp <= 0 && gs.phase === 'combat') {
         gs.phase = 'killed';
-        gs.killTimer = 0.7;
+        gs.killTimer = 0.6;
+        atkAnim.active = false;
+        projectiles.length = 0;
         gs.onKill && gs.onKill();
       } else if ((gs.currentHp || 1) <= 0 && gs.phase === 'combat') {
         gs.phase = 'defeat';
         gs.onDefeat && gs.onDefeat();
       }
+
     } else if (gs.phase === 'killed') {
       anim.player.anim = 'run';
       gs.killTimer = (gs.killTimer || 0) - dt;
       if (gs.killTimer <= 0) {
         gs.phase = 'running';
         gs.monsterX = undefined;
-        gs.monster = null;
+        gs.monster  = null;
         gs.onSpawnMonster && gs.onSpawnMonster();
       }
     } else {
       anim.player.anim = 'idle';
     }
 
-    // Draw player
-    drawPlayer(ctx, charId, anim.player.anim, anim.player.frame, playerX, groundY, PLAYER_SCALE);
-    // Player HP bar (always show)
-    const stats = gs.computedStats;
-    if (stats) {
-      drawHPBar(ctx, playerX, groundY - (SPRITE_DATA[charId]?.frameHeight || 64) * PLAYER_SCALE - 10,
-        gs.currentHp || stats.maxHp, stats.maxHp, 80);
+    // ── DRAW PLAYER ──────────────────────────────────────────────
+    const drawAnim  = atkAnim.active ? 'attack' : anim.player.anim;
+    const drawFrame = atkAnim.active ? atkAnim.frame : anim.player.frame;
+    drawPlayer(ctx, charId, drawAnim, drawFrame, playerX, groundY, PLAYER_SCALE);
+
+    // Player HP bar
+    const stats2 = gs.computedStats;
+    if (stats2) {
+      const sprH = (sd?.frameHeight || 64) * PLAYER_SCALE;
+      drawHPBar(ctx, playerX, groundY - sprH + (sd?.frameHeight || 64) * 0.08 * PLAYER_SCALE - 14,
+        gs.currentHp || stats2.maxHp, stats2.maxHp, 80);
     }
 
+    updateProjectiles(dt);
+    drawProjectiles(ctx);
     updateDmgNumbers(dt);
     drawDmgNumbers(ctx);
     updateEffects(dt);
@@ -565,6 +693,8 @@ const Engine = (() => {
 
   function start(gameState) {
     gs = gameState;
+    atkAnim.active = false; atkAnim.frame = 0; atkAnim.fired = false;
+    projectiles.length = 0;
     if (!canvas) {
       canvas = document.getElementById('game-canvas');
       ctx = canvas.getContext('2d');
