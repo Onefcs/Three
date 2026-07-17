@@ -526,7 +526,7 @@ const Engine = (() => {
     };
 
     if (char && char.type === 'ranged') {
-      const py = groundY - (sd?.frameHeight || 64) * PLAYER_SCALE * 0.38;
+      const py = groundY - (sd?.frameHeight || 64) * PLAYER_SCALE * 0.30;
       const my = groundY - gs.monster.size * 0.55;
       spawnProjectile(charId, playerX + 20, py, monX, my, dmg, isCrit, applyDmg);
     } else {
@@ -549,8 +549,8 @@ const Engine = (() => {
 
     runTime += dt;
 
-    // Update scroll
-    if (gs.phase === 'running') {
+    // Update scroll (also during kill pause so character doesn't run in place)
+    if (gs.phase === 'running' || gs.phase === 'killed') {
       scrollOffset += 180 * dt;
     }
 
@@ -599,7 +599,6 @@ const Engine = (() => {
 
       if (gs.monster && gs.monsterX <= playerX + 55) {
         gs.phase = 'combat';
-        gs.monsterX = w * 0.64;
         gs.combatTimer = 0;
         gs.attackCooldown = 0.5;
         gs.monsterAttackCooldown = 1.2;
