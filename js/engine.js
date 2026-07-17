@@ -34,7 +34,7 @@ const Engine = (() => {
     player: { anim: 'run', frame: 0, timer: 0, fps: 10 }
   };
   // Separate one-shot attack animation
-  const atkAnim = { active: false, frame: 0, timer: 0, fps: 7, fired: false };
+  const atkAnim = { active: false, frame: 0, timer: 0, fps: 14, fired: false };
   // Projectiles (arrow / tornado)
   const projectiles = [];
 
@@ -341,7 +341,7 @@ const Engine = (() => {
     const f = Math.floor(frame) % totalFrames;
     const dw = fw * scale, dh = fh * scale;
     // Sprites have ~40% empty transparent space below the character feet
-    const footFix = fh * 0.42 * scale;
+    const footFix = fh * 0.28 * scale;
     ctx.drawImage(img, f * fw, 0, fw, fh, x - dw / 2, y - dh + footFix, dw, dh);
   }
 
@@ -697,7 +697,7 @@ const Engine = (() => {
     const stats2 = gs.computedStats;
     if (stats2) {
       const fh2 = sd?.frameHeight || 64;
-      const sprH = fh2 * PLAYER_SCALE * (1 - 0.42);
+      const sprH = fh2 * PLAYER_SCALE * (1 - 0.28);
       drawHPBar(ctx, playerX, groundY - sprH - 14,
         gs.currentHp || stats2.maxHp, stats2.maxHp, 80);
     }
