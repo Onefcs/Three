@@ -5,6 +5,8 @@ const Engine = (() => {
   let animId = null;
   let lastTime = 0;
   let scrollOffset = 0;
+  let runTime = 0;
+  const PLAYER_SCALE = 1.73;
   const GROUND_Y_RATIO = 0.72;
   const PLAYER_X_RATIO = 0.22;
 
@@ -265,11 +267,22 @@ const Engine = (() => {
     th.drawLayer4(ctx, w, h, off);
   }
 
-  // Draw monster procedurally
-  function drawMonster(ctx, mData, x, y, scale = 1, flip = false) {
+  // Draw monster procedurally with run animation
+  function drawMonster(ctx, mData, x, y, scale = 1, running = false, t = 0) {
     const s = mData.size * scale;
+    // Running bob: body moves up/down, legs alternate
+    const speed = 8;
+    const bob   = running ? Math.sin(t * speed) * s * 0.05 : 0;
+    const legA  = running ? Math.sin(t * speed) * 0.5 : 0;       // leg swing angle
+    const armA  = running ? Math.sin(t * speed + Math.PI) * 0.4 : 0;
+
     ctx.save();
-    if (flip) { ctx.translate(x, y); ctx.scale(-1, 1); ctx.translate(-x, -y); }
+    // Monsters always face left (toward player), so flip horizontally
+    ctx.translate(x, 0);
+    ctx.scale(-1, 1);
+    ctx.translate(-x, 0);
+
+    const cy = y + bob; // vertical bob
 
     // Shadow
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
@@ -277,29 +290,38 @@ const Engine = (() => {
 
     // Body
     ctx.fillStyle = mData.color;
-    ctx.beginPath(); ctx.ellipse(x, y - s * 0.45, s * 0.32, s * 0.42, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x, cy - s * 0.45, s * 0.32, s * 0.42, 0, 0, Math.PI * 2); ctx.fill();
 
-    // Head
+    // Head (slight tilt when running)
     ctx.fillStyle = mData.accent;
-    ctx.beginPath(); ctx.arc(x, y - s * 0.88, s * 0.24, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x, cy - s * 0.88, s * 0.24, 0, Math.PI * 2); ctx.fill();
 
     // Eyes
     ctx.fillStyle = '#ffffff';
-    ctx.beginPath(); ctx.arc(x - s * 0.08, y - s * 0.9, s * 0.065, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(x + s * 0.08, y - s * 0.9, s * 0.065, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x - s * 0.08, cy - s * 0.9, s * 0.065, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + s * 0.08, cy - s * 0.9, s * 0.065, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#ff2020';
-    ctx.beginPath(); ctx.arc(x - s * 0.08, y - s * 0.9, s * 0.035, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(x + s * 0.08, y - s * 0.9, s * 0.035, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x - s * 0.08, cy - s * 0.9, s * 0.035, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + s * 0.08, cy - s * 0.9, s * 0.035, 0, Math.PI * 2); ctx.fill();
 
-    // Arms
-    ctx.strokeStyle = mData.color; ctx.lineWidth = s * 0.09;
-    ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(x - s * 0.3, y - s * 0.55); ctx.lineTo(x - s * 0.55, y - s * 0.3); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(x + s * 0.3, y - s * 0.55); ctx.lineTo(x + s * 0.55, y - s * 0.3); ctx.stroke();
+    // Arms (swing when running)
+    ctx.strokeStyle = mData.color; ctx.lineWidth = s * 0.09; ctx.lineCap = 'round';
+    const armSwing = s * 0.25 * (running ? Math.sin(t * speed + Math.PI) : 1);
+    ctx.beginPath();
+    ctx.moveTo(x - s * 0.3, cy - s * 0.55);
+    ctx.lineTo(x - s * 0.52, cy - s * 0.55 + armSwing); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x + s * 0.3, cy - s * 0.55);
+    ctx.lineTo(x + s * 0.52, cy - s * 0.55 - armSwing); ctx.stroke();
 
-    // Legs
-    ctx.beginPath(); ctx.moveTo(x - s * 0.14, y - s * 0.1); ctx.lineTo(x - s * 0.18, y + s * 0.12); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(x + s * 0.14, y - s * 0.1); ctx.lineTo(x + s * 0.18, y + s * 0.12); ctx.stroke();
+    // Legs (alternate when running)
+    const legFwd = s * 0.22 * Math.sin(t * speed);
+    ctx.beginPath();
+    ctx.moveTo(x - s * 0.13, cy - s * 0.08);
+    ctx.lineTo(x - s * 0.13 - legFwd, y + s * 0.02); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x + s * 0.13, cy - s * 0.08);
+    ctx.lineTo(x + s * 0.13 + legFwd, y + s * 0.02); ctx.stroke();
 
     ctx.restore();
   }
@@ -395,6 +417,8 @@ const Engine = (() => {
     const dungeon = DUNGEONS.find(d => d.id === gs.currentDungeon);
     const theme = dungeon ? dungeon.theme : 'forest';
 
+    runTime += dt;
+
     // Update scroll
     if (gs.phase === 'running') {
       scrollOffset += 180 * dt;
@@ -433,11 +457,10 @@ const Engine = (() => {
         gs.buffState = {};
       }
 
-      // Draw monster approaching
+      // Draw monster running toward player
       if (gs.monster) {
-        const sd = SPRITE_DATA[charId];
         const monY = groundY;
-        drawMonster(ctx, gs.monster, gs.monsterX, monY, 1, true);
+        drawMonster(ctx, gs.monster, gs.monsterX, monY, 1, true, runTime);
         drawHPBar(ctx, gs.monsterX, monY - gs.monster.size - 10, gs.monsterHp || gs.monster.hp, gs.monster.hp);
       }
 
@@ -494,8 +517,8 @@ const Engine = (() => {
         }
       }
 
-      // Draw monster
-      drawMonster(ctx, gs.monster, monX, monY, 1, true);
+      // Draw monster (idle in combat)
+      drawMonster(ctx, gs.monster, monX, monY, 1, false, runTime);
       drawHPBar(ctx, monX, monY - gs.monster.size - 10, gs.monsterHp, gs.monsterMaxHp);
 
       // Draw monster name
@@ -526,11 +549,11 @@ const Engine = (() => {
     }
 
     // Draw player
-    drawPlayer(ctx, charId, anim.player.anim, anim.player.frame, playerX, groundY, 2.6);
+    drawPlayer(ctx, charId, anim.player.anim, anim.player.frame, playerX, groundY, PLAYER_SCALE);
     // Player HP bar (always show)
     const stats = gs.computedStats;
     if (stats) {
-      drawHPBar(ctx, playerX, groundY - (SPRITE_DATA[charId]?.frameHeight || 64) * 2.6 - 10,
+      drawHPBar(ctx, playerX, groundY - (SPRITE_DATA[charId]?.frameHeight || 64) * PLAYER_SCALE - 10,
         gs.currentHp || stats.maxHp, stats.maxHp, 80);
     }
 
