@@ -341,7 +341,7 @@ const Engine = (() => {
     const f = Math.floor(frame) % totalFrames;
     const dw = fw * scale, dh = fh * scale;
     // Sprites have ~40% empty transparent space below the character feet
-    const footFix = fh * 0.25 * scale;
+    const footFix = fh * 0.23 * scale;
     ctx.drawImage(img, f * fw, 0, fw, fh, x - dw / 2, y - dh + footFix, dw, dh);
   }
 
@@ -526,7 +526,7 @@ const Engine = (() => {
     };
 
     if (char && char.type === 'ranged') {
-      const py = groundY - (sd?.frameHeight || 64) * PLAYER_SCALE * 0.6;
+      const py = groundY - (sd?.frameHeight || 64) * PLAYER_SCALE * 0.38;
       const my = groundY - gs.monster.size * 0.55;
       spawnProjectile(charId, playerX + 20, py, monX, my, dmg, isCrit, applyDmg);
     } else {
@@ -696,7 +696,7 @@ const Engine = (() => {
     const stats2 = gs.computedStats;
     if (stats2) {
       const fh2 = sd?.frameHeight || 64;
-      const sprH = fh2 * PLAYER_SCALE * (1 - 0.25);
+      const sprH = fh2 * PLAYER_SCALE * (1 - 0.23);
       drawHPBar(ctx, playerX, groundY - sprH - 14,
         gs.currentHp || stats2.maxHp, stats2.maxHp, 80);
     }
