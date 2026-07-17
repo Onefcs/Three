@@ -41,233 +41,493 @@ const Engine = (() => {
   // Game state (set from outside)
   let gs = null;
 
-  // Parallax themes
+  // Parallax themes — pixel-art style with live animations
   const THEMES = {
     forest: {
-      skyGrad: ['#1a2a14', '#2d5020', '#4a8040'],
-      ground: '#2a5a1a',
-      groundTop: '#3a8a2a',
-      drawLayer1: (ctx, w, h) => {
-        const g = ctx.createLinearGradient(0, 0, 0, h * GROUND_Y_RATIO);
-        g.addColorStop(0, '#0a1a08'); g.addColorStop(0.6, '#1a3a10'); g.addColorStop(1, '#2a5a18');
-        ctx.fillStyle = g; ctx.fillRect(0, 0, w, h * GROUND_Y_RATIO);
-      },
-      drawLayer2: (ctx, w, h, off) => {
-        ctx.fillStyle = '#1a3a10';
-        for (let i = -1; i < 5; i++) {
-          const x = ((i * 220 - off * 0.08) % (w + 250)) - 50;
-          const ph = 90 + (i % 3) * 35;
-          ctx.beginPath(); ctx.moveTo(x, h * GROUND_Y_RATIO);
-          ctx.lineTo(x + 110, h * GROUND_Y_RATIO - ph);
-          ctx.lineTo(x + 220, h * GROUND_Y_RATIO); ctx.fill();
+      ground: '#142808', groundTop: '#245010',
+      drawLayer1: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        const g = ctx.createLinearGradient(0, 0, 0, gy);
+        g.addColorStop(0, '#030608'); g.addColorStop(0.6, '#06100e'); g.addColorStop(1, '#0a1c10');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, w, gy);
+        // Pixel stars — deterministic, twinkling
+        for (let i = 0; i < 60; i++) {
+          const sx = (i * 137 + 11) % w, sy = (i * 89 + 7) % (gy * 0.68);
+          const tw = Math.sin(t * 2 + i * 0.9) * 0.5 + 0.5;
+          ctx.fillStyle = `rgba(200,225,170,${0.15 + tw * 0.75})`;
+          ctx.fillRect(Math.floor(sx), Math.floor(sy), i % 5 === 0 ? 2 : 1, 1);
         }
+        // Crescent moon (pixel circle with shadow bite)
+        const mx = Math.floor(w * 0.78), my = Math.floor(gy * 0.14), mr = 14;
+        ctx.fillStyle = '#d4e87a';
+        for (let r = -mr; r <= mr; r++) for (let c = -mr; c <= mr; c++)
+          if (r*r+c*c <= mr*mr) ctx.fillRect(mx+c, my+r, 1, 1);
+        ctx.fillStyle = '#04080e';
+        for (let r = -mr; r <= mr; r++) for (let c = -mr+5; c <= mr+5; c++)
+          if (r*r+c*c <= mr*mr) ctx.fillRect(mx+c, my+r, 1, 1);
       },
-      drawLayer3: (ctx, w, h, off) => {
+      drawLayer2: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        ctx.fillStyle = '#091a0c';
+        for (let i = -1; i < 5; i++) {
+          const x = ((i * 240 - off * 0.04) % (w + 270)) - 70;
+          const mh = 72 + (i * 41 % 52);
+          ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x + 120, gy - mh); ctx.lineTo(x + 240, gy); ctx.fill();
+        }
+        ctx.fillStyle = '#112016';
         for (let i = -1; i < 7; i++) {
-          const x = ((i * 150 - off * 0.3) % (w + 180)) - 60;
-          const th = 55 + (i % 4) * 18;
-          ctx.fillStyle = '#4a2a14';
-          ctx.fillRect(x + 28, h * GROUND_Y_RATIO - th, 14, th);
-          ctx.fillStyle = '#1b4020';
-          ctx.beginPath(); ctx.arc(x + 35, h * GROUND_Y_RATIO - th - 30, 38, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = '#255030';
-          ctx.beginPath(); ctx.arc(x + 35, h * GROUND_Y_RATIO - th - 48, 26, 0, Math.PI * 2); ctx.fill();
+          const x = ((i * 165 - off * 0.08) % (w + 190)) - 50;
+          const mh = 46 + (i * 37 % 30);
+          ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x + 82, gy - mh); ctx.lineTo(x + 165, gy); ctx.fill();
         }
       },
-      drawLayer4: (ctx, w, h, off) => {
-        ctx.fillStyle = '#0d2010';
-        for (let i = -1; i < 14; i++) {
-          const x = ((i * 80 - off * 0.7) % (w + 100)) - 30;
-          ctx.beginPath(); ctx.arc(x + 20, h * GROUND_Y_RATIO, 20, Math.PI, 0); ctx.fill();
-          ctx.beginPath(); ctx.arc(x + 42, h * GROUND_Y_RATIO, 15, Math.PI, 0); ctx.fill();
-        }
-      }
-    },
-    cave: {
-      ground: '#2a1a3a', groundTop: '#3a2a5a',
-      drawLayer1: (ctx, w, h) => {
-        const g = ctx.createLinearGradient(0, 0, 0, h);
-        g.addColorStop(0, '#05020a'); g.addColorStop(1, '#150830');
-        ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
-      },
-      drawLayer2: (ctx, w, h, off) => {
-        ctx.fillStyle = '#0f0520';
+      drawLayer3: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
         for (let i = -1; i < 8; i++) {
-          const x = ((i * 130 - off * 0.05) % (w + 150)) - 40;
-          const sh = 40 + (i % 4) * 25;
-          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 40, sh); ctx.lineTo(x + 80, 0); ctx.fill();
-          ctx.fillStyle = '#150830'; ctx.fillRect(x, 0, 80, sh * 0.3);
+          const x = Math.floor(((i * 148 - off * 0.28) % (w + 172)) - 46);
+          const th2 = 60 + (i * 31 % 32), trunkH = Math.floor(th2 * 0.38);
+          ctx.fillStyle = '#2d1a08';
+          ctx.fillRect(x + 22, Math.floor(gy - trunkH), 12, trunkH);
+          ctx.fillStyle = '#3d2410';
+          ctx.fillRect(x + 22, Math.floor(gy - trunkH), 3, trunkH);
+          const layers = [{w:54,h:18,yo:0.14},{w:42,h:16,yo:0.32},{w:30,h:14,yo:0.50},{w:18,h:12,yo:0.65}];
+          const cols = ['#0e2a0a','#163a10','#1e4a15','#266020'];
+          layers.forEach((cl, idx) => {
+            ctx.fillStyle = cols[idx];
+            ctx.fillRect(x + 28 - Math.floor(cl.w/2), Math.floor(gy - th2 + cl.yo * th2), Math.floor(cl.w), cl.h);
+            ctx.fillStyle = '#2a5818';
+            ctx.fillRect(x + 28 - Math.floor(cl.w/2), Math.floor(gy - th2 + cl.yo * th2), Math.floor(cl.w), 2);
+          });
         }
       },
-      drawLayer3: (ctx, w, h, off) => {
-        ctx.fillStyle = '#200a40';
-        for (let i = -1; i < 10; i++) {
-          const x = ((i * 100 - off * 0.25) % (w + 120)) - 30;
-          const sh = 55 + (i % 3) * 30;
-          ctx.beginPath(); ctx.moveTo(x + 10, 0); ctx.lineTo(x + 30, sh); ctx.lineTo(x + 50, 0); ctx.fill();
+      drawLayer4: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        for (let i = -1; i < 15; i++) {
+          const x = Math.floor(((i * 78 - off * 0.72) % (w + 94)) - 28);
+          const bh = 12 + (i * 19 % 10);
+          ctx.fillStyle = '#091508'; ctx.fillRect(x, Math.floor(gy - bh), 28, bh);
+          ctx.fillStyle = '#102010'; ctx.fillRect(x + 4, Math.floor(gy - bh - 5), 18, 7);
+          ctx.fillStyle = '#1a3510';
+          ctx.fillRect(x, Math.floor(gy - 4), 4, 4);
+          ctx.fillRect(x + 10, Math.floor(gy - 5), 3, 5);
+          ctx.fillRect(x + 20, Math.floor(gy - 3), 4, 3);
         }
-        // gems
-        const gemColors = ['#ff4080', '#4080ff', '#40ff80'];
-        for (let i = -1; i < 12; i++) {
-          const x = ((i * 85 - off * 0.3) % (w + 100)) - 20;
-          const y = 20 + (i % 5) * 18;
-          ctx.fillStyle = gemColors[i % 3] + '88';
-          ctx.beginPath(); ctx.arc(x + 15, y, 5, 0, Math.PI * 2); ctx.fill();
-        }
-      },
-      drawLayer4: (ctx, w, h, off) => {
-        ctx.fillStyle = '#100520';
-        for (let i = -1; i < 16; i++) {
-          const x = ((i * 60 - off * 0.6) % (w + 80)) - 20;
-          ctx.beginPath();
-          ctx.moveTo(x + 5, h * GROUND_Y_RATIO);
-          ctx.lineTo(x + 15, h * GROUND_Y_RATIO - 22);
-          ctx.lineTo(x + 25, h * GROUND_Y_RATIO); ctx.fill();
+        // Fireflies — animated 2×2 glowing pixels
+        for (let i = 0; i < 10; i++) {
+          const fx = ((i * 177 + off * 0.18) % w);
+          const fy = gy * (0.32 + (i * 83 % 48) / 100) + Math.sin(t * 2.2 + i * 1.8) * 18;
+          const glow = Math.sin(t * 3.5 + i * 2.3);
+          if (glow > 0) {
+            ctx.fillStyle = `rgba(150,255,70,${glow * 0.85})`;
+            ctx.fillRect(Math.floor(fx), Math.floor(fy), 2, 2);
+            ctx.fillStyle = `rgba(150,255,70,${glow * 0.18})`;
+            ctx.fillRect(Math.floor(fx) - 3, Math.floor(fy) - 3, 8, 8);
+          }
         }
       }
     },
-    ice: {
-      ground: '#c8e8f8', groundTop: '#e8f8ff',
-      drawLayer1: (ctx, w, h) => {
-        const g = ctx.createLinearGradient(0, 0, 0, h);
-        g.addColorStop(0, '#0a1830'); g.addColorStop(0.5, '#1a3860'); g.addColorStop(1, '#2a5880');
-        ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
-      },
-      drawLayer2: (ctx, w, h, off) => {
-        ctx.fillStyle = '#1a3860aa';
-        for (let i = -1; i < 5; i++) {
-          const x = ((i * 200 - off * 0.07) % (w + 230)) - 60;
-          const ph = 100 + (i % 3) * 40;
-          ctx.beginPath(); ctx.moveTo(x, h * GROUND_Y_RATIO);
-          ctx.lineTo(x + 100, h * GROUND_Y_RATIO - ph);
-          ctx.lineTo(x + 200, h * GROUND_Y_RATIO); ctx.fill();
-          ctx.fillStyle = '#e8f8ffcc';
-          ctx.fillRect(x + 85, h * GROUND_Y_RATIO - ph - 5, 30, 12);
+
+    cave: {
+      ground: '#100818', groundTop: '#1e1030',
+      drawLayer1: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        ctx.fillStyle = '#02010a'; ctx.fillRect(0, 0, w, h);
+        const lg = ctx.createLinearGradient(0, gy * 0.55, 0, gy);
+        lg.addColorStop(0, 'rgba(55,0,95,0)'); lg.addColorStop(1, 'rgba(75,15,125,0.2)');
+        ctx.fillStyle = lg; ctx.fillRect(0, gy * 0.55, w, gy * 0.45);
+        // Floating spores
+        for (let i = 0; i < 14; i++) {
+          const fx = ((i * 173 + off * 0.05) % w);
+          const fy = (gy * 0.15 + (i * 79 % (gy * 60)) / 100 + t * (8 + i % 5)) % gy;
+          const alpha = Math.sin(t * 2 + i * 1.7) * 0.4 + 0.5;
+          ctx.fillStyle = `rgba(190,90,255,${alpha * 0.55})`; ctx.fillRect(Math.floor(fx), Math.floor(fy), 2, 2);
         }
       },
-      drawLayer3: (ctx, w, h, off) => {
-        ctx.strokeStyle = '#88c8e8'; ctx.lineWidth = 2;
+      drawLayer2: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        // Ceiling stalactites — pixel tapered spikes
+        for (let i = -1; i < 8; i++) {
+          const x = Math.floor(((i * 118 - off * 0.05) % (w + 142)) - 44);
+          const sl = 52 + (i * 43 % 55), sw = 15 + (i * 11 % 14);
+          ctx.fillStyle = '#07021a';
+          for (let row = 0; row < sl; row++) {
+            const rw = Math.max(2, Math.floor(sw * (1 - row / sl)));
+            ctx.fillRect(x + Math.floor((sw - rw) / 2), row, rw, 1);
+          }
+          ctx.fillStyle = '#100330';
+          ctx.fillRect(x + 1, 0, 3, sl);
+          const drip = (t * 38 + i * 28) % 75;
+          if (drip < sl + 18) {
+            ctx.fillStyle = '#4a0890aa';
+            ctx.fillRect(x + Math.floor(sw / 2) - 1, Math.floor(sl + drip * 0.3), 2, 3);
+          }
+        }
+        // Floor stalagmites
         for (let i = -1; i < 10; i++) {
-          const x = ((i * 90 - off * 0.25) % (w + 110)) - 20;
-          const hy = 50 + (i % 4) * 25;
-          ctx.beginPath(); ctx.moveTo(x + 20, h * GROUND_Y_RATIO);
-          ctx.lineTo(x + 20, h * GROUND_Y_RATIO - hy);
-          ctx.lineTo(x, h * GROUND_Y_RATIO - hy + 15);
-          ctx.moveTo(x + 20, h * GROUND_Y_RATIO - hy);
-          ctx.lineTo(x + 40, h * GROUND_Y_RATIO - hy + 15); ctx.stroke();
+          const x = Math.floor(((i * 93 - off * 0.08) % (w + 112)) - 34);
+          const sl = 22 + (i * 37 % 32), sw = 10 + (i * 9 % 10);
+          ctx.fillStyle = '#0e0420';
+          for (let row = 0; row < sl; row++) {
+            const rw = Math.max(2, Math.floor(sw * (1 - row / sl)));
+            ctx.fillRect(x + Math.floor((sw - rw) / 2), Math.floor(gy - sl + row), rw, 1);
+          }
         }
       },
-      drawLayer4: (ctx, w, h, off) => {
-        ctx.fillStyle = '#88d8f8aa';
-        for (let i = -1; i < 18; i++) {
-          const x = ((i * 55 - off * 0.6) % (w + 70)) - 15;
-          ctx.beginPath(); ctx.moveTo(x + 12, h * GROUND_Y_RATIO);
-          ctx.lineTo(x + 18, h * GROUND_Y_RATIO - 18);
-          ctx.lineTo(x + 24, h * GROUND_Y_RATIO); ctx.fill();
-        }
-      }
-    },
-    volcano: {
-      ground: '#3a0a00', groundTop: '#6a1a00',
-      drawLayer1: (ctx, w, h) => {
-        const g = ctx.createLinearGradient(0, 0, 0, h);
-        g.addColorStop(0, '#1a0000'); g.addColorStop(0.6, '#3a0800'); g.addColorStop(1, '#6a1000');
-        ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
-        // lava glow at bottom
-        const lg = ctx.createLinearGradient(0, h * 0.6, 0, h);
-        lg.addColorStop(0, 'transparent'); lg.addColorStop(1, '#ff400088');
-        ctx.fillStyle = lg; ctx.fillRect(0, h * 0.6, w, h * 0.4);
-      },
-      drawLayer2: (ctx, w, h, off) => {
-        ctx.fillStyle = '#2a0800';
-        for (let i = -1; i < 4; i++) {
-          const x = ((i * 280 - off * 0.06) % (w + 320)) - 80;
-          ctx.beginPath(); ctx.moveTo(x, h * GROUND_Y_RATIO);
-          ctx.lineTo(x + 140, h * GROUND_Y_RATIO - 150);
-          ctx.lineTo(x + 280, h * GROUND_Y_RATIO); ctx.fill();
-          // lava spout
-          ctx.fillStyle = '#ff6020';
-          ctx.beginPath(); ctx.arc(x + 140, h * GROUND_Y_RATIO - 155, 8, 0, Math.PI * 2); ctx.fill();
+      drawLayer3: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        const cols = ['#ff1877','#1870ff','#18e898','#9018ff','#ff8800'];
+        for (let i = -1; i < 13; i++) {
+          const x = Math.floor(((i * 80 - off * 0.26) % (w + 98)) - 28);
+          const col = cols[i % 5], ch = 18 + (i * 17 % 20);
+          const pulse = Math.sin(t * 2.5 + i * 1.2) * 0.25 + 0.75;
+          for (let row = 0; row < ch; row++) {
+            const rw = Math.max(1, Math.floor(7 * (1 - row / ch)));
+            ctx.fillStyle = row < ch * 0.28 ? '#ffffff' : col;
+            ctx.globalAlpha = pulse;
+            ctx.fillRect(x + Math.floor((7 - rw) / 2), Math.floor(gy - ch + row), rw, 1);
+          }
+          const sh = Math.floor(ch * 0.6);
+          for (let row = 0; row < sh; row++) {
+            const rw = Math.max(1, Math.floor(4 * (1 - row / sh)));
+            ctx.fillStyle = col; ctx.globalAlpha = pulse * 0.65;
+            ctx.fillRect(x - 5 + Math.floor((4 - rw) / 2), Math.floor(gy - sh + row), rw, 1);
+            ctx.fillRect(x + 9 + Math.floor((4 - rw) / 2), Math.floor(gy - sh + row), rw, 1);
+          }
+          ctx.globalAlpha = pulse * 0.13; ctx.fillStyle = col;
+          ctx.fillRect(x - 8, Math.floor(gy - ch - 5), 30, ch + 8);
+          ctx.globalAlpha = 1;
         }
       },
-      drawLayer3: (ctx, w, h, off) => {
-        // lava pools
-        for (let i = -1; i < 10; i++) {
-          const x = ((i * 110 - off * 0.28) % (w + 130)) - 30;
-          ctx.fillStyle = '#8a2000';
-          ctx.beginPath(); ctx.ellipse(x + 35, h * GROUND_Y_RATIO - 8, 35, 12, 0, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = '#ff6020aa';
-          ctx.beginPath(); ctx.ellipse(x + 35, h * GROUND_Y_RATIO - 8, 20, 7, 0, 0, Math.PI * 2); ctx.fill();
-        }
-      },
-      drawLayer4: (ctx, w, h, off) => {
-        ctx.fillStyle = '#1a0500';
+      drawLayer4: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
         for (let i = -1; i < 20; i++) {
-          const x = ((i * 45 - off * 0.65) % (w + 60)) - 15;
-          const rh = 12 + (i % 4) * 8;
-          ctx.fillRect(x, h * GROUND_Y_RATIO - rh, 20, rh);
+          const x = Math.floor(((i * 48 - off * 0.68) % (w + 62)) - 18);
+          const rh = 8 + (i * 15 % 14), rw = 18 + (i * 11 % 14);
+          ctx.fillStyle = '#05010e'; ctx.fillRect(x, Math.floor(gy - rh), rw, rh);
+          ctx.fillStyle = '#0b021e'; ctx.fillRect(x + 2, Math.floor(gy - rh), 3, rh);
         }
       }
     },
-    ruins: {
-      ground: '#2a1a30', groundTop: '#4a2a50',
-      drawLayer1: (ctx, w, h) => {
-        const g = ctx.createLinearGradient(0, 0, 0, h);
-        g.addColorStop(0, '#0a0515'); g.addColorStop(0.5, '#15082a'); g.addColorStop(1, '#200a35');
-        ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
-        // stars
-        ctx.fillStyle = '#ffffff';
-        for (let i = 0; i < 40; i++) {
-          const sx = (i * 137.5) % w, sy = (i * 97.3) % (h * 0.5);
-          ctx.beginPath(); ctx.arc(sx, sy, 1, 0, Math.PI * 2); ctx.fill();
+
+    ice: {
+      ground: '#a0c8e0', groundTop: '#c8e8f8',
+      drawLayer1: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        const g = ctx.createLinearGradient(0, 0, 0, gy);
+        g.addColorStop(0, '#010408'); g.addColorStop(0.5, '#020810'); g.addColorStop(1, '#040f1c');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, w, gy);
+        // Stars
+        for (let i = 0; i < 65; i++) {
+          const sx = (i * 151 + 5) % w, sy = (i * 97 + 3) % (gy * 0.58);
+          const tw = Math.sin(t * 1.8 + i * 0.7) * 0.5 + 0.5;
+          ctx.fillStyle = `rgba(175,210,255,${0.18 + tw * 0.72})`;
+          ctx.fillRect(Math.floor(sx), Math.floor(sy), i % 6 === 0 ? 2 : 1, 1);
         }
+        // Aurora borealis — wavy colour bands
+        const auroras = [{y:0.07,col:[0,210,110],bw:30},{y:0.13,col:[0,155,255],bw:24},{y:0.19,col:[135,0,255],bw:18}];
+        auroras.forEach((au, ai) => {
+          for (let xi = 0; xi < w; xi += 2) {
+            const wave = Math.sin(xi * 0.012 + t * 0.6 + ai * 2.1) * 22 + Math.sin(xi * 0.007 - t * 0.4 + ai) * 12;
+            const aY = gy * au.y + wave;
+            const alpha = (Math.sin(xi * 0.018 + t * 0.5 + ai * 1.8) * 0.3 + 0.5) * 0.28;
+            const [r, g2, b] = au.col;
+            ctx.fillStyle = `rgba(${r},${g2},${b},${alpha})`;
+            ctx.fillRect(xi, Math.floor(aY), 2, au.bw);
+          }
+        });
       },
-      drawLayer2: (ctx, w, h, off) => {
-        ctx.fillStyle = '#180830';
+      drawLayer2: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        ctx.fillStyle = '#0b1828';
         for (let i = -1; i < 4; i++) {
-          const x = ((i * 260 - off * 0.06) % (w + 300)) - 70;
-          const bh = 120 + (i % 3) * 40;
-          ctx.fillRect(x, h * GROUND_Y_RATIO - bh, 80, bh);
-          ctx.fillRect(x + 90, h * GROUND_Y_RATIO - bh * 0.7, 60, bh * 0.7);
-          // arch
-          ctx.beginPath(); ctx.arc(x + 40, h * GROUND_Y_RATIO - bh + 40, 25, Math.PI, 0); ctx.fill();
+          const x = ((i * 285 - off * 0.04) % (w + 325)) - 90;
+          const mh = 102 + (i * 47 % 55);
+          ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x + 142, gy - mh); ctx.lineTo(x + 285, gy); ctx.fill();
+        }
+        // Pixel snow caps
+        for (let i = -1; i < 4; i++) {
+          const x = ((i * 285 - off * 0.04) % (w + 325)) - 90;
+          const mh = 102 + (i * 47 % 55);
+          for (let row = 0; row < 24; row++) {
+            const tw = Math.floor(((24 - row) / 24) * 38);
+            ctx.fillStyle = row < 10 ? '#daeeff' : '#b4d4ee';
+            ctx.fillRect(Math.floor(x + 142 - tw), Math.floor(gy - mh + row), tw * 2, 1);
+          }
         }
       },
-      drawLayer3: (ctx, w, h, off) => {
-        ctx.fillStyle = '#2a1040';
+      drawLayer3: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
         for (let i = -1; i < 10; i++) {
-          const x = ((i * 95 - off * 0.28) % (w + 110)) - 25;
-          const ph = 60 + (i % 3) * 30;
-          ctx.fillRect(x + 10, h * GROUND_Y_RATIO - ph, 18, ph);
-          ctx.fillRect(x + 5, h * GROUND_Y_RATIO - ph - 8, 28, 10);
+          const x = Math.floor(((i * 90 - off * 0.26) % (w + 108)) - 30);
+          const ch = 50 + (i * 29 % 38), cw = 11 + (i * 7 % 8);
+          const shimmer = Math.sin(t * 2.2 + i * 1.5) * 0.12 + 0.88;
+          for (let row = 0; row < ch; row++) {
+            const rw = Math.max(2, Math.floor(cw * (1 - row / ch)));
+            ctx.fillStyle = row < ch * 0.15 ? '#eef8ff' : row < ch * 0.45 ? '#a4d4f0' : row < ch * 0.72 ? '#6aaad4' : '#4484b4';
+            ctx.globalAlpha = shimmer;
+            ctx.fillRect(x + Math.floor((cw - rw) / 2), Math.floor(gy - ch + row), rw, 1);
+          }
+          ctx.fillStyle = '#ffffff'; ctx.globalAlpha = shimmer * 0.55;
+          ctx.fillRect(x + 2, Math.floor(gy - ch * 0.85), 2, Math.floor(ch * 0.5));
+          // Small side shard
+          const sh = Math.floor(ch * 0.5);
+          ctx.fillStyle = '#8ec8e8'; ctx.globalAlpha = shimmer * 0.75;
+          for (let row = 0; row < sh; row++) {
+            const rw = Math.max(1, Math.floor(5 * (1 - row / sh)));
+            ctx.fillRect(x + cw + 3 + Math.floor((5 - rw) / 2), Math.floor(gy - sh + row), rw, 1);
+          }
+          ctx.globalAlpha = 1;
         }
       },
-      drawLayer4: (ctx, w, h, off) => {
-        ctx.fillStyle = '#180828';
+      drawLayer4: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        // Snow drifts — pixel mounds
+        for (let i = -1; i < 14; i++) {
+          const x = Math.floor(((i * 70 - off * 0.62) % (w + 85)) - 22);
+          const sh = 10 + (i * 13 % 10);
+          for (let row = 0; row < sh; row++) {
+            const sw2 = Math.floor(36 * Math.sqrt(Math.max(0, 1 - (row / sh) * (row / sh))));
+            ctx.fillStyle = row === 0 ? '#e8f8ff' : '#c4e4f8';
+            ctx.fillRect(x + Math.floor((36 - sw2 * 2) / 2), Math.floor(gy - sh + row), sw2 * 2, 1);
+          }
+        }
+        // Falling snowflakes
+        for (let i = 0; i < 26; i++) {
+          const fx = ((i * 157 + off * 0.12) % w);
+          const fy = ((i * 71 % (gy * 100)) / 100 + t * (18 + i % 12)) % gy;
+          ctx.fillStyle = `rgba(210,238,255,${0.45 + (i % 4) * 0.12})`;
+          ctx.fillRect(Math.floor(fx), Math.floor(fy), i % 3 === 0 ? 2 : 1, i % 3 === 0 ? 2 : 1);
+        }
+      }
+    },
+
+    volcano: {
+      ground: '#1e0400', groundTop: '#480c00',
+      drawLayer1: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        const g = ctx.createLinearGradient(0, 0, 0, gy);
+        g.addColorStop(0, '#080000'); g.addColorStop(0.4, '#1c0300'); g.addColorStop(0.8, '#340600'); g.addColorStop(1, '#520c00');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, w, gy);
+        // Rising ember pixels
+        for (let i = 0; i < 42; i++) {
+          const ex = ((i * 143 + off * 0.25) % w);
+          const speed = 26 + (i % 20);
+          const ey = (((i * 79 % (gy * 100)) / 100 - t * speed) % gy + gy) % gy;
+          const alpha = (ey / gy) * 0.85;
+          ctx.fillStyle = i % 3 === 0 ? `rgba(255,175,0,${alpha})` : i % 3 === 1 ? `rgba(255,75,0,${alpha})` : `rgba(255,35,0,${alpha * 0.55})`;
+          ctx.fillRect(Math.floor(ex), Math.floor(ey), i % 5 === 0 ? 2 : 1, i % 5 === 0 ? 2 : 1);
+        }
+        // Ash wisps
+        for (let i = 0; i < 3; i++) {
+          const cx = w * (0.15 + i * 0.35) + Math.sin(t * 0.3 + i) * 14;
+          for (let row = 0; row < 52; row++) {
+            const cw2 = Math.floor(5 + row * 0.55 + Math.sin(row * 0.14 + t + i) * 4);
+            ctx.fillStyle = `rgba(18,3,0,${0.26 - row * 0.004})`;
+            ctx.fillRect(Math.floor(cx - cw2 / 2), row, cw2, 2);
+          }
+        }
+      },
+      drawLayer2: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        const vx = w * 0.62, vh = gy * 0.6;
+        ctx.fillStyle = '#0b0100';
+        ctx.beginPath();
+        ctx.moveTo(vx - vh * 0.88, gy); ctx.lineTo(vx - 16, gy - vh); ctx.lineTo(vx + 16, gy - vh); ctx.lineTo(vx + vh * 0.88, gy);
+        ctx.fill();
+        // Crater glow — pulsing
+        const pulse = Math.sin(t * 2.5) * 0.35 + 0.65;
+        const cg = ctx.createRadialGradient(vx, gy - vh, 0, vx, gy - vh, 58);
+        cg.addColorStop(0, `rgba(255,135,0,${pulse * 0.95})`);
+        cg.addColorStop(0.35, `rgba(255,55,0,${pulse * 0.65})`);
+        cg.addColorStop(0.75, `rgba(170,0,0,${pulse * 0.28})`);
+        cg.addColorStop(1, 'rgba(90,0,0,0)');
+        ctx.fillStyle = cg; ctx.fillRect(vx - 58, gy - vh - 28, 116, 65);
+        // Lava blobs arcing out
+        for (let i = 0; i < 5; i++) {
+          const phase = (t * 1.8 + i * 1.26) % (Math.PI * 2);
+          if (phase < Math.PI * 0.8) {
+            const prog = phase / (Math.PI * 0.8);
+            const angle = -Math.PI * 0.32 - (i - 2) * 0.24;
+            const dist = prog * 52;
+            const ex = vx + Math.cos(angle) * dist;
+            const ey = gy - vh + Math.sin(angle) * dist - prog * prog * 28;
+            ctx.fillStyle = `rgba(255,${95 + Math.floor(prog * 105)},0,${1 - prog * 0.45})`;
+            ctx.fillRect(Math.floor(ex), Math.floor(ey), 3, 3);
+          }
+        }
+      },
+      drawLayer3: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        for (let i = -1; i < 8; i++) {
+          const x = Math.floor(((i * 112 - off * 0.28) % (w + 136)) - 34);
+          const pulse = Math.sin(t * 2.2 + i * 1.1) * 0.2 + 0.8;
+          ctx.fillStyle = '#180200'; ctx.fillRect(x, Math.floor(gy - 17), 58, 17);
+          ctx.fillStyle = `rgba(175,18,0,${pulse})`; ctx.fillRect(x + 3, Math.floor(gy - 15), 52, 13);
+          ctx.fillStyle = `rgba(255,55,0,${pulse * 0.9})`; ctx.fillRect(x + 7, Math.floor(gy - 11), 44, 8);
+          ctx.fillStyle = `rgba(255,128,0,${pulse * 0.82})`; ctx.fillRect(x + 12, Math.floor(gy - 8), 34, 4);
+          ctx.fillStyle = `rgba(255,200,0,${pulse * 0.7})`; ctx.fillRect(x + 18, Math.floor(gy - 5), 22, 2);
+          const hg = ctx.createLinearGradient(0, gy - 46, 0, gy - 17);
+          hg.addColorStop(0, 'rgba(255,35,0,0)'); hg.addColorStop(1, `rgba(255,35,0,${pulse * 0.11})`);
+          ctx.fillStyle = hg; ctx.fillRect(x, Math.floor(gy - 46), 58, 30);
+        }
+      },
+      drawLayer4: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        for (let i = -1; i < 20; i++) {
+          const x = Math.floor(((i * 46 - off * 0.66) % (w + 60)) - 15);
+          const rh = 10 + (i * 17 % 18), rw = 18 + (i * 11 % 14);
+          ctx.fillStyle = '#0c0100'; ctx.fillRect(x, Math.floor(gy - rh), rw, rh);
+          ctx.fillStyle = '#1c0300'; ctx.fillRect(x, Math.floor(gy - rh), rw, 2);
+          if (i % 3 === 1) {
+            const cp = Math.sin(t * 3.5 + i * 2.3) * 0.35 + 0.65;
+            ctx.fillStyle = `rgba(255,48,0,${cp * 0.52})`;
+            ctx.fillRect(x + 5, Math.floor(gy - rh + 3), 2, rh - 6);
+          }
+        }
+      }
+    },
+
+    ruins: {
+      ground: '#160c20', groundTop: '#241535',
+      drawLayer1: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        const g = ctx.createLinearGradient(0, 0, 0, gy);
+        g.addColorStop(0, '#030108'); g.addColorStop(0.5, '#05020e'); g.addColorStop(1, '#0a0416');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, w, gy);
+        // Stars with occasional cross-glint
+        for (let i = 0; i < 65; i++) {
+          const sx = (i * 157 + 9) % w, sy = (i * 103 + 5) % (gy * 0.6);
+          const tw = Math.sin(t * 2.2 + i * 1.1) * 0.5 + 0.5;
+          ctx.fillStyle = `rgba(205,185,255,${0.12 + tw * 0.78})`; ctx.fillRect(Math.floor(sx), Math.floor(sy), 1, 1);
+          if (i % 8 === 0 && tw > 0.82) {
+            ctx.fillStyle = `rgba(255,245,255,${(tw - 0.82) * 2.8})`;
+            ctx.fillRect(Math.floor(sx) - 2, Math.floor(sy), 5, 1);
+            ctx.fillRect(Math.floor(sx), Math.floor(sy) - 2, 1, 5);
+          }
+        }
+        // Moon with purple glow
+        const mx = Math.floor(w * 0.22), my = Math.floor(gy * 0.14), mr = 13;
+        const mg = ctx.createRadialGradient(mx, my, mr - 1, mx, my, mr + 28);
+        mg.addColorStop(0, 'rgba(175,135,255,0.28)'); mg.addColorStop(1, 'rgba(75,35,175,0)');
+        ctx.fillStyle = mg; ctx.fillRect(mx - 34, my - 34, 68, 68);
+        ctx.fillStyle = '#c4a4ff';
+        for (let r = -mr; r <= mr; r++) for (let c = -mr; c <= mr; c++)
+          if (r*r+c*c <= mr*mr) ctx.fillRect(mx + c, my + r, 1, 1);
+        ctx.fillStyle = '#9c78d8';
+        ctx.fillRect(mx - 4, my - 3, 4, 4); ctx.fillRect(mx + 3, my + 3, 3, 3);
+        // Drifting clouds
+        for (let i = 0; i < 4; i++) {
+          const cx = ((i * 245 - off * 0.015 + t * 6) % (w + 285)) - 85;
+          const cy = gy * (0.14 + i * 0.08);
+          ctx.fillStyle = `rgba(10,4,22,${0.55 + i * 0.06})`;
+          for (let j = 0; j < 5; j++) {
+            ctx.beginPath(); ctx.arc(cx + j * 22, cy, 12 + (j % 3) * 5, 0, Math.PI * 2); ctx.fill();
+          }
+        }
+      },
+      drawLayer2: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        const tx = w * 0.62;
+        // Ziggurat steps
+        const steps = [{w:170,h:20},{w:136,h:19},{w:102,h:18},{w:70,h:18},{w:40,h:58}];
+        let sy2 = gy;
+        steps.forEach((s, idx) => {
+          ctx.fillStyle = idx % 2 === 0 ? '#060412' : '#080516';
+          ctx.fillRect(Math.floor(tx - s.w/2), Math.floor(sy2 - s.h), s.w, s.h);
+          sy2 -= s.h;
+        });
+        // Torch glows
+        const tp = Math.sin(t * 4.2) * 0.3 + 0.7;
+        [-18, 18].forEach(ox => {
+          const tg2 = ctx.createRadialGradient(tx + ox, sy2, 2, tx + ox, sy2, 24);
+          tg2.addColorStop(0, `rgba(255,128,0,${tp * 0.92})`); tg2.addColorStop(1, 'rgba(255,55,0,0)');
+          ctx.fillStyle = tg2; ctx.fillRect(Math.floor(tx + ox - 24), Math.floor(sy2 - 22), 48, 30);
+          ctx.fillStyle = `rgba(255,200,0,${tp})`;
+          ctx.fillRect(Math.floor(tx + ox) - 1, Math.floor(sy2) - 6, 2, 6);
+        });
+      },
+      drawLayer3: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
+        for (let i = -1; i < 8; i++) {
+          const x = Math.floor(((i * 106 - off * 0.28) % (w + 126)) - 32);
+          const ph = 58 + (i * 33 % 38), bY = Math.floor(ph * (0.42 + (i * 7 % 5) * 0.08));
+          ctx.fillStyle = '#14102a';
+          ctx.fillRect(x + 5, Math.floor(gy - bY), 16, bY);
+          ctx.fillStyle = '#1e1438'; ctx.fillRect(x + 5, Math.floor(gy - bY), 4, bY);
+          ctx.fillStyle = '#1a1232';
+          ctx.fillRect(x, Math.floor(gy - bY - 7), 26, 8);
+          ctx.fillRect(x, Math.floor(gy - 8), 26, 8);
+          if (bY < ph - 8) {
+            ctx.fillStyle = '#100828';
+            ctx.fillRect(x + (i % 2 === 0 ? 18 : -18), Math.floor(gy - 11), 24, 11);
+          }
+          ctx.fillStyle = '#0b1806';
+          for (let v = 4; v < bY; v += 7) {
+            ctx.fillRect(x + 5 + Math.floor(Math.sin(v * 0.4 + i) * 2), Math.floor(gy - bY + v), 3, 5);
+          }
+        }
+      },
+      drawLayer4: (ctx, w, h, off, t) => {
+        const gy = h * GROUND_Y_RATIO;
         for (let i = -1; i < 22; i++) {
-          const x = ((i * 42 - off * 0.62) % (w + 55)) - 12;
-          ctx.beginPath(); ctx.arc(x + 12, h * GROUND_Y_RATIO, 12 + (i % 3) * 5, Math.PI, 0); ctx.fill();
+          const x = Math.floor(((i * 42 - off * 0.64) % (w + 55)) - 14);
+          const sh = 7 + (i * 13 % 11), sw2 = 16 + (i * 9 % 12);
+          ctx.fillStyle = '#0c0618'; ctx.fillRect(x, Math.floor(gy - sh), sw2, sh);
+          ctx.fillStyle = '#0a1406'; ctx.fillRect(x + 2, Math.floor(gy - sh), sw2 - 4, 2);
+        }
+        // Floating magic dust particles
+        for (let i = 0; i < 16; i++) {
+          const fx = ((i * 169 + off * 0.08) % w);
+          const fy = gy * 0.28 + (i * 71 % (gy * 55)) / 100 + Math.sin(t * 1.8 + i * 2.1) * 10;
+          const alpha = Math.sin(t * 2.5 + i * 1.4) * 0.4 + 0.52;
+          const hue = i % 3 === 0 ? '195,95,255' : i % 3 === 1 ? '95,145,255' : '255,95,195';
+          ctx.fillStyle = `rgba(${hue},${alpha})`; ctx.fillRect(Math.floor(fx), Math.floor(fy), 2, 2);
         }
       }
     }
   };
 
-  function drawGround(ctx, w, h, theme) {
+  function drawGround(ctx, w, h, theme, off) {
     const th = THEMES[theme] || THEMES.forest;
     const gy = h * GROUND_Y_RATIO;
-    ctx.fillStyle = th.ground;
-    ctx.fillRect(0, gy, w, h - gy);
-    ctx.fillStyle = th.groundTop;
-    ctx.fillRect(0, gy, w, 6);
+    ctx.fillStyle = th.ground; ctx.fillRect(0, gy, w, h - gy);
+    ctx.fillStyle = th.groundTop; ctx.fillRect(0, gy, w, 4);
+    // Per-theme ground edge detail
+    if (theme === 'forest') {
+      ctx.fillStyle = '#1e3a0a';
+      for (let i = 0; i < w / 18 + 1; i++) {
+        const x = Math.floor(((i * 18 - off * 0.8) % (w + 22)) - 4);
+        ctx.fillRect(x, Math.floor(gy), 8, 2);
+      }
+    } else if (theme === 'ice') {
+      ctx.fillStyle = '#daf2ff'; ctx.fillRect(0, gy, w, 3);
+      ctx.fillStyle = '#b0d8f0';
+      for (let i = 0; i < w / 65 + 1; i++) {
+        const x = Math.floor(((i * 65 - off * 0.55) % (w + 75)) - 8);
+        ctx.fillRect(x, Math.floor(gy + 3), 38, 1);
+      }
+    } else if (theme === 'volcano') {
+      for (let i = 0; i < w / 28 + 1; i++) {
+        const x = Math.floor(((i * 28 - off * 0.75) % (w + 34)) - 5);
+        ctx.fillStyle = '#300600'; ctx.fillRect(x, Math.floor(gy), 14, 2);
+      }
+    } else if (theme === 'ruins') {
+      for (let i = 0; i < w / 32 + 1; i++) {
+        const x = Math.floor(((i * 32 - off * 0.62) % (w + 38)) - 6);
+        ctx.fillStyle = '#1c1030'; ctx.fillRect(x, Math.floor(gy), 18, 3);
+        ctx.fillStyle = '#0e1006'; ctx.fillRect(x + 2, Math.floor(gy), 14, 2);
+      }
+    }
   }
 
-  function drawBackground(ctx, w, h, theme, off) {
+  function drawBackground(ctx, w, h, theme, off, t) {
+    ctx.imageSmoothingEnabled = false;
     const th = THEMES[theme] || THEMES.forest;
-    th.drawLayer1(ctx, w, h, off);
-    th.drawLayer2(ctx, w, h, off);
-    th.drawLayer3(ctx, w, h, off);
-    drawGround(ctx, w, h, theme);
-    th.drawLayer4(ctx, w, h, off);
+    th.drawLayer1(ctx, w, h, off, t);
+    th.drawLayer2(ctx, w, h, off, t);
+    th.drawLayer3(ctx, w, h, off, t);
+    drawGround(ctx, w, h, theme, off);
+    th.drawLayer4(ctx, w, h, off, t);
   }
 
   // Draw monster procedurally with run animation
@@ -554,7 +814,7 @@ const Engine = (() => {
       scrollOffset += 180 * dt;
     }
 
-    drawBackground(ctx, w, h, theme, scrollOffset);
+    drawBackground(ctx, w, h, theme, scrollOffset, runTime);
 
     const groundY = h * GROUND_Y_RATIO;
     const playerX = w * PLAYER_X_RATIO;
