@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Dungeon Warriors</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ── CHARACTER SELECTION ── -->
+  <div id="char-select-screen" class="screen active">
+    <div class="char-select-header">
+      <h1>⚔️ Dungeon Warriors</h1>
+      <p style="color:#888;font-size:13px;margin-top:6px">Выбери своего героя</p>
+    </div>
+    <div class="char-list" id="char-list"></div>
+    <div class="char-info" id="char-info">
+      <div class="char-preview" id="char-preview"></div>
+      <div class="char-stats" id="char-stats"></div>
+      <div style="padding:0 16px 20px">
+        <button class="btn-select" id="btn-select">Выбрать героя</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN GAME ── -->
+  <div id="main-screen" class="screen">
+
+    <!-- Header -->
+    <header id="game-header">
+      <div class="header-left">
+        <div class="char-name" id="h-char-name">Герой</div>
+        <div class="bars">
+          <div class="bar-row">
+            <span>HP</span>
+            <div class="bar hp-bar"><div class="bar-fill hp-fill" id="h-hp-fill" style="width:100%"></div></div>
+            <span id="h-hp-text">—</span>
+          </div>
+          <div class="bar-row">
+            <span>XP</span>
+            <div class="bar xp-bar"><div class="bar-fill xp-fill" id="h-xp-fill" style="width:0%"></div></div>
+            <span id="h-level-text">0/100</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="stat-item">💰 <span id="h-gold">0</span></div>
+        <div class="stat-item">⚔️ <span id="h-power">0</span></div>
+        <div class="stat-item">🏆 <span id="h-level">1</span></div>
+      </div>
+    </header>
+
+    <!-- ── TAB: GAME ── -->
+    <div id="tab-game" class="tab-content active">
+      <!-- Dungeon selector -->
+      <div id="dungeon-select" class="dungeon-select">
+        <h3>🗺️ Выбери подземелье</h3>
+        <div class="dungeon-list" id="dungeon-list"></div>
+      </div>
+      <!-- Canvas area -->
+      <div id="game-area" style="display:none;flex:1;flex-direction:column">
+        <canvas id="game-canvas"></canvas>
+        <div id="skills-bar" class="skills-bar"></div>
+      </div>
+      <!-- Victory / Defeat overlay -->
+      <div id="battle-result" class="battle-result" style="display:none">
+        <div class="result-content">
+          <h2 id="result-title"></h2>
+          <div id="result-rewards"></div>
+          <button onclick="continueGame()">Продолжить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: UPGRADES ── -->
+    <div id="tab-upgrades" class="tab-content">
+      <h2>📈 Улучшения</h2>
+      <div id="upgrades-list"></div>
+    </div>
+
+    <!-- ── TAB: INVENTORY ── -->
+    <div id="tab-inventory" class="tab-content">
+      <div class="inv-tabs">
+        <button class="inv-tab-btn active" onclick="showInvTab('equip')">Экипировка</button>
+        <button class="inv-tab-btn" onclick="showInvTab('items')">Предметы</button>
+        <button class="inv-tab-btn" onclick="showInvTab('craft')">Крафт</button>
+      </div>
+      <div id="inv-equip" class="inv-section active"></div>
+      <div id="inv-items" class="inv-section"></div>
+      <div id="inv-craft" class="inv-section"></div>
+    </div>
+
+    <!-- ── TAB: FRIENDS ── -->
+    <div id="tab-friends" class="tab-content">
+      <div class="friends-screen">
+        <h2>Друзья</h2>
+        <div class="empty-state">
+          <span style="font-size:64px">👥</span>
+          <p>Пока нет друзей</p>
+          <p style="color:#888;font-size:13px">Пригласи друзей и получи бонусы!</p>
+          <button class="btn-primary">Пригласить друзей</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: PROFILE ── -->
+    <div id="tab-profile" class="tab-content">
+      <div id="profile-content"></div>
+    </div>
+
+    <!-- Bottom navigation -->
+    <nav id="bottom-nav">
+      <button class="nav-btn active" onclick="switchTab('game', this)">
+        <span>⚔️</span><label>Игра</label>
+      </button>
+      <button class="nav-btn" onclick="switchTab('upgrades', this)">
+        <span>📈</span><label>Улучшения</label>
+      </button>
+      <button class="nav-btn" onclick="switchTab('inventory', this)">
+        <span>🎒</span><label>Инвентарь</label>
+      </button>
+      <button class="nav-btn" onclick="switchTab('friends', this)">
+        <span>👥</span><label>Друзья</label>
+      </button>
+      <button class="nav-btn" onclick="switchTab('profile', this)">
+        <span>👤</span><label>Профиль</label>
+      </button>
+    </nav>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
