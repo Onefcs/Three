@@ -18,7 +18,7 @@ const State = (() => {
       combatTimer: 0, attackCooldown: 0, monsterAttackCooldown: 0,
       buffState: {},
       computedStats: null,
-      onVictory: null,
+      onKill: null,
       onDefeat: null,
       playerLevel: 1
     };
@@ -59,7 +59,7 @@ const State = (() => {
   function save() {
     if (!state) return;
     const toSave = { ...state };
-    toSave.onVictory = null; toSave.onDefeat = null;
+    toSave.onKill = null; toSave.onDefeat = null; toSave.onSpawnMonster = null;
     toSave.buffState = {};
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(toSave)); } catch(e){}
   }
@@ -91,30 +91,38 @@ const State = (() => {
     UI.renderDungeonSelect();
   }
 
+  function spawnMonster(dungeon) {
+    const monsterKey = dungeon.monsters[Math.floor(Math.random() * dungeon.monsters.length)];
+    const monBase = MONSTERS[monsterKey];
+    const lvlScale = Math.pow(1.06, state.level - 1);
+    // HP scaled so monsters survive ~8-15 hits
+    const hpMult = 6 + dungeon.goldMult * 1.5;
+    state.monster = {
+      ...monBase,
+      hp:  Math.round(monBase.hp  * lvlScale * hpMult),
+      atk: Math.round(monBase.atk * lvlScale * 1.2),
+      def: Math.round(monBase.def * lvlScale)
+    };
+    state.monsterHp    = state.monster.hp;
+    state.monsterMaxHp = state.monster.hp;
+    state.attackCooldown = 0;
+    state.monsterAttackCooldown = 0.6;
+    state.buffState = {};
+  }
+
   function startDungeon(dungeonId) {
     state.currentDungeon = dungeonId;
     const dungeon = DUNGEONS.find(d => d.id === dungeonId);
-    const monsterKey = dungeon.monsters[Math.floor(Math.random() * dungeon.monsters.length)];
-    const monBase = MONSTERS[monsterKey];
-    const lvlScale = Math.pow(1.08, state.level - 1);
-    state.monster = {
-      ...monBase,
-      hp: Math.round(monBase.hp * lvlScale * dungeon.goldMult * 0.5),
-      atk: Math.round(monBase.atk * lvlScale),
-      def: Math.round(monBase.def * lvlScale)
-    };
     state.monsterX = undefined;
-    state.monsterHp = state.monster.hp;
-    state.monsterMaxHp = state.monster.hp;
     state.phase = 'running';
     state.skillCooldowns = [0, 0, 0, 0, 0];
-    state.buffState = {};
-    state.attackCooldown = 0;
-    state.monsterAttackCooldown = 0;
     state.playerLevel = state.level;
     state.computedStats = computeStats(state);
 
-    state.onVictory = () => handleVictory(dungeon);
+    spawnMonster(dungeon);
+
+    state.onKill = () => handleKill(dungeon);
+    state.onSpawnMonster = () => { spawnMonster(dungeon); state.onKill = () => handleKill(dungeon); };
     state.onDefeat = () => handleDefeat();
 
     UI.showGameArea();
@@ -123,14 +131,12 @@ const State = (() => {
     save();
   }
 
-  function handleVictory(dungeon) {
+  function handleKill(dungeon) {
     const gold = Math.round(state.monster.gold * dungeon.goldMult * (0.8 + Math.random() * 0.4));
-    const xp = Math.round(state.monster.xp * dungeon.xpMult * (0.8 + Math.random() * 0.4));
+    const xp   = Math.round(state.monster.xp   * dungeon.xpMult  * (0.8 + Math.random() * 0.4));
     state.gold += gold;
+    state.xp   += xp;
 
-    // XP and level up
-    state.xp += xp;
-    const xpNeeded = getXpForLevel(state.level);
     let leveled = false;
     while (state.xp >= getXpForLevel(state.level)) {
       state.xp -= getXpForLevel(state.level);
@@ -139,24 +145,26 @@ const State = (() => {
     }
     if (leveled) {
       state.computedStats = computeStats(state);
-      state.currentHp = Math.min(state.currentHp + state.computedStats.maxHp * 0.3, state.computedStats.maxHp);
+      state.currentHp = Math.min(
+        state.currentHp + state.computedStats.maxHp * 0.25,
+        state.computedStats.maxHp
+      );
+      showToast(`🎉 Уровень ${state.level}!`, '#f1c40f');
     }
 
     // Loot drop
-    const drops = [];
-    const dropChance = 0.35;
-    if (Math.random() < dropChance) {
+    if (Math.random() < 0.3) {
       const rarIdx = weightedRarityDrop(state.level);
-      const rar = RARITIES[rarIdx];
+      const rar  = RARITIES[rarIdx];
       const slots = ITEM_SLOTS.filter(s => s !== 'ring2' && s !== 'ring1');
-      const slot = Math.random() < 0.15 ? 'weapon' : slots[Math.floor(Math.random() * slots.length)];
-      const item = generateItem(slot, rar, state.selectedChar);
+      const slot  = Math.random() < 0.15 ? 'weapon' : slots[Math.floor(Math.random() * slots.length)];
+      const item  = generateItem(slot, rar, state.selectedChar);
       state.inventory.push(item);
-      drops.push(item);
+      showToast(`${item.icon} ${item.name}`, RARITY[rar].color);
     }
 
+    showToast(`+${gold}💰  +${xp}⭐`, '#aaa');
     UI.updateHeader();
-    UI.showVictory(gold, xp, drops);
     save();
   }
 
@@ -183,13 +191,28 @@ const State = (() => {
 
   function continueGame() {
     UI.hideResult();
-    if (state.phase === 'victory' && (state.currentHp || 1) > 0) {
+    if ((state.currentHp || 0) > 0) {
+      // Revive with 10% HP and continue
+      if (!state.currentHp || state.currentHp <= 0) {
+        state.currentHp = Math.ceil(state.computedStats.maxHp * 0.1);
+      }
       startDungeon(state.currentDungeon);
     } else {
       state.phase = 'idle';
       Engine.stop();
       UI.showDungeonSelect();
     }
+  }
+
+  function showToast(text, color = '#fff') {
+    const el = document.createElement('div');
+    el.className = 'game-toast';
+    el.textContent = text;
+    el.style.color = color;
+    const gameArea = document.getElementById('game-area');
+    if (!gameArea) return;
+    gameArea.appendChild(el);
+    setTimeout(() => el.remove(), 1800);
   }
 
   function buyUpgrade(id) {

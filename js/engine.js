@@ -504,15 +504,24 @@ const Engine = (() => {
       ctx.textAlign = 'left';
 
       // Check results
-      if (gs.monsterHp <= 0) {
-        gs.phase = 'victory';
-        gs.onVictory && gs.onVictory();
-      } else if ((gs.currentHp || 1) <= 0) {
+      if (gs.monsterHp <= 0 && gs.phase === 'combat') {
+        gs.phase = 'killed';
+        gs.killTimer = 0.7;
+        gs.onKill && gs.onKill();
+      } else if ((gs.currentHp || 1) <= 0 && gs.phase === 'combat') {
         gs.phase = 'defeat';
         gs.onDefeat && gs.onDefeat();
       }
+    } else if (gs.phase === 'killed') {
+      anim.player.anim = 'run';
+      gs.killTimer = (gs.killTimer || 0) - dt;
+      if (gs.killTimer <= 0) {
+        gs.phase = 'running';
+        gs.monsterX = undefined;
+        gs.monster = null;
+        gs.onSpawnMonster && gs.onSpawnMonster();
+      }
     } else {
-      // idle / victory / defeat - keep player idle
       anim.player.anim = 'idle';
     }
 
