@@ -593,6 +593,13 @@ async function initAuth(){
   try{
     const tg=window.Telegram?.WebApp;
     const initData=tg?.initData;
+    // Build a preliminary link right away from local Telegram data
+    const uid=tg?.initDataUnsafe?.user?.id;
+    if(uid&&!refLink){
+      refLink='https://t.me/CoreMiningBot?start='+uid;
+      const el=document.getElementById('ref-link-val');
+      if(el)el.textContent=refLink;
+    }
     if(!initData)return;
     const startParam=tg?.initDataUnsafe?.start_param||'';
     const body={initData};
@@ -617,18 +624,23 @@ async function initAuth(){
       buildCards();
     }
     updateUI();
+    // Refresh friends page if it's currently open
+    const fp=document.getElementById('page-friends');
+    if(fp&&fp.style.display!=='none')loadFriendsData();
   }catch(e){/* offline mode */}
 }
 
 async function loadFriendsData(){
   const linkEl=document.getElementById('ref-link-val');
-  // Show best-guess link immediately
   const tg=window.Telegram?.WebApp;
   const uid=tg?.initDataUnsafe?.user?.id;
-  if(refLink){linkEl.textContent=refLink;}
-  else if(uid){
-    refLink=`https://t.me/CoreMiningBot?start=${uid}`;
+  if(refLink){
     linkEl.textContent=refLink;
+  }else if(uid){
+    refLink='https://t.me/CoreMiningBot?start='+uid;
+    linkEl.textContent=refLink;
+  }else{
+    linkEl.textContent='Откройте приложение в Telegram';
   }
   if(!authToken)return;
   try{
