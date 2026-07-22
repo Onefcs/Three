@@ -464,27 +464,35 @@ function fmtPrice(n){
   return String(n);
 }
 
-function buyGpu(idx){
+async function buyGpu(idx){
+  if(!authToken){showToast('Нет подключения к серверу');return;}
   const g=GPUS[idx];
   const price=nextPrice(g);
-  if(st.balance<price){showToast("Недостаточно CORE");return;}
-  st.balance-=price;
-  g.count+=1;
-  perSec=calcPerSec();
-  buildCards();
-  updateUI();
-  saveLocal();
-  if(authToken){
-    fetch(API_BASE+'/api/buy-gpu',{
+  if(st.balance<price){showToast('Недостаточно CORE');return;}
+  try{
+    const res=await fetch(API_BASE+'/api/buy-gpu',{
       method:'POST',
       headers:{'Authorization':'Bearer '+authToken,'Content-Type':'application/json'},
       body:JSON.stringify({gpuId:g.id}),
-    }).then(r=>r.ok?r.json():null).then(d=>{
-      if(!d)return;
-      st.balance=d.balance;
-      d.gpus.forEach(slot=>{const gg=GPUS.find(x=>x.id===slot.gpuId);if(gg)gg.count=slot.count;});
-      perSec=calcPerSec();buildCards();updateUI();saveLocal();
-    }).catch(()=>{});
+    });
+    if(res.status===401){clearJwt();authToken=null;return;}
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      showToast(err.error==='Insufficient balance'?'Недостаточно CORE':'Ошибка покупки');
+      return;
+    }
+    const d=await res.json();
+    st.balance=d.balance;
+    d.gpus.forEach(slot=>{
+      const gg=GPUS.find(x=>x.id===slot.gpuId);
+      if(gg)gg.count=slot.count;
+    });
+    perSec=calcPerSec();
+    buildCards();
+    updateUI();
+    saveLocal();
+  }catch(e){
+    showToast('Ошибка соединения');
   }
 }
 
@@ -604,13 +612,7 @@ async function collect(){
   if(st.pending<.0005)return;
   const btn=document.getElementById("cbtn");
   if(btn.dataset.busy)return;
-  if(!authToken){
-    // offline — apply locally
-    const amt=st.pending;
-    st.balance+=amt;st.pending=0;collectTime=Date.now();
-    _collectAnim(amt);updateUI();saveLocal();
-    return;
-  }
+  if(!authToken){showToast('Нет подключения к серверу');return;}
   btn.dataset.busy='1';
   try{
     const res=await fetch(API_BASE+'/api/collect',{
@@ -631,10 +633,7 @@ async function collect(){
       updateUI();saveLocal();
     }
   }catch(e){
-    // network error — apply locally
-    const amt=st.pending;
-    st.balance+=amt;st.pending=0;collectTime=Date.now();
-    _collectAnim(amt);updateUI();saveLocal();
+    showToast('Ошибка соединения');
   }
   delete btn.dataset.busy;
 }
@@ -685,9 +684,9 @@ let collectTime=Date.now();
 function saveLocal(){
   try{
     localStorage.setItem(SAVE_KEY,JSON.stringify({
-      balance:st.balance,
       collectTime,
       gpus:GPUS.map(g=>({id:g.id,count:g.count})),
+      // balance is server-only — never saved locally
     }));
   }catch(e){}
 }
@@ -703,7 +702,7 @@ function loadLocal(){
       });
       perSec=calcPerSec();
     }
-    st.balance=d.balance||0;
+    // st.balance stays 0 until server responds
     collectTime=d.collectTime||Date.now();
     const elapsed=Math.min((Date.now()-collectTime)/1000,86400);
     st.pending=perSec*elapsed;
