@@ -427,6 +427,19 @@ function buyGpu(idx){
   perSec=calcPerSec();
   buildCards();
   updateUI();
+  saveLocal();
+  if(authToken){
+    fetch(API_BASE+'/api/buy-gpu',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+authToken,'Content-Type':'application/json'},
+      body:JSON.stringify({gpuId:g.id}),
+    }).then(r=>r.ok?r.json():null).then(d=>{
+      if(!d)return;
+      st.balance=d.balance;
+      d.gpus.forEach(slot=>{const gg=GPUS.find(x=>x.id===slot.gpuId);if(gg)gg.count=slot.count;});
+      perSec=calcPerSec();buildCards();updateUI();saveLocal();
+    }).catch(()=>{});
+  }
 }
 
 function updateRateDisplay(){
@@ -543,6 +556,16 @@ function collect(){
   btn.classList.remove("pop");void btn.offsetWidth;btn.classList.add("pop");
   setTimeout(()=>btn.classList.remove("pop"),500);
   updateUI();
+  saveLocal();
+  if(authToken){
+    fetch(API_BASE+'/api/collect',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+authToken},
+    }).then(r=>r.ok?r.json():null).then(d=>{
+      if(!d)return;
+      st.balance=d.balance;updateUI();saveLocal();
+    }).catch(()=>{});
+  }
 }
 function showToast(msg){
   const t=document.createElement("div");t.className="toast";t.textContent=msg;
@@ -583,6 +606,38 @@ function exExecute(){
   document.getElementById('ex-to').value='';
   updateUI();
 }
+
+/* ── LOCAL PERSISTENCE ── */
+const SAVE_KEY='core_mining_v1';
+function saveLocal(){
+  try{
+    localStorage.setItem(SAVE_KEY,JSON.stringify({
+      balance:st.balance,
+      pending:st.pending,
+      savedAt:Date.now(),
+      gpus:GPUS.map(g=>({id:g.id,count:g.count})),
+    }));
+  }catch(e){}
+}
+function loadLocal(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw)return;
+    const d=JSON.parse(raw);
+    if(d.gpus){
+      d.gpus.forEach(slot=>{
+        const g=GPUS.find(x=>x.id===slot.id);
+        if(g)g.count=slot.count;
+      });
+      perSec=calcPerSec();
+    }
+    st.balance=d.balance||0;
+    // Add income accrued since last save (cap at 24h)
+    const elapsed=Math.min((Date.now()-(d.savedAt||Date.now()))/1000,86400);
+    st.pending=(d.pending||0)+perSec*elapsed;
+  }catch(e){}
+}
+setInterval(saveLocal,30000);
 
 /* ── BACKEND INTEGRATION ── */
 const API_BASE='https://two-production-eb6f.up.railway.app';
@@ -625,6 +680,7 @@ async function initAuth(){
       buildCards();
     }
     updateUI();
+    saveLocal();
     // Refresh friends page if it's currently open
     const fp=document.getElementById('page-friends');
     if(fp&&fp.style.display!=='none')loadFriendsData();
@@ -713,6 +769,7 @@ async function collectReferral(){
   }
 }
 
+loadLocal();
 initAuth();
 
 buildCards();
