@@ -714,9 +714,6 @@ function loadJwt(){try{return localStorage.getItem('core_jwt');}catch(e){return 
 function clearJwt(){try{localStorage.removeItem('core_jwt');}catch(e){}}
 setInterval(saveLocal,30000);
 
-// Restore JWT immediately so collect() always has authToken available
-authToken=loadJwt();
-
 /* ── SPLASH ── */
 function setSplashProgress(pct){const b=document.getElementById('spl-bar');if(b)b.style.width=pct+'%';}
 function setSplashStatus(txt){const el=document.getElementById('spl-status');if(el)el.textContent=txt;}
@@ -730,7 +727,7 @@ setTimeout(hideSplash,7000); // failsafe if auth hangs
 
 /* ── BACKEND INTEGRATION ── */
 const API_BASE='https://two-production-eb6f.up.railway.app';
-let authToken=null;
+let authToken=loadJwt();
 let refLink=null;
 let refPendingAmt=0;
 
