@@ -142,6 +142,27 @@ main::-webkit-scrollbar{display:none}
   padding:8px 16px;font-size:11px;font-weight:700;color:var(--tx2);
   z-index:200;animation:fup .85s ease forwards;white-space:nowrap}
 @media(prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+
+/* FRIENDS PAGE */
+.ref-card{background:linear-gradient(160deg,#091a0b,#0d1b0f);border:1px solid #2a4030;border-radius:16px;padding:16px}
+.ref-card-title{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--acc);margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.ref-link-wrap{background:rgba(255,255,255,.04);border:1px solid var(--bdr2);border-radius:10px;padding:9px 12px;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ref-link-val{flex:1;font-size:10px;color:var(--tx);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;font-variant-numeric:tabular-nums}
+.ref-copy-btn{flex-shrink:0;background:var(--acc);border:none;border-radius:7px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#000;transition:opacity .15s}
+.ref-copy-btn:active{opacity:.7}
+.ref-share-btn{width:100%;background:transparent;border:1px solid var(--acc);border-radius:10px;padding:10px 0;font-size:12px;font-weight:900;color:var(--acc);cursor:pointer;letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:7px;transition:background .15s,color .15s}
+.ref-share-btn:active{background:var(--acc);color:#000}
+.ref-stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.ref-stat{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:12px 6px;text-align:center}
+.ref-stat-val{font-size:17px;font-weight:900;color:var(--acc);font-variant-numeric:tabular-nums;line-height:1;margin-bottom:5px}
+.ref-stat-lbl{font-size:7px;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px;line-height:1.4}
+.ref-info-card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:13px 14px;display:flex;align-items:flex-start;gap:10px}
+.ref-info-ico{flex-shrink:0;color:var(--acc);margin-top:1px}
+.ref-info-text{font-size:11px;color:var(--tx2);line-height:1.65}
+.ref-info-text strong{color:var(--acc);font-weight:900}
+.ref-collect{display:block;width:100%;background:var(--acc);border:none;border-radius:12px;padding:13px 0;font-size:14px;font-weight:900;color:#000;cursor:pointer;letter-spacing:.4px;box-shadow:0 0 20px var(--acc-glow),0 3px 12px rgba(0,0,0,.4);transition:transform .1s,opacity .15s;margin-bottom:2px}
+.ref-collect:active{transform:scale(.97)}
+.ref-collect:disabled{opacity:.35;cursor:default;box-shadow:none;transform:none}
 </style>
 
 <div id="app"><div id="inner">
@@ -233,11 +254,56 @@ main::-webkit-scrollbar{display:none}
 </div>
 
 <div id="page-friends" class="page" style="display:none">
-<div class="ph-page">
-  <div class="ph-ico"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-  <div class="ph-title">Друзья</div>
-  <div class="ph-sub">Приглашай друзей и получай +100 CORE за каждого. Реферальная программа скоро запустится!</div>
-</div>
+
+  <!-- Referral link card -->
+  <div class="ref-card">
+    <div class="ref-card-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      Реферальная ссылка
+    </div>
+    <div class="ref-link-wrap">
+      <div class="ref-link-val" id="ref-link-val">Загрузка...</div>
+      <button class="ref-copy-btn" onclick="copyRefLink()" title="Копировать">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+    </div>
+    <button class="ref-share-btn" onclick="shareRefLink()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Поделиться в Telegram
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="ref-stats-row">
+    <div class="ref-stat">
+      <div class="ref-stat-val" id="ref-count">—</div>
+      <div class="ref-stat-lbl">Друзей<br>приглашено</div>
+    </div>
+    <div class="ref-stat">
+      <div class="ref-stat-val" id="ref-pending">—</div>
+      <div class="ref-stat-lbl">Ожидает<br>CORE</div>
+    </div>
+    <div class="ref-stat">
+      <div class="ref-stat-val" id="ref-earned">—</div>
+      <div class="ref-stat-lbl">Заработано<br>всего</div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="ref-info-card">
+    <div class="ref-info-ico">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+    </div>
+    <div class="ref-info-text">
+      Получай <strong>5% от дохода</strong> каждого приглашённого друга — автоматически при каждом его сборе майнинга. Чем активнее друг майнит, тем больше ты зарабатываешь.
+    </div>
+  </div>
+
+  <!-- Collect referral bonuses -->
+  <button class="ref-collect" id="ref-collect-btn" onclick="collectReferral()" disabled>
+    Нет накопленного бонуса
+  </button>
+
 </div>
 
 <div id="page-profile" class="page" style="display:none">
@@ -271,12 +337,12 @@ const TIER={
 
 // count = how many owned; basePrice = starting price for first purchase
 const GPUS=[
-  {name:"RTX 3060",    income:0.0947,  fans:2,tier:1,count:1,basePrice:100},
-  {name:"RTX 3060 Ti", income:0.9470,  fans:2,tier:2,count:0,basePrice:1000},
-  {name:"RTX 3070",    income:4.7348,  fans:2,tier:3,count:0,basePrice:5000},
-  {name:"RTX 4070 Ti", income:28.4091, fans:2,tier:4,count:0,basePrice:30000},
-  {name:"RTX 4080",    income:66.2879, fans:3,tier:4,count:0,basePrice:70000},
-  {name:"RTX 4090",    income:142.0455,fans:3,tier:5,count:0,basePrice:150000},
+  {id:"rtx3060",   name:"RTX 3060",    income:0.0947,  fans:2,tier:1,count:1,basePrice:100},
+  {id:"rtx3060ti", name:"RTX 3060 Ti", income:0.9470,  fans:2,tier:2,count:0,basePrice:1000},
+  {id:"rtx3070",   name:"RTX 3070",    income:4.7348,  fans:2,tier:3,count:0,basePrice:5000},
+  {id:"rtx4070ti", name:"RTX 4070 Ti", income:28.4091, fans:2,tier:4,count:0,basePrice:30000},
+  {id:"rtx4080",   name:"RTX 4080",    income:66.2879, fans:3,tier:4,count:0,basePrice:70000},
+  {id:"rtx4090",   name:"RTX 4090",    income:142.0455,fans:3,tier:5,count:0,basePrice:150000},
 ];
 
 // price for next purchase of gpu g: basePrice * 1.1^count (rounded)
@@ -486,6 +552,7 @@ function showPage(id,btn){
   document.getElementById('page-'+id).style.display='flex';
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
+  if(id==='friends') loadFriendsData();
 }
 
 const EX_RATE=0.005; // 1 CORE = 0.005 TON
@@ -515,6 +582,125 @@ function exExecute(){
   document.getElementById('ex-to').value='';
   updateUI();
 }
+
+/* ── BACKEND INTEGRATION ── */
+const API_BASE='https://two-production-eb6f.up.railway.app';
+let authToken=null;
+let refLink=null;
+let refPendingAmt=0;
+
+async function initAuth(){
+  try{
+    const tg=window.Telegram?.WebApp;
+    const initData=tg?.initData;
+    if(!initData)return;
+    const startParam=tg?.initDataUnsafe?.start_param||'';
+    const body={initData};
+    if(startParam)body.referredBy=startParam;
+    const res=await fetch(API_BASE+'/api/auth',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body),
+    });
+    if(!res.ok)return;
+    const data=await res.json();
+    authToken=data.token;
+    refLink=data.user.referralLink;
+    // Sync server state
+    if(data.user.balance>st.balance)st.balance=data.user.balance;
+    if(data.user.gpus&&data.user.gpus.length){
+      data.user.gpus.forEach(slot=>{
+        const gpu=GPUS.find(g=>g.id===slot.gpuId);
+        if(gpu)gpu.count=slot.count;
+      });
+      perSec=calcPerSec();
+      buildCards();
+    }
+    updateUI();
+  }catch(e){/* offline mode */}
+}
+
+async function loadFriendsData(){
+  const linkEl=document.getElementById('ref-link-val');
+  // Show best-guess link immediately
+  const tg=window.Telegram?.WebApp;
+  const uid=tg?.initDataUnsafe?.user?.id;
+  if(refLink){linkEl.textContent=refLink;}
+  else if(uid){
+    refLink=`https://t.me/CoreMiningBot?start=${uid}`;
+    linkEl.textContent=refLink;
+  }
+  if(!authToken)return;
+  try{
+    const res=await fetch(API_BASE+'/api/referral',{
+      headers:{'Authorization':'Bearer '+authToken},
+    });
+    if(!res.ok)return;
+    const d=await res.json();
+    refLink=d.referralLink;
+    refPendingAmt=d.referralPending||0;
+    linkEl.textContent=refLink;
+    document.getElementById('ref-count').textContent=d.referralCount??'0';
+    document.getElementById('ref-pending').textContent=fmtBal(refPendingAmt);
+    document.getElementById('ref-earned').textContent=fmtBal(d.referralEarned||0);
+    const btn=document.getElementById('ref-collect-btn');
+    if(refPendingAmt>0.001){
+      btn.disabled=false;
+      btn.textContent='Забрать бонус  •  '+fmtBal(refPendingAmt)+' CORE';
+    }else{
+      btn.disabled=true;
+      btn.textContent='Нет накопленного бонуса';
+    }
+  }catch(e){/* silent */}
+}
+
+async function copyRefLink(){
+  const link=refLink||'';
+  if(!link){showToast('Ссылка загружается...');return;}
+  try{
+    await navigator.clipboard.writeText(link);
+    showToast('Ссылка скопирована');
+  }catch{
+    const el=document.getElementById('ref-link-val');
+    const r=document.createRange();r.selectNodeContents(el);
+    const s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    showToast('Выделите и скопируйте ссылку');
+  }
+}
+
+function shareRefLink(){
+  const link=refLink||'';
+  if(!link){showToast('Ссылка загружается...');return;}
+  const text='Майни CORE вместе со мной — присоединяйся к Core Mining!';
+  const url='https://t.me/share/url?url='+encodeURIComponent(link)+'&text='+encodeURIComponent(text);
+  const tg=window.Telegram?.WebApp;
+  if(tg)tg.openTelegramLink(url);
+  else window.open(url,'_blank');
+}
+
+async function collectReferral(){
+  if(!authToken||refPendingAmt<=0)return;
+  const btn=document.getElementById('ref-collect-btn');
+  btn.disabled=true;
+  try{
+    const res=await fetch(API_BASE+'/api/referral/collect',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+authToken},
+    });
+    if(!res.ok)throw new Error();
+    const d=await res.json();
+    st.balance+=d.collected;
+    refPendingAmt=0;
+    updateUI();
+    showToast('+'+fmtBal(d.collected)+' CORE от рефералов');
+    loadFriendsData();
+  }catch{
+    showToast('Ошибка, попробуйте снова');
+    btn.disabled=false;
+  }
+}
+
+initAuth();
 
 buildCards();
 requestAnimationFrame(loop);
