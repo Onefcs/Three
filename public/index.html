@@ -617,6 +617,7 @@ async function collect(){
       method:'POST',
       headers:{'Authorization':'Bearer '+authToken},
     });
+    if(res.status===401){clearJwt();authToken=null;delete btn.dataset.busy;return;}
     if(res.ok){
       const d=await res.json();
       st.balance=d.balance;
@@ -704,12 +705,18 @@ function loadLocal(){
     }
     st.balance=d.balance||0;
     collectTime=d.collectTime||Date.now();
-    // Recalculate pending from last collect time (cap at 24h)
     const elapsed=Math.min((Date.now()-collectTime)/1000,86400);
     st.pending=perSec*elapsed;
   }catch(e){}
 }
+// Persist JWT so authToken survives page reloads and cold initData
+function saveJwt(token){try{localStorage.setItem('core_jwt',token);}catch(e){}}
+function loadJwt(){try{return localStorage.getItem('core_jwt');}catch(e){return null;}}
+function clearJwt(){try{localStorage.removeItem('core_jwt');}catch(e){}}
 setInterval(saveLocal,30000);
+
+// Restore JWT immediately so collect() always has authToken available
+authToken=loadJwt();
 
 /* ── SPLASH ── */
 function setSplashProgress(pct){const b=document.getElementById('spl-bar');if(b)b.style.width=pct+'%';}
@@ -758,6 +765,7 @@ async function initAuth(){
     setSplashProgress(85);
     setSplashStatus('СИНХРОНИЗАЦИЯ');
     authToken=data.token;
+    saveJwt(data.token);
     refLink=data.user.referralLink;
     // Server is always source of truth — override local state completely
     st.balance=data.user.balance;
