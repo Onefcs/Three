@@ -590,10 +590,7 @@ function updateUI(){
   document.getElementById("cbtn").style.opacity=st.pending>.0005?"1":".4";
 }
 function fmtBal(n){return n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});}
-function collect(){
-  if(st.pending<.0005)return;
-  const amt=st.pending;st.balance+=amt;st.pending=0;
-  collectTime=Date.now();
+function _collectAnim(amt){
   const el=document.getElementById("hbal");
   el.classList.remove("bflash");void el.offsetWidth;el.classList.add("bflash");
   const ft=document.createElement("div");ft.className="float";
@@ -602,17 +599,43 @@ function collect(){
   const btn=document.getElementById("cbtn");
   btn.classList.remove("pop");void btn.offsetWidth;btn.classList.add("pop");
   setTimeout(()=>btn.classList.remove("pop"),500);
-  updateUI();
-  saveLocal();
-  if(authToken){
-    fetch(API_BASE+'/api/collect',{
+}
+async function collect(){
+  if(st.pending<.0005)return;
+  const btn=document.getElementById("cbtn");
+  if(btn.dataset.busy)return;
+  if(!authToken){
+    // offline — apply locally
+    const amt=st.pending;
+    st.balance+=amt;st.pending=0;collectTime=Date.now();
+    _collectAnim(amt);updateUI();saveLocal();
+    return;
+  }
+  btn.dataset.busy='1';
+  try{
+    const res=await fetch(API_BASE+'/api/collect',{
       method:'POST',
       headers:{'Authorization':'Bearer '+authToken},
-    }).then(r=>r.ok?r.json():null).then(d=>{
-      if(!d)return;
-      st.balance=d.balance;updateUI();saveLocal();
-    }).catch(()=>{});
+    });
+    if(res.ok){
+      const d=await res.json();
+      st.balance=d.balance;
+      if(d.collected>.0001){
+        st.pending=0;collectTime=Date.now();
+        _collectAnim(d.collected);
+      }else{
+        st.pending=0;
+        showToast('Уже собрано на другом устройстве');
+      }
+      updateUI();saveLocal();
+    }
+  }catch(e){
+    // network error — apply locally
+    const amt=st.pending;
+    st.balance+=amt;st.pending=0;collectTime=Date.now();
+    _collectAnim(amt);updateUI();saveLocal();
   }
+  delete btn.dataset.busy;
 }
 function showToast(msg){
   const t=document.createElement("div");t.className="toast";t.textContent=msg;

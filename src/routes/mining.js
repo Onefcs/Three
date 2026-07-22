@@ -10,7 +10,7 @@ router.post('/collect', requireAuth, async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const earned = user.calcPending();
-    if (earned <= 0) return res.json({ collected: 0, balance: user.balance });
+    if (earned < 0.001) return res.json({ collected: 0, balance: user.balance });
 
     const prevCollectTime = user.lastCollectTime;
     const now = new Date();
