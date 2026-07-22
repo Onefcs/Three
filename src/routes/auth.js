@@ -51,6 +51,7 @@ router.post('/', async (req, res) => {
         username:        user.username,
         firstName:       user.firstName,
         balance:         user.balance,
+        lastCollectTime: user.lastCollectTime,
         referralPending: user.referralPending,
         gpus:            user.gpus,
         referralLink:    `https://t.me/${botUsername}?start=${telegramId}`,

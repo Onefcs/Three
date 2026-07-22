@@ -547,6 +547,7 @@ function fmtBal(n){return n.toLocaleString("en-US",{minimumFractionDigits:2,maxi
 function collect(){
   if(st.pending<.0005)return;
   const amt=st.pending;st.balance+=amt;st.pending=0;
+  collectTime=Date.now();
   const el=document.getElementById("hbal");
   el.classList.remove("bflash");void el.offsetWidth;el.classList.add("bflash");
   const ft=document.createElement("div");ft.className="float";
@@ -609,12 +610,13 @@ function exExecute(){
 
 /* ── LOCAL PERSISTENCE ── */
 const SAVE_KEY='core_mining_v1';
+let collectTime=Date.now();
+
 function saveLocal(){
   try{
     localStorage.setItem(SAVE_KEY,JSON.stringify({
       balance:st.balance,
-      pending:st.pending,
-      savedAt:Date.now(),
+      collectTime,
       gpus:GPUS.map(g=>({id:g.id,count:g.count})),
     }));
   }catch(e){}
@@ -632,9 +634,10 @@ function loadLocal(){
       perSec=calcPerSec();
     }
     st.balance=d.balance||0;
-    // Add income accrued since last save (cap at 24h)
-    const elapsed=Math.min((Date.now()-(d.savedAt||Date.now()))/1000,86400);
-    st.pending=(d.pending||0)+perSec*elapsed;
+    collectTime=d.collectTime||Date.now();
+    // Recalculate pending from last collect time (cap at 24h)
+    const elapsed=Math.min((Date.now()-collectTime)/1000,86400);
+    st.pending=perSec*elapsed;
   }catch(e){}
 }
 setInterval(saveLocal,30000);
@@ -669,8 +672,8 @@ async function initAuth(){
     const data=await res.json();
     authToken=data.token;
     refLink=data.user.referralLink;
-    // Sync server state
-    if(data.user.balance>st.balance)st.balance=data.user.balance;
+    // Server is always source of truth — override local state completely
+    st.balance=data.user.balance;
     if(data.user.gpus&&data.user.gpus.length){
       data.user.gpus.forEach(slot=>{
         const gpu=GPUS.find(g=>g.id===slot.gpuId);
@@ -678,6 +681,12 @@ async function initAuth(){
       });
       perSec=calcPerSec();
       buildCards();
+    }
+    // Recalculate pending from server's lastCollectTime
+    if(data.user.lastCollectTime){
+      collectTime=new Date(data.user.lastCollectTime).getTime();
+      const elapsed=Math.min((Date.now()-collectTime)/1000,86400);
+      st.pending=perSec*elapsed;
     }
     updateUI();
     saveLocal();
