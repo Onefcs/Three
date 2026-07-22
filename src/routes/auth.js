@@ -2,7 +2,7 @@ const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { verifyTelegramInitData } = require('../middleware/telegramAuth');
-const { jwtSecret, botUsername } = require('../config');
+const { jwtSecret, botUsername, COLLECT_COOLDOWN_MS } = require('../config');
 
 // POST /api/auth
 // Body: { initData: string, referredBy?: string }
@@ -52,6 +52,7 @@ router.post('/', async (req, res) => {
         firstName:       user.firstName,
         balance:         user.balance,
         lastCollectTime: user.lastCollectTime,
+        nextCollectAt:   new Date(user.lastCollectTime.getTime() + COLLECT_COOLDOWN_MS),
         referralPending: user.referralPending,
         gpus:            user.gpus,
         referralLink:    `https://t.me/${botUsername}?start=${telegramId}`,

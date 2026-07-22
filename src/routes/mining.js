@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const User = require('../models/User');
 const { requireAuth } = require('../middleware/telegramAuth');
-const { GPU_CATALOG, REFERRAL_PERCENT } = require('../config');
+const { GPU_CATALOG, REFERRAL_PERCENT, COLLECT_COOLDOWN_MS } = require('../config');
 
 // POST /api/collect  — collect pending mining income (atomic, race-safe)
 router.post('/collect', requireAuth, async (req, res) => {
@@ -12,21 +12,24 @@ router.post('/collect', requireAuth, async (req, res) => {
     const earned = user.calcPending();
     if (earned < 0.001) return res.json({ collected: 0, balance: user.balance });
 
-    const prevCollectTime = user.lastCollectTime;
     const now = new Date();
+    // Cutoff: lastCollectTime must be old enough (enforces cooldown between collects).
+    // Using $lte instead of exact match prevents simultaneous double-collect from two devices:
+    // once the first request wins and sets lastCollectTime=now, the second request's condition
+    // { lastCollectTime: { $lte: cutoff } } fails because now > cutoff.
+    const cutoff = new Date(now.getTime() - COLLECT_COOLDOWN_MS);
 
-    // Atomic update: only apply if lastCollectTime hasn't changed since we read it.
-    // If another device already collected, this findOneAndUpdate returns null.
     const updated = await User.findOneAndUpdate(
-      { telegramId: req.user.telegramId, lastCollectTime: prevCollectTime },
+      { telegramId: req.user.telegramId, lastCollectTime: { $lte: cutoff } },
       { $inc: { balance: earned }, $set: { lastCollectTime: now, lastActive: now } },
       { new: true }
     );
 
     if (!updated) {
-      // Race lost — another device collected first, return fresh state
+      // Either on cooldown or race lost — return fresh state with next allowed collect time
       const fresh = await User.findOne({ telegramId: req.user.telegramId });
-      return res.json({ collected: 0, balance: fresh.balance });
+      const nextCollectAt = new Date(fresh.lastCollectTime.getTime() + COLLECT_COOLDOWN_MS);
+      return res.json({ collected: 0, balance: fresh.balance, nextCollectAt });
     }
 
     // Credit referrer 5%
@@ -38,7 +41,8 @@ router.post('/collect', requireAuth, async (req, res) => {
       );
     }
 
-    res.json({ collected: earned, balance: updated.balance });
+    const nextCollectAt = new Date(now.getTime() + COLLECT_COOLDOWN_MS);
+    res.json({ collected: earned, balance: updated.balance, nextCollectAt });
   } catch (err) {
     console.error('collect error', err);
     res.status(500).json({ error: 'Server error' });
@@ -111,6 +115,7 @@ router.get('/status', requireAuth, async (req, res) => {
       pending:         user.calcPending(),
       perSec:          user.calcPerSec(),
       lastCollectTime: user.lastCollectTime,
+      nextCollectAt:   new Date(user.lastCollectTime.getTime() + COLLECT_COOLDOWN_MS),
       gpus:            user.gpus,
       referralPending: user.referralPending,
     });

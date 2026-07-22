@@ -59,6 +59,7 @@ main::-webkit-scrollbar{display:none}
   box-shadow:0 0 20px var(--acc-glow),0 3px 12px rgba(0,0,0,.4);
   transition:transform .1s,box-shadow .1s;position:relative;z-index:1}
 .collect:active{transform:scale(.96)}
+.collect:disabled{cursor:not-allowed;transform:none;font-size:17px;font-weight:900;letter-spacing:.5px}
 .collect.pop{animation:cpop .5s ease}
 @keyframes cpop{0%,100%{box-shadow:0 0 20px var(--acc-glow),0 3px 12px rgba(0,0,0,.4)}
   50%{box-shadow:0 0 50px rgba(61,224,112,.55),0 3px 12px rgba(0,0,0,.4)}}
@@ -595,7 +596,19 @@ function loop(ts){
 function updateUI(){
   document.getElementById("hbal").textContent=fmtBal(st.balance);
   document.getElementById("tamt").textContent=st.pending.toFixed(6);
-  document.getElementById("cbtn").style.opacity=st.pending>.0005?"1":".4";
+  const btn=document.getElementById("cbtn");
+  const msLeft=collectCooldownUntil-Date.now();
+  if(msLeft>0){
+    const s=Math.ceil(msLeft/1000);
+    const mm=String(Math.floor(s/60)).padStart(2,'0');
+    const ss=String(s%60).padStart(2,'0');
+    btn.textContent=mm+':'+ss;
+    btn.style.opacity='.5';
+    btn.disabled=true;
+  }else{
+    if(btn.disabled){btn.textContent='ЗАБРАТЬ';btn.disabled=false;}
+    btn.style.opacity=st.pending>.0005?'1':'.4';
+  }
 }
 function fmtBal(n){return n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});}
 function _collectAnim(amt){
@@ -609,6 +622,7 @@ function _collectAnim(amt){
   setTimeout(()=>btn.classList.remove("pop"),500);
 }
 async function collect(){
+  if(Date.now()<collectCooldownUntil)return;
   if(st.pending<.0005)return;
   const btn=document.getElementById("cbtn");
   if(btn.dataset.busy)return;
@@ -623,12 +637,13 @@ async function collect(){
     if(res.ok){
       const d=await res.json();
       st.balance=d.balance;
+      if(d.nextCollectAt) collectCooldownUntil=new Date(d.nextCollectAt).getTime();
       if(d.collected>.0001){
         st.pending=0;collectTime=Date.now();
         _collectAnim(d.collected);
       }else{
         st.pending=0;
-        showToast('Уже собрано на другом устройстве');
+        showToast('Уже забрано на другом устройстве');
       }
       updateUI();saveLocal();
     }
@@ -727,9 +742,11 @@ setTimeout(hideSplash,7000); // failsafe if auth hangs
 
 /* ── BACKEND INTEGRATION ── */
 const API_BASE='https://two-production-eb6f.up.railway.app';
+const COLLECT_COOLDOWN_MS=60000; // must match server COLLECT_COOLDOWN_MS
 let authToken=loadJwt();
 let refLink=null;
 let refPendingAmt=0;
+let collectCooldownUntil=0; // timestamp (ms) until next collect is allowed
 
 async function initAuth(){
   try{
@@ -778,6 +795,10 @@ async function initAuth(){
       collectTime=new Date(data.user.lastCollectTime).getTime();
       const elapsed=Math.min((Date.now()-collectTime)/1000,86400);
       st.pending=perSec*elapsed;
+    }
+    // Restore cooldown from server so second device can't collect for remaining cooldown period
+    if(data.user.nextCollectAt){
+      collectCooldownUntil=new Date(data.user.nextCollectAt).getTime();
     }
     updateUI();
     saveLocal();

@@ -18,4 +18,5 @@ module.exports = {
   },
 
   REFERRAL_PERCENT: 5, // 5% of referee's collected income goes to referrer
+  COLLECT_COOLDOWN_MS: 60 * 1000, // minimum ms between collects (prevents double-collect)
 };
