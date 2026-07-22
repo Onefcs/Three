@@ -3,7 +3,7 @@ const User = require('../models/User');
 const { requireAuth } = require('../middleware/telegramAuth');
 const { GPU_CATALOG, REFERRAL_PERCENT } = require('../config');
 
-// POST /api/collect  — collect pending mining income
+// POST /api/collect  — collect pending mining income (atomic, race-safe)
 router.post('/collect', requireAuth, async (req, res) => {
   try {
     const user = await User.findOne({ telegramId: req.user.telegramId });
@@ -12,10 +12,24 @@ router.post('/collect', requireAuth, async (req, res) => {
     const earned = user.calcPending();
     if (earned <= 0) return res.json({ collected: 0, balance: user.balance });
 
-    user.balance += earned;
-    user.lastCollectTime = new Date();
+    const prevCollectTime = user.lastCollectTime;
+    const now = new Date();
 
-    // Credit referrer 5% of this collect
+    // Atomic update: only apply if lastCollectTime hasn't changed since we read it.
+    // If another device already collected, this findOneAndUpdate returns null.
+    const updated = await User.findOneAndUpdate(
+      { telegramId: req.user.telegramId, lastCollectTime: prevCollectTime },
+      { $inc: { balance: earned }, $set: { lastCollectTime: now, lastActive: now } },
+      { new: true }
+    );
+
+    if (!updated) {
+      // Race lost — another device collected first, return fresh state
+      const fresh = await User.findOne({ telegramId: req.user.telegramId });
+      return res.json({ collected: 0, balance: fresh.balance });
+    }
+
+    // Credit referrer 5%
     if (user.referredBy) {
       const bonus = earned * (REFERRAL_PERCENT / 100);
       await User.updateOne(
@@ -24,8 +38,7 @@ router.post('/collect', requireAuth, async (req, res) => {
       );
     }
 
-    await user.save();
-    res.json({ collected: earned, balance: user.balance });
+    res.json({ collected: earned, balance: updated.balance });
   } catch (err) {
     console.error('collect error', err);
     res.status(500).json({ error: 'Server error' });
@@ -44,17 +57,25 @@ router.post('/buy-gpu', requireAuth, async (req, res) => {
     const user = await User.findOne({ telegramId: req.user.telegramId });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Collect pending before purchase so balance is current
+    // Atomically collect pending income before purchase
     const earned = user.calcPending();
+    const now = new Date();
     if (earned > 0) {
-      user.balance += earned;
-      user.lastCollectTime = new Date();
-      if (user.referredBy) {
-        const bonus = earned * (REFERRAL_PERCENT / 100);
-        await User.updateOne(
-          { telegramId: user.referredBy },
-          { $inc: { referralPending: bonus, referralEarned: bonus } }
-        );
+      const collected = await User.findOneAndUpdate(
+        { telegramId: req.user.telegramId, lastCollectTime: user.lastCollectTime },
+        { $inc: { balance: earned }, $set: { lastCollectTime: now, lastActive: now } },
+        { new: true }
+      );
+      if (collected) {
+        user.balance = collected.balance;
+        user.lastCollectTime = now;
+        if (user.referredBy) {
+          const bonus = earned * (REFERRAL_PERCENT / 100);
+          await User.updateOne(
+            { telegramId: user.referredBy },
+            { $inc: { referralPending: bonus, referralEarned: bonus } }
+          );
+        }
       }
     }
 
