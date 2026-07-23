@@ -202,6 +202,30 @@ main::-webkit-scrollbar{display:none}
 .ref-collect{display:block;width:100%;background:var(--acc);border:none;border-radius:12px;padding:13px 0;font-size:14px;font-weight:900;color:#000;cursor:pointer;letter-spacing:.4px;box-shadow:0 0 20px var(--acc-glow),0 3px 12px rgba(0,0,0,.4);transition:transform .1s,opacity .15s;margin-bottom:2px}
 .ref-collect:active{transform:scale(.97)}
 .ref-collect:disabled{opacity:.35;cursor:default;box-shadow:none;transform:none}
+
+/* WALLET PAGE */
+.wl-bal-card{background:linear-gradient(160deg,#091a0b,#0d1b0f);border:1px solid #2a4030;border-radius:16px;padding:20px 16px 18px;text-align:center}
+.wl-bal-lbl{font-size:9px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.wl-bal-amt{font-size:36px;font-weight:900;color:var(--acc);font-variant-numeric:tabular-nums;line-height:1;text-shadow:0 0 24px rgba(61,224,112,.4)}
+.wl-bal-sub{font-size:11px;color:var(--tx2);margin-top:5px;font-variant-numeric:tabular-nums}
+.wl-tabs{display:flex;gap:6px}
+.wl-tab{flex:1;background:var(--card);border:1px solid var(--bdr2);border-radius:10px;padding:10px 0;font-size:11px;font-weight:900;color:var(--tx2);cursor:pointer;letter-spacing:.4px;transition:all .15s}
+.wl-tab.active{background:rgba(61,224,112,.1);border-color:var(--acc);color:var(--acc)}
+.wl-panel{background:var(--card);border:1px solid var(--bdr2);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:0}
+.wl-panel-wd-active{background:rgba(28,20,8,.7);border-color:#3a2c10}
+.wl-field-lbl{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.7px;color:var(--tx2);margin-bottom:5px;margin-top:12px}
+.wl-field-lbl:first-child{margin-top:0}
+.wl-inp-wrap{display:flex;align-items:center;background:rgba(255,255,255,.04);border:1px solid var(--bdr2);border-radius:10px;overflow:hidden;transition:border-color .15s}
+.wl-inp-wrap:focus-within{border-color:var(--acc)}
+.wl-inp-wrap-wd:focus-within{border-color:#f0a030}
+.wl-inp{flex:1;background:none;border:none;outline:none;padding:11px 12px;font-size:16px;font-weight:800;color:var(--tx);font-variant-numeric:tabular-nums;min-width:0}
+.wl-inp-tag{padding:0 12px;font-size:10px;font-weight:900;color:var(--tx2);letter-spacing:.4px;white-space:nowrap;flex-shrink:0}
+.wl-hint{font-size:9px;color:var(--tx3);margin-top:6px;font-variant-numeric:tabular-nums;line-height:1.5}
+.wl-hint-avail{color:var(--tx2)}
+.wl-btn{width:100%;border:none;border-radius:12px;padding:13px 0;font-size:15px;font-weight:900;cursor:pointer;letter-spacing:.6px;transition:opacity .15s;margin-top:16px}
+.wl-btn:active{opacity:.7}
+.wl-btn-dep{background:var(--acc);color:#000;box-shadow:0 0 18px var(--acc-glow)}
+.wl-btn-wd{background:#f0a030;color:#000;box-shadow:0 0 18px rgba(240,160,48,.25)}
 </style>
 
 <div id="splash">
@@ -358,12 +382,49 @@ main::-webkit-scrollbar{display:none}
 
 </div>
 
-<div id="page-profile" class="page" style="display:none">
-<div class="ph-page">
-  <div class="ph-ico"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-  <div class="ph-title">Профиль</div>
-  <div class="ph-sub">Статистика майнинга, достижения и настройки аккаунта появятся здесь.</div>
+<div id="page-wallet" class="page" style="display:none">
+
+<div class="wl-bal-card">
+  <div class="wl-bal-lbl">Баланс CORE</div>
+  <div class="wl-bal-amt" id="wl-bal">0.000000</div>
+  <div class="wl-bal-sub">≈ <span id="wl-bal-ton">0.0000</span> TON</div>
 </div>
+
+<div class="wl-tabs">
+  <button class="wl-tab active" id="wl-tab-dep" onclick="wlSwitchTab('dep')">↓ Пополнить</button>
+  <button class="wl-tab" id="wl-tab-wd" onclick="wlSwitchTab('wd')">↑ Вывести</button>
+</div>
+
+<div class="wl-panel" id="wl-panel-dep">
+  <div class="wl-field-lbl">Сумма пополнения</div>
+  <div class="wl-inp-wrap">
+    <input class="wl-inp" id="wl-dep-amt" type="number" inputmode="decimal" placeholder="0.00" min="0" oninput="wlDepCalc()">
+    <span class="wl-inp-tag">CORE</span>
+  </div>
+  <div class="wl-field-lbl">К оплате</div>
+  <div class="wl-inp-wrap">
+    <input class="wl-inp" id="wl-dep-ton" type="text" placeholder="0.0000" readonly>
+    <span class="wl-inp-tag">TON</span>
+  </div>
+  <div class="wl-hint">Курс: 1 CORE = 0.0050 TON · Минимум 10 CORE</div>
+  <button class="wl-btn wl-btn-dep" onclick="wlDeposit()">ПОПОЛНИТЬ</button>
+</div>
+
+<div class="wl-panel wl-panel-wd-active" id="wl-panel-wd" style="display:none">
+  <div class="wl-field-lbl">TON-адрес для получения</div>
+  <div class="wl-inp-wrap wl-inp-wrap-wd">
+    <input class="wl-inp" id="wl-wd-addr" type="text" placeholder="EQ…" autocomplete="off" autocorrect="off" spellcheck="false">
+  </div>
+  <div class="wl-field-lbl">Сумма вывода</div>
+  <div class="wl-inp-wrap wl-inp-wrap-wd">
+    <input class="wl-inp" id="wl-wd-amt" type="number" inputmode="decimal" placeholder="0.00" min="0">
+    <span class="wl-inp-tag">CORE</span>
+  </div>
+  <div class="wl-hint wl-hint-avail">Доступно: <span id="wl-wd-avail">0.000000</span> CORE · Комиссия: 0.5%</div>
+  <div class="wl-hint">Минимум 100 CORE · Получите в TON по курсу 0.0050</div>
+  <button class="wl-btn wl-btn-wd" onclick="wlWithdraw()">ВЫВЕСТИ</button>
+</div>
+
 </div>
 
 </main>
@@ -373,7 +434,7 @@ main::-webkit-scrollbar{display:none}
   <button class="nav-btn" onclick="showPage('exchange',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4"/><path d="M3 8l4-4 4 4"/><path d="M17 8v12"/><path d="M21 16l-4 4-4-4"/></svg></span>Обмен</button>
   <button class="nav-btn" onclick="showPage('tasks',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Задания</button>
   <button class="nav-btn" onclick="showPage('friends',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Друзья</button>
-  <button class="nav-btn" onclick="showPage('profile',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Профиль</button>
+  <button class="nav-btn" onclick="showPage('wallet',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12h2"/><path d="M2 10h20"/></svg></span>Кошелёк</button>
 </nav>
 </div></div>
 
@@ -602,6 +663,7 @@ function loop(ts){
 }
 function updateUI(){
   document.getElementById("hbal").textContent=fmtBal(st.balance);
+  wlRefresh();
   document.getElementById("tamt").textContent=st.pending.toFixed(6);
   const btn=document.getElementById("cbtn");
   const dot=document.getElementById("t-dot");
@@ -677,6 +739,7 @@ function showPage(id,btn){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
   if(id==='friends') loadFriendsData();
+  if(id==='wallet') wlRefresh();
 }
 
 const EX_RATE=0.005; // 1 CORE = 0.005 TON
@@ -698,6 +761,39 @@ function exSwap(){
 }
 function exExecute(){
   showToast('Биржа скоро откроется');
+}
+
+/* ── WALLET ── */
+const WL_RATE=0.005; // 1 CORE = 0.005 TON
+function wlSwitchTab(mode){
+  const isDep=mode==='dep';
+  document.getElementById('wl-tab-dep').classList.toggle('active',isDep);
+  document.getElementById('wl-tab-wd').classList.toggle('active',!isDep);
+  document.getElementById('wl-panel-dep').style.display=isDep?'flex':'none';
+  document.getElementById('wl-panel-wd').style.display=isDep?'none':'flex';
+}
+function wlRefresh(){
+  const b=st.balance;
+  const wb=document.getElementById('wl-bal');if(wb)wb.textContent=b.toFixed(6);
+  const wt=document.getElementById('wl-bal-ton');if(wt)wt.textContent=(b*WL_RATE).toFixed(4);
+  const wa=document.getElementById('wl-wd-avail');if(wa)wa.textContent=b.toFixed(6);
+}
+function wlDepCalc(){
+  const v=parseFloat(document.getElementById('wl-dep-amt').value)||0;
+  document.getElementById('wl-dep-ton').value=v>0?(v*WL_RATE).toFixed(4):'';
+}
+function wlDeposit(){
+  const v=parseFloat(document.getElementById('wl-dep-amt').value)||0;
+  if(v<10){showToast('Минимум 10 CORE');return;}
+  showToast('Пополнение скоро будет доступно');
+}
+function wlWithdraw(){
+  const addr=(document.getElementById('wl-wd-addr').value||'').trim();
+  const amt=parseFloat(document.getElementById('wl-wd-amt').value)||0;
+  if(!addr){showToast('Введите TON-адрес');return;}
+  if(amt<100){showToast('Минимум 100 CORE');return;}
+  if(amt>st.balance){showToast('Недостаточно CORE');return;}
+  showToast('Вывод скоро будет доступен');
 }
 
 /* ── LOCAL PERSISTENCE ── */
