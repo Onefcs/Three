@@ -1050,10 +1050,7 @@ function taskClaim(id){
     st.balance=d.balance;
     updateUI();
     wlRefresh();
-    const card=document.getElementById('task-'+id);
-    if(card)card.remove();
-    if(!document.querySelector('.task-card'))
-      document.getElementById('tasks-list').innerHTML='<div class="tasks-empty">Нет доступных заданий.<br>Будьте первым — добавьте своё!</div>';
+    if(btn){btn.disabled=true;btn.textContent='✅ Выполнено';btn.style.opacity='.5';btn.style.cursor='default';}
   }).catch(()=>{
     if(btn){btn.disabled=false;btn.textContent='Повторить';btn.classList.remove('done');}
     showToast('Ошибка соединения');
