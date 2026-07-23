@@ -471,7 +471,7 @@ main::-webkit-scrollbar{display:none}
   <div class="modal-sheet">
     <div class="modal-title">💳 Пополнение CORE</div>
     <div class="modal-row" id="dep-addr-row">
-      <span class="modal-row-lbl">Адрес TON</span>
+      <span class="modal-row-lbl">Адрес Core</span>
       <span class="modal-row-val" id="dep-modal-addr">Загрузка...</span>
       <button class="modal-copy" id="dep-copy-addr" onclick="depCopy('dep-modal-addr')" style="display:none">Копировать</button>
     </div>
@@ -919,21 +919,35 @@ function wlDeposit(){
     body:JSON.stringify({coreAmount:v}),
   }).then(r=>r.json()).then(d=>{
     if(d.error){depModalClose();showToast(d.error);return;}
+    _depId=d.depositId;
     document.getElementById('dep-modal-addr').textContent=d.tonAddress||'Уточните у администратора';
     document.getElementById('dep-modal-memo').textContent=d.memo||d.depositId;
     if(d.tonAddress){document.getElementById('dep-copy-addr').style.display='';}
     document.getElementById('dep-copy-memo').style.display='';
-    document.getElementById('dep-modal-notice').textContent='Отправьте TON на этот адрес с указанным MEMO, затем нажмите «Я оплатил».';
+    document.getElementById('dep-modal-notice').textContent='Отправьте Core на этот адрес с указанным MEMO, затем нажмите «Я оплатил».';
     document.getElementById('dep-pay-btn').disabled=false;
   }).catch(()=>{depModalClose();showToast('Ошибка соединения');});
 }
 function depModalClose(){
   document.getElementById('dep-modal').style.display='none';
 }
+var _depId=null;
 function depSendRequest(){
-  document.getElementById('dep-modal-notice').textContent='✅ Заявка отправлена администратору. CORE будут зачислены после подтверждения.';
-  document.getElementById('dep-btns-pre').style.display='none';
-  document.getElementById('dep-btns-post').style.display='flex';
+  if(!_depId){showToast('Нет активной заявки');return;}
+  const btn=document.getElementById('dep-pay-btn');
+  btn.disabled=true;
+  document.getElementById('dep-modal-notice').textContent='Отправка...';
+  fetch(API_BASE+'/api/deposit/paid',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
+    body:JSON.stringify({depositId:_depId}),
+  }).then(r=>r.json()).then(d=>{
+    if(d.error){btn.disabled=false;document.getElementById('dep-modal-notice').textContent='❌ '+d.error;return;}
+    document.getElementById('dep-modal-notice').textContent='✅ Заявка отправлена администратору. CORE будут зачислены после подтверждения.';
+    document.getElementById('dep-btns-pre').style.display='none';
+    document.getElementById('dep-btns-post').style.display='flex';
+    _depId=null;
+  }).catch(()=>{btn.disabled=false;document.getElementById('dep-modal-notice').textContent='❌ Ошибка соединения';});
 }
 function depCopy(id){
   const txt=document.getElementById(id).textContent;
@@ -1009,7 +1023,9 @@ function renderTasks(tasks){
       <div class="task-card-link">${escHtml(t.link)}</div>
       <div class="task-card-foot">
         <div class="task-card-slots">Осталось: ${t.remaining} из ${t.maxClicks}</div>
-        <button class="task-card-btn" id="tbtn-${t._id}" onclick="taskGo('${t._id}','${escHtml(t.link)}')">Выполнить</button>
+        ${t.isOwn
+          ? `<button class="task-card-btn" disabled style="opacity:.5;cursor:default">Моё задание</button>`
+          : `<button class="task-card-btn" id="tbtn-${t._id}" onclick="taskGo('${t._id}','${escHtml(t.link)}')">Выполнить</button>`}
       </div>
     </div>`).join('');
 }
