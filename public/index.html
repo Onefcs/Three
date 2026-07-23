@@ -406,7 +406,7 @@ main::-webkit-scrollbar{display:none}
     <input class="wl-inp" id="wl-dep-ton" type="text" placeholder="0.0000" readonly>
     <span class="wl-inp-tag">TON</span>
   </div>
-  <div class="wl-hint">Курс: 1 CORE = 0.0050 TON · Минимум 10 CORE</div>
+  <div class="wl-hint">Курс: 1 CORE = 0.0050 TON · Мин. 1 000 · Макс. 10 000 000 CORE</div>
   <button class="wl-btn wl-btn-dep" onclick="wlDeposit()">ПОПОЛНИТЬ</button>
 </div>
 
@@ -420,8 +420,8 @@ main::-webkit-scrollbar{display:none}
     <input class="wl-inp" id="wl-wd-amt" type="number" inputmode="decimal" placeholder="0.00" min="0">
     <span class="wl-inp-tag">CORE</span>
   </div>
-  <div class="wl-hint wl-hint-avail">Доступно: <span id="wl-wd-avail">0.000000</span> CORE · Комиссия: 0.5%</div>
-  <div class="wl-hint">Минимум 100 CORE · Получите в TON по курсу 0.0050</div>
+  <div class="wl-hint wl-hint-avail">Доступно: <span id="wl-wd-avail">0.000000</span> CORE · Комиссия: 10%</div>
+  <div class="wl-hint">Мин. 1 000 CORE · Макс. 10 000 000 CORE · Получите в TON по курсу 0.0050</div>
   <button class="wl-btn wl-btn-wd" onclick="wlWithdraw()">ВЫВЕСТИ</button>
 </div>
 
@@ -784,14 +784,16 @@ function wlDepCalc(){
 }
 function wlDeposit(){
   const v=parseFloat(document.getElementById('wl-dep-amt').value)||0;
-  if(v<10){showToast('Минимум 10 CORE');return;}
+  if(v<1000){showToast('Минимум 1 000 CORE');return;}
+  if(v>10000000){showToast('Максимум 10 000 000 CORE');return;}
   showToast('Пополнение скоро будет доступно');
 }
 function wlWithdraw(){
   const addr=(document.getElementById('wl-wd-addr').value||'').trim();
   const amt=parseFloat(document.getElementById('wl-wd-amt').value)||0;
   if(!addr){showToast('Введите TON-адрес');return;}
-  if(amt<100){showToast('Минимум 100 CORE');return;}
+  if(amt<1000){showToast('Минимум 1 000 CORE');return;}
+  if(amt>10000000){showToast('Максимум 10 000 000 CORE');return;}
   if(amt>st.balance){showToast('Недостаточно CORE');return;}
   showToast('Вывод скоро будет доступен');
 }
