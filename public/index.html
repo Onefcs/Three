@@ -244,6 +244,29 @@ main::-webkit-scrollbar{display:none}
 .modal-btn:active{opacity:.7}
 .modal-btn-pay{background:var(--acc);color:#000;box-shadow:0 0 18px var(--acc-glow)}
 .modal-btn-cancel{background:var(--card);color:var(--tx2);border:1px solid var(--bdr2)}
+/* TASKS */
+.tasks-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px}
+.tasks-title{font-size:14px;font-weight:900;color:var(--tx);letter-spacing:.3px}
+.tasks-add-btn{background:var(--acc);color:#000;border:none;border-radius:10px;padding:7px 14px;font-size:11px;font-weight:900;cursor:pointer;letter-spacing:.4px;box-shadow:0 0 12px var(--acc-glow);transition:opacity .15s;white-space:nowrap}
+.tasks-add-btn:active{opacity:.7}
+.task-card{background:var(--card);border:1px solid var(--bdr2);border-radius:14px;padding:14px;margin-bottom:10px}
+.task-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:5px}
+.task-card-title{font-size:13px;font-weight:900;color:var(--tx);flex:1;min-width:0}
+.task-card-reward{background:rgba(61,224,112,.12);border:1px solid rgba(61,224,112,.25);border-radius:8px;padding:3px 9px;font-size:10px;font-weight:900;color:var(--acc);white-space:nowrap;flex-shrink:0}
+.task-card-desc{font-size:11px;color:var(--tx2);line-height:1.5;margin-bottom:8px}
+.task-card-link{font-size:9px;color:var(--tx2);opacity:.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:10px}
+.task-card-foot{display:flex;align-items:center;justify-content:space-between}
+.task-card-slots{font-size:9px;font-weight:800;color:var(--tx2);letter-spacing:.2px;opacity:.7}
+.task-card-btn{background:var(--acc);color:#000;border:none;border-radius:9px;padding:7px 18px;font-size:11px;font-weight:900;cursor:pointer;letter-spacing:.3px;transition:opacity .15s}
+.task-card-btn:active{opacity:.7}
+.task-card-btn.done{background:var(--bdr2);color:var(--tx2);cursor:default;box-shadow:none}
+.tasks-empty{text-align:center;padding:48px 16px;color:var(--tx2);font-size:12px;line-height:1.8;opacity:.7}
+.task-inp{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bdr2);border-radius:10px;outline:none;padding:10px 12px;font-size:14px;font-weight:700;color:var(--tx);box-sizing:border-box;transition:border-color .15s}
+.task-inp:focus{border-color:var(--acc)}
+.task-inp-lbl{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.7px;color:var(--tx2);margin-bottom:4px;margin-top:10px;display:flex;justify-content:space-between;align-items:center}
+.task-inp-lbl:first-child{margin-top:0}
+.task-char{font-size:9px;color:var(--tx3);font-weight:700;letter-spacing:0}
+.task-price-info{font-size:10px;color:var(--tx2);text-align:center;margin:10px 0 2px;line-height:1.6;padding:8px 10px;background:rgba(61,224,112,.05);border:1px solid rgba(61,224,112,.12);border-radius:9px}
 </style>
 
 <div id="splash">
@@ -340,10 +363,12 @@ main::-webkit-scrollbar{display:none}
 </div>
 
 <div id="page-tasks" class="page" style="display:none">
-<div class="ph-page">
-  <div class="ph-ico"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-  <div class="ph-title">Задания</div>
-  <div class="ph-sub">Выполняйте задания и получай бонусы. Скоро здесь появятся новые задания!</div>
+<div class="tasks-header">
+  <div class="tasks-title">Задания</div>
+  <button class="tasks-add-btn" onclick="taskCreateOpen()">+ Добавить</button>
+</div>
+<div id="tasks-list">
+  <div class="tasks-empty">Загрузка...</div>
 </div>
 </div>
 
@@ -487,6 +512,32 @@ main::-webkit-scrollbar{display:none}
     </div>
     <div class="modal-btns" id="wd-btns-post" style="display:none">
       <button class="modal-btn modal-btn-pay" onclick="wdModalClose()">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- TASK CREATE MODAL -->
+<div id="task-modal" style="display:none" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-title">📋 Создать задание</div>
+    <label class="task-inp-lbl">Ссылка для перехода</label>
+    <input class="task-inp" id="task-link" type="url" placeholder="https://...">
+    <label class="task-inp-lbl">
+      Название проекта
+      <span class="task-char"><span id="task-title-cnt">0</span>/20</span>
+    </label>
+    <input class="task-inp" id="task-title-inp" type="text" maxlength="20" placeholder="Мой проект" oninput="document.getElementById('task-title-cnt').textContent=this.value.length">
+    <label class="task-inp-lbl">
+      Описание
+      <span class="task-char"><span id="task-desc-cnt">0</span>/50</span>
+    </label>
+    <input class="task-inp" id="task-desc-inp" type="text" maxlength="50" placeholder="Краткое описание" oninput="document.getElementById('task-desc-cnt').textContent=this.value.length">
+    <label class="task-inp-lbl">Сумма (мин. 10 000 CORE)</label>
+    <input class="task-inp" id="task-amt-inp" type="number" inputmode="decimal" placeholder="10000" min="10000" oninput="taskAmtCalc()">
+    <div class="task-price-info" id="task-price-info">100 CORE = 1 переход · 50 CORE награда · 50 CORE сжигается</div>
+    <div class="modal-btns" style="margin-top:14px">
+      <button class="modal-btn modal-btn-cancel" onclick="taskModalClose()">Отмена</button>
+      <button class="modal-btn modal-btn-pay" id="task-create-btn" onclick="taskCreate()">Создать</button>
     </div>
   </div>
 </div>
@@ -802,6 +853,7 @@ function showPage(id,btn){
   if(btn)btn.classList.add('active');
   if(id==='friends') loadFriendsData();
   if(id==='wallet') wlRefresh();
+  if(id==='tasks') loadTasks();
 }
 
 const EX_RATE=0.005; // 1 CORE = 0.005 TON
@@ -914,6 +966,117 @@ function wdSendRequest(){
     updateUI();
     wlRefresh();
   }).catch(()=>{btn.disabled=false;document.getElementById('wd-modal-notice').textContent='❌ Ошибка соединения';});
+}
+
+/* ── TASKS ── */
+let _tasksLoaded=false;
+function loadTasks(){
+  if(!authToken)return;
+  fetch(API_BASE+'/api/tasks',{headers:{'Authorization':'Bearer '+authToken}})
+    .then(r=>r.json()).then(d=>{
+      if(d.error){document.getElementById('tasks-list').innerHTML='<div class="tasks-empty">'+d.error+'</div>';return;}
+      _tasksLoaded=true;
+      renderTasks(d.tasks);
+    }).catch(()=>{document.getElementById('tasks-list').innerHTML='<div class="tasks-empty">Ошибка загрузки</div>';});
+}
+function renderTasks(tasks){
+  const list=document.getElementById('tasks-list');
+  if(!tasks.length){
+    list.innerHTML='<div class="tasks-empty">Нет доступных заданий.<br>Будьте первым — добавьте своё!</div>';
+    return;
+  }
+  list.innerHTML=tasks.map(t=>`
+    <div class="task-card" id="task-${t._id}">
+      <div class="task-card-head">
+        <div class="task-card-title">${escHtml(t.title)}</div>
+        <div class="task-card-reward">+${t.reward} CORE</div>
+      </div>
+      ${t.description?`<div class="task-card-desc">${escHtml(t.description)}</div>`:''}
+      <div class="task-card-link">${escHtml(t.link)}</div>
+      <div class="task-card-foot">
+        <div class="task-card-slots">Осталось: ${t.remaining} из ${t.maxClicks}</div>
+        <button class="task-card-btn" id="tbtn-${t._id}" onclick="taskGo('${t._id}','${escHtml(t.link)}')">Выполнить</button>
+      </div>
+    </div>`).join('');
+}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function taskGo(id,link){
+  window.open(link,'_blank');
+  const btn=document.getElementById('tbtn-'+id);
+  if(btn){btn.textContent='Забрать 50 CORE';btn.onclick=()=>taskClaim(id);}
+}
+function taskClaim(id){
+  const btn=document.getElementById('tbtn-'+id);
+  if(btn){btn.disabled=true;btn.textContent='...';btn.classList.add('done');}
+  fetch(API_BASE+'/api/tasks/'+id+'/complete',{
+    method:'POST',
+    headers:{'Authorization':'Bearer '+authToken},
+  }).then(r=>r.json()).then(d=>{
+    if(d.error){
+      if(btn){btn.disabled=false;btn.textContent='Ошибка';btn.classList.remove('done');}
+      showToast(d.error);return;
+    }
+    showToast('+ '+d.reward+' CORE получено!');
+    st.balance=d.balance;
+    updateUI();
+    wlRefresh();
+    const card=document.getElementById('task-'+id);
+    if(card)card.remove();
+    if(!document.querySelector('.task-card'))
+      document.getElementById('tasks-list').innerHTML='<div class="tasks-empty">Нет доступных заданий.<br>Будьте первым — добавьте своё!</div>';
+  }).catch(()=>{
+    if(btn){btn.disabled=false;btn.textContent='Повторить';btn.classList.remove('done');}
+    showToast('Ошибка соединения');
+  });
+}
+function taskCreateOpen(){
+  document.getElementById('task-link').value='';
+  document.getElementById('task-title-inp').value='';
+  document.getElementById('task-desc-inp').value='';
+  document.getElementById('task-amt-inp').value='';
+  document.getElementById('task-title-cnt').textContent='0';
+  document.getElementById('task-desc-cnt').textContent='0';
+  document.getElementById('task-price-info').textContent='100 CORE = 1 переход · 50 CORE награда · 50 CORE сжигается';
+  document.getElementById('task-create-btn').disabled=false;
+  document.getElementById('task-modal').style.display='flex';
+}
+function taskModalClose(){
+  document.getElementById('task-modal').style.display='none';
+}
+function taskAmtCalc(){
+  const v=parseFloat(document.getElementById('task-amt-inp').value)||0;
+  const clicks=v>=10000?Math.floor(v/100):0;
+  document.getElementById('task-price-info').textContent=
+    v>=10000
+      ?`${clicks} переходов · ${(clicks*50).toLocaleString()} CORE выплат · ${(v-clicks*50).toLocaleString()} CORE сжигается`
+      :'100 CORE = 1 переход · 50 CORE награда · 50 CORE сжигается';
+}
+function taskCreate(){
+  const link=(document.getElementById('task-link').value||'').trim();
+  const title=(document.getElementById('task-title-inp').value||'').trim();
+  const desc=(document.getElementById('task-desc-inp').value||'').trim();
+  const amt=parseFloat(document.getElementById('task-amt-inp').value)||0;
+  if(!link){showToast('Укажите ссылку');return;}
+  if(!title){showToast('Укажите название');return;}
+  if(amt<10000){showToast('Минимум 10 000 CORE');return;}
+  if(amt>st.balance){showToast('Недостаточно CORE');return;}
+  if(!authToken){showToast('Нет подключения');return;}
+  const btn=document.getElementById('task-create-btn');
+  btn.disabled=true;
+  fetch(API_BASE+'/api/tasks/create',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
+    body:JSON.stringify({link,title,description:desc,coreAmount:amt}),
+  }).then(r=>r.json()).then(d=>{
+    btn.disabled=false;
+    if(d.error){showToast(d.error);return;}
+    st.balance=d.balance;
+    updateUI();
+    wlRefresh();
+    taskModalClose();
+    showToast('Задание создано — '+d.maxClicks+' переходов');
+    loadTasks();
+  }).catch(()=>{btn.disabled=false;showToast('Ошибка соединения');});
 }
 
 /* ── LOCAL PERSISTENCE ── */
