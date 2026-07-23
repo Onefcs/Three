@@ -26,6 +26,7 @@ app.use('/api/collect',          collectLimiter);
 app.use('/api/referral/collect', collectLimiter);
 app.use('/api/referral',         apiLimiter,     require('./routes/referral'));
 app.use('/api/deposit',          apiLimiter,     require('./routes/deposit'));
+app.use('/api/withdraw',         apiLimiter,     require('./routes/withdraw'));
 app.use('/api',                  apiLimiter,     require('./routes/mining'));
 
 // Health check

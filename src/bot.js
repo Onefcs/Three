@@ -3,6 +3,7 @@ const TelegramBot = _TBotModule.default || _TBotModule;
 const { botToken, adminTelegramId, appUrl, botUsername } = require('./config');
 const User = require('./models/User');
 const Deposit = require('./models/Deposit');
+const Withdraw = require('./models/Withdraw');
 
 function createBot() {
   if (!botToken) {
@@ -44,10 +45,12 @@ function createBot() {
       return bot.answerCallbackQuery(query.id, { text: '⛔ Нет доступа' });
     }
 
-    const [action, depositId] = (query.data || '').split(':');
+    const [action, recordId] = (query.data || '').split(':');
 
     try {
-      const deposit = await Deposit.findById(depositId);
+      /* ── DEPOSIT ── */
+      if (action === 'dep_confirm' || action === 'dep_reject') {
+      const deposit = await Deposit.findById(recordId);
       if (!deposit) {
         return bot.answerCallbackQuery(query.id, { text: 'Заявка не найдена' });
       }
@@ -102,6 +105,70 @@ function createBot() {
 
         await bot.answerCallbackQuery(query.id, { text: '❌ Отклонено' });
       }
+      } /* end deposit block */
+
+      /* ── WITHDRAW ── */
+      else if (action === 'wd_confirm' || action === 'wd_reject') {
+        const withdraw = await Withdraw.findById(recordId);
+        if (!withdraw) {
+          return bot.answerCallbackQuery(query.id, { text: 'Заявка не найдена' });
+        }
+        if (withdraw.status !== 'pending') {
+          return bot.answerCallbackQuery(query.id, { text: 'Уже обработана' });
+        }
+
+        const wdTag = withdraw.username ? `@${withdraw.username}` : withdraw.firstName;
+
+        if (action === 'wd_confirm') {
+          withdraw.status = 'confirmed';
+          await withdraw.save();
+
+          await bot.editMessageText(
+            `✅ *ВЫВОД ПОДТВЕРЖДЁН*\n\n👤 ${withdraw.firstName} (${wdTag})\n` +
+            `💎 ${withdraw.coreAmount.toLocaleString()} CORE\n` +
+            `👛 \`${withdraw.walletAddress}\``,
+            { chat_id: query.message.chat.id, message_id: query.message.message_id, parse_mode: 'Markdown' }
+          );
+
+          try {
+            await bot.sendMessage(
+              withdraw.telegramId,
+              `✅ Вывод *${withdraw.coreAmount.toLocaleString()} CORE* подтверждён!`,
+              { parse_mode: 'Markdown' }
+            );
+          } catch (_) {}
+
+          await bot.answerCallbackQuery(query.id, { text: '✅ Подтверждено' });
+
+        } else if (action === 'wd_reject') {
+          withdraw.status = 'rejected';
+          await withdraw.save();
+
+          // Refund balance
+          await User.updateOne(
+            { telegramId: withdraw.telegramId },
+            { $inc: { balance: withdraw.coreAmount } }
+          );
+
+          await bot.editMessageText(
+            `❌ *ВЫВОД ОТКЛОНЁН*\n\n👤 ${withdraw.firstName} (${wdTag})\n` +
+            `💎 ${withdraw.coreAmount.toLocaleString()} CORE (возвращено)\n` +
+            `👛 \`${withdraw.walletAddress}\``,
+            { chat_id: query.message.chat.id, message_id: query.message.message_id, parse_mode: 'Markdown' }
+          );
+
+          try {
+            await bot.sendMessage(
+              withdraw.telegramId,
+              `❌ Заявка на вывод *${withdraw.coreAmount.toLocaleString()} CORE* отклонена. Средства возвращены на баланс.`,
+              { parse_mode: 'Markdown' }
+            );
+          } catch (_) {}
+
+          await bot.answerCallbackQuery(query.id, { text: '❌ Отклонено' });
+        }
+      } /* end withdraw block */
+
     } catch (err) {
       console.error('bot callback error', err);
       await bot.answerCallbackQuery(query.id, { text: 'Ошибка обработки' });
