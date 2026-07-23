@@ -226,6 +226,24 @@ main::-webkit-scrollbar{display:none}
 .wl-btn:active{opacity:.7}
 .wl-btn-dep{background:var(--acc);color:#000;box-shadow:0 0 18px var(--acc-glow)}
 .wl-btn-wd{background:#f0a030;color:#000;box-shadow:0 0 18px rgba(240,160,48,.25)}
+
+/* DEPOSIT MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:500;display:flex;align-items:flex-end;justify-content:center;animation:mfade .2s ease}
+@keyframes mfade{from{opacity:0}to{opacity:1}}
+.modal-sheet{width:100%;max-width:430px;background:var(--surf);border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0));border-top:1px solid var(--bdr2);animation:mslide .25s ease}
+@keyframes mslide{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-title{font-size:14px;font-weight:900;color:var(--tx);margin-bottom:16px;text-align:center;letter-spacing:.4px}
+.modal-row{display:flex;align-items:center;background:var(--card);border:1px solid var(--bdr2);border-radius:10px;padding:10px 12px;margin-bottom:8px;gap:10px}
+.modal-row-lbl{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.7px;color:var(--tx2);white-space:nowrap;flex-shrink:0}
+.modal-row-val{flex:1;font-size:12px;font-weight:800;color:var(--tx);word-break:break-all;font-variant-numeric:tabular-nums}
+.modal-copy{flex-shrink:0;background:var(--bdr2);border:none;border-radius:6px;padding:4px 8px;font-size:9px;font-weight:900;color:var(--tx2);cursor:pointer;letter-spacing:.3px;transition:background .15s}
+.modal-copy:active{background:var(--acc);color:#000}
+.modal-notice{font-size:10px;color:var(--tx2);text-align:center;line-height:1.65;margin:12px 0 4px;padding:10px 12px;background:rgba(61,224,112,.06);border:1px solid rgba(61,224,112,.15);border-radius:10px}
+.modal-btns{display:flex;gap:8px;margin-top:14px}
+.modal-btn{flex:1;border:none;border-radius:12px;padding:13px 0;font-size:14px;font-weight:900;cursor:pointer;letter-spacing:.4px;transition:opacity .15s}
+.modal-btn:active{opacity:.7}
+.modal-btn-pay{background:var(--acc);color:#000;box-shadow:0 0 18px var(--acc-glow)}
+.modal-btn-cancel{background:var(--card);color:var(--tx2);border:1px solid var(--bdr2)}
 </style>
 
 <div id="splash">
@@ -428,6 +446,33 @@ main::-webkit-scrollbar{display:none}
 </div>
 
 </main>
+
+<!-- DEPOSIT MODAL -->
+<div id="dep-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)depModalClose()">
+  <div class="modal-sheet">
+    <div class="modal-title">💳 Пополнение CORE</div>
+    <div class="modal-row">
+      <span class="modal-row-lbl">Адрес</span>
+      <span class="modal-row-val" id="dep-modal-addr">—</span>
+      <button class="modal-copy" onclick="depCopy('dep-modal-addr')">Копировать</button>
+    </div>
+    <div class="modal-row">
+      <span class="modal-row-lbl">MEMO</span>
+      <span class="modal-row-val" id="dep-modal-memo">—</span>
+      <button class="modal-copy" onclick="depCopy('dep-modal-memo')">Копировать</button>
+    </div>
+    <div class="modal-row">
+      <span class="modal-row-lbl">Сумма</span>
+      <span class="modal-row-val" id="dep-modal-ton">— TON</span>
+      <button class="modal-copy" onclick="depCopy('dep-modal-ton')">Копировать</button>
+    </div>
+    <div class="modal-notice">⚠️ Обязательно укажи <strong>MEMO</strong> при отправке TON — без него депозит не будет зачислен.</div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="depModalClose()">Отмена</button>
+      <button class="modal-btn modal-btn-pay" id="dep-modal-pay-btn" onclick="depSendRequest()">Я оплатил</button>
+    </div>
+  </div>
+</div>
 
 <nav class="bot-nav">
   <button class="nav-btn active" onclick="showPage('mining',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></span>Майнинг</button>
@@ -782,11 +827,43 @@ function wlDepCalc(){
   const v=parseFloat(document.getElementById('wl-dep-amt').value)||0;
   document.getElementById('wl-dep-ton').value=v>0?(v*WL_RATE).toFixed(4):'';
 }
+let _depModalData=null;
 function wlDeposit(){
   const v=parseFloat(document.getElementById('wl-dep-amt').value)||0;
   if(v<1000){showToast('Минимум 1 000 CORE');return;}
   if(v>10000000){showToast('Максимум 10 000 000 CORE');return;}
-  showToast('Пополнение скоро будет доступно');
+  if(!authToken){showToast('Нет подключения к серверу');return;}
+  // Pre-fill modal with pending state while request is in flight
+  _depModalData=null;
+  document.getElementById('dep-modal-addr').textContent='Загрузка...';
+  document.getElementById('dep-modal-memo').textContent='Загрузка...';
+  document.getElementById('dep-modal-ton').textContent='...';
+  document.getElementById('dep-modal-pay-btn').disabled=true;
+  document.getElementById('dep-modal').style.display='flex';
+  fetch(API_BASE+'/api/deposit/request',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
+    body:JSON.stringify({coreAmount:v}),
+  }).then(r=>r.json()).then(d=>{
+    if(d.error){depModalClose();showToast(d.error);return;}
+    _depModalData=d;
+    document.getElementById('dep-modal-addr').textContent=d.tonAddress||'Уточните у администратора';
+    document.getElementById('dep-modal-memo').textContent=d.memo;
+    document.getElementById('dep-modal-ton').textContent=d.tonAmount+' TON';
+    document.getElementById('dep-modal-pay-btn').disabled=false;
+  }).catch(()=>{depModalClose();showToast('Ошибка соединения');});
+}
+function depModalClose(){
+  document.getElementById('dep-modal').style.display='none';
+  _depModalData=null;
+}
+function depCopy(id){
+  const txt=document.getElementById(id).textContent;
+  navigator.clipboard.writeText(txt).then(()=>showToast('Скопировано')).catch(()=>showToast('Не удалось скопировать'));
+}
+function depSendRequest(){
+  depModalClose();
+  showToast('Заявка отправлена — ожидайте подтверждения');
 }
 function wlWithdraw(){
   const addr=(document.getElementById('wl-wd-addr').value||'').trim();
@@ -871,7 +948,7 @@ async function initAuth(){
     if(!initData){hideSplash();return;}
     setSplashProgress(35);
     setSplashStatus('ЗАГРУЗКА ДАННЫХ');
-    const startParam=tg?.initDataUnsafe?.start_param||'';
+    const startParam=tg?.initDataUnsafe?.start_param||new URLSearchParams(window.location.search).get('ref')||'';
     const body={initData};
     if(startParam)body.referredBy=startParam;
     const res=await fetch(API_BASE+'/api/auth',{

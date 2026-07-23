@@ -17,6 +17,10 @@ module.exports = {
     rtx4090:   { name: 'RTX 4090',    basePrice: 150000, incomePerHour: 142.0455 },
   },
 
+  adminTelegramId: process.env.ADMIN_TELEGRAM_ID || '',
+  depositTonAddress: process.env.DEPOSIT_TON_ADDRESS || '',
+  appUrl: process.env.APP_URL || 'https://two-production-eb6f.up.railway.app',
+
   REFERRAL_PERCENT: 5, // 5% of referee's collected income goes to referrer
   COLLECT_COOLDOWN_MS: 5 * 60 * 60 * 1000, // 5-hour farm window; collect resets the timer
 };

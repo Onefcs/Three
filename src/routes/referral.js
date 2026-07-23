@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const User = require('../models/User');
 const { requireAuth } = require('../middleware/telegramAuth');
-const { botUsername } = require('../config');
+const { botUsername, appUrl } = require('../config');
 
 // GET /api/referral  — referral stats + link
 router.get('/', requireAuth, async (req, res) => {
@@ -14,6 +14,7 @@ router.get('/', requireAuth, async (req, res) => {
 
     res.json({
       referralLink:    `https://t.me/${botUsername}?start=${req.user.telegramId}`,
+      referralWebLink: `${appUrl}?ref=${req.user.telegramId}`,
       referralCount,
       referralPending: user.referralPending,
       referralEarned:  user.referralEarned,

@@ -5,6 +5,7 @@ const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 const path = require('path');
 const { port, mongoUri } = require('./config');
+const { createBot } = require('./bot');
 
 const app = express();
 
@@ -20,11 +21,12 @@ const collectLimiter = rateLimit({ windowMs: 60 * 1000, max: 5, standardHeaders:
 app.use(express.static(path.join(__dirname, '../public')));
 
 // API routes
-app.use('/api/auth',            authLimiter, require('./routes/auth'));
-app.use('/api/collect',         collectLimiter);
+app.use('/api/auth',             authLimiter,    require('./routes/auth'));
+app.use('/api/collect',          collectLimiter);
 app.use('/api/referral/collect', collectLimiter);
-app.use('/api/referral',        apiLimiter, require('./routes/referral'));
-app.use('/api',                 apiLimiter, require('./routes/mining'));
+app.use('/api/referral',         apiLimiter,     require('./routes/referral'));
+app.use('/api/deposit',          apiLimiter,     require('./routes/deposit'));
+app.use('/api',                  apiLimiter,     require('./routes/mining'));
 
 // Health check
 app.get('/health', (_, res) => res.json({ ok: true }));
@@ -41,6 +43,7 @@ async function start() {
   }
   await mongoose.connect(mongoUri);
   console.log('MongoDB connected');
+  app.locals.bot = createBot();
   app.listen(port, () => console.log(`Server running on port ${port}`));
 }
 
