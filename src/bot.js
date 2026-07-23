@@ -68,9 +68,7 @@ function createBot() {
 
         await bot.editMessageText(
           `✅ *ПОДТВЕРЖДЕНО*\n\n👤 ${deposit.firstName} (${userTag})\n` +
-          `💎 +${deposit.coreAmount.toLocaleString()} CORE\n` +
-          `💰 ${deposit.tonAmount.toFixed(4)} TON\n` +
-          `🔑 MEMO: \`${deposit.memo}\``,
+          `💎 +${deposit.coreAmount.toLocaleString()} CORE`,
           { chat_id: query.message.chat.id, message_id: query.message.message_id, parse_mode: 'Markdown' }
         );
 
@@ -90,9 +88,7 @@ function createBot() {
 
         await bot.editMessageText(
           `❌ *ОТКЛОНЕНО*\n\n👤 ${deposit.firstName} (${userTag})\n` +
-          `💎 ${deposit.coreAmount.toLocaleString()} CORE\n` +
-          `💰 ${deposit.tonAmount.toFixed(4)} TON\n` +
-          `🔑 MEMO: \`${deposit.memo}\``,
+          `💎 ${deposit.coreAmount.toLocaleString()} CORE`,
           { chat_id: query.message.chat.id, message_id: query.message.message_id, parse_mode: 'Markdown' }
         );
 
