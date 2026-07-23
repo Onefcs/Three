@@ -136,6 +136,11 @@ main::-webkit-scrollbar{display:none}
 .ph-title{font-size:14px;font-weight:900;color:var(--tx);opacity:.6;text-align:center}
 .ph-sub{font-size:11px;color:var(--tx2);text-align:center;line-height:1.5;max-width:220px}
 
+/* LANG SWITCHER */
+.lang-sw{display:flex;background:var(--card);border:1px solid var(--bdr2);border-radius:8px;overflow:hidden;flex-shrink:0;margin-left:6px}
+.lang-btn{background:none;border:none;padding:5px 9px;font-size:9px;font-weight:900;color:var(--tx2);cursor:pointer;letter-spacing:.5px;transition:all .15s}
+.lang-btn.active{background:var(--acc);color:#000}
+
 /* NAV */
 .bot-nav{flex-shrink:0;display:flex;background:var(--surf);border-top:1px solid var(--bdr);padding-bottom:env(safe-area-inset-bottom,0)}
 .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 4px;background:none;border:none;cursor:pointer;color:var(--tx3);font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;transition:color .15s;position:relative}
@@ -284,24 +289,28 @@ main::-webkit-scrollbar{display:none}
   </div>
   <div class="spl-name">CORE <em>MINING</em></div>
   <div class="spl-bar-wrap"><div class="spl-bar" id="spl-bar"></div></div>
-  <div class="spl-status" id="spl-status">ИНИЦИАЛИЗАЦИЯ</div>
+  <div class="spl-status" id="spl-status" data-i18n="spl.init">ИНИЦИАЛИЗАЦИЯ</div>
 </div>
 
 <div id="app"><div id="inner">
 <header>
   <div class="logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></div>
   <div class="bal-blk">
-    <div class="h-lbl">Баланс</div>
+    <div class="h-lbl" data-i18n="hdr.balance">Баланс</div>
     <div class="h-bal" id="hbal">0.00</div>
     <div class="h-unit">CORE</div>
   </div>
   <div class="inc-blk">
-    <div class="h-lbl">Доход/сек</div>
+    <div class="h-lbl" data-i18n="hdr.income">Доход/сек</div>
     <div class="inc-row-h">
       <img class="coin-ico" src="data:image/png;base64,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" alt="">
       <span class="h-inc" id="hinc">+0.0061</span>
     </div>
     <div class="h-unit">CORE</div>
+  </div>
+  <div class="lang-sw">
+    <button class="lang-btn active" id="lang-ru" onclick="setLang('ru')">RU</button>
+    <button class="lang-btn" id="lang-en" onclick="setLang('en')">EN</button>
   </div>
 </header>
 
@@ -310,7 +319,7 @@ main::-webkit-scrollbar{display:none}
   <section class="ticker">
     <div class="t-status">
       <div class="t-dot" id="t-dot"></div>
-      <span class="t-title" id="t-title-text">Майнинг активен</span>
+      <span class="t-title" id="t-title-text" data-i18n="mine.active">Майнинг активен</span>
       <span class="t-rate">
         <img class="coin-ico" src="data:image/png;base64,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" alt="">
         <span id="trate-val">+0.0061 CORE/сек</span>
@@ -319,7 +328,7 @@ main::-webkit-scrollbar{display:none}
     <div class="t-center">
       <img class="coin-ico-lg" src="data:image/png;base64,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" alt="" style="align-self:flex-start;margin-top:8px">
       <div class="t-left">
-        <div class="t-lbl">Добыто</div>
+        <div class="t-lbl" data-i18n="mine.mined">Добыто</div>
         <div class="t-amt" id="tamt">0.0000</div>
         <div class="t-u">CORE</div>
       </div>
@@ -329,7 +338,7 @@ main::-webkit-scrollbar{display:none}
 
   <section>
     <div class="sec-hdr">
-      <span class="sec-ttl">Мои видеокарты</span>
+      <span class="sec-ttl" data-i18n="mine.my_gpus">Мои видеокарты</span>
       <span class="gpu-cnt" id="gcnt">1 / 6</span>
     </div>
     <div class="gpu-grid" id="ggrid"></div>
@@ -340,9 +349,9 @@ main::-webkit-scrollbar{display:none}
 <div id="page-halving" class="page" style="display:none">
 <div class="hlv-page">
   <div class="hlv-hero">
-    <div class="hlv-epoch-label">Эпоха халвинга</div>
+    <div class="hlv-epoch-label" data-i18n="hlv.epoch_label">Эпоха халвинга</div>
     <div class="hlv-epoch-num" id="hlv-epoch">—</div>
-    <div class="hlv-mult">Множитель дохода: <span id="hlv-mult-val">×1</span></div>
+    <div class="hlv-mult"><span data-i18n="hlv.mult_prefix">Множитель дохода:</span> <span id="hlv-mult-val">×1</span></div>
     <div class="hlv-ring-wrap">
       <svg class="hlv-ring" width="158" height="158" viewBox="0 0 158 158">
         <defs>
@@ -355,7 +364,7 @@ main::-webkit-scrollbar{display:none}
         <circle class="hlv-ring-fill" id="hlv-ring-fill" cx="79" cy="79" r="65" stroke="url(#hlv-grad)"/>
         <g transform="rotate(90,79,79)">
           <text id="hlv-ring-label" x="79" y="72" text-anchor="middle" dominant-baseline="middle" fill="var(--tx1)" font-size="15" font-weight="800" font-family="inherit">—</text>
-          <text id="hlv-ring-sub" x="79" y="90" text-anchor="middle" dominant-baseline="middle" fill="#a78bfa" font-size="10" font-family="inherit">до халвинга</text>
+          <text id="hlv-ring-sub" x="79" y="90" text-anchor="middle" dominant-baseline="middle" fill="#a78bfa" font-size="10" font-family="inherit" data-i18n="hlv.until">до халвинга</text>
         </g>
       </svg>
     </div>
@@ -363,42 +372,42 @@ main::-webkit-scrollbar{display:none}
 
   <div class="hlv-bar-wrap">
     <div class="hlv-bar-header">
-      <div class="hlv-bar-title">⚡ Пул текущего цикла</div>
+      <div class="hlv-bar-title" data-i18n="hlv.pool_title">⚡ Пул текущего цикла</div>
       <div class="hlv-bar-pct" id="hlv-bar-pct">0%</div>
     </div>
     <div class="hlv-bar-track"><div class="hlv-bar-fill" id="hlv-bar-fill" style="width:0%"></div></div>
     <div class="hlv-bar-sub">
       <span id="hlv-withdrawn-lbl">0 выведено</span>
-      <span>2 000 000 CORE</span>
+      <span data-i18n="hlv.pool_total">2 000 000 CORE</span>
     </div>
   </div>
 
   <div class="hlv-stats">
     <div class="hlv-stat-row">
-      <span class="hlv-stat-lbl">Всего халвингов</span>
+      <span class="hlv-stat-lbl" data-i18n="hlv.stat_count">Всего халвингов</span>
       <span class="hlv-stat-val" id="hlv-count">0</span>
     </div>
     <div class="hlv-stat-row">
-      <span class="hlv-stat-lbl">Осталось до халвинга</span>
+      <span class="hlv-stat-lbl" data-i18n="hlv.stat_remain">Осталось до халвинга</span>
       <span class="hlv-stat-val" id="hlv-remaining">2 000 000 CORE</span>
     </div>
     <div class="hlv-stat-row">
-      <span class="hlv-stat-lbl">Текущий доход майнеров</span>
+      <span class="hlv-stat-lbl" data-i18n="hlv.stat_rate">Текущий доход майнеров</span>
       <span class="hlv-stat-val" id="hlv-income-rate">100%</span>
     </div>
   </div>
 
-  <div class="hlv-desc">Каждый вывод CORE расходует общий пул. Когда пул достигает 2 000 000 — происходит халвинг: доход всех майнеров уменьшается вдвое и пул обновляется снова.</div>
+  <div class="hlv-desc" data-i18n="hlv.desc">Каждый вывод CORE расходует общий пул. Когда пул достигает 2 000 000 — происходит халвинг: доход всех майнеров уменьшается вдвое и пул обновляется снова.</div>
 </div>
 </div>
 
 <div id="page-tasks" class="page" style="display:none">
 <div class="tasks-header">
-  <div class="tasks-title">Задания</div>
-  <button class="tasks-add-btn" onclick="taskCreateOpen()">+ Добавить</button>
+  <div class="tasks-title" data-i18n="tasks.title">Задания</div>
+  <button class="tasks-add-btn" onclick="taskCreateOpen()" data-i18n="tasks.add_btn">+ Добавить</button>
 </div>
 <div id="tasks-list">
-  <div class="tasks-empty">Загрузка...</div>
+  <div class="tasks-empty" data-i18n="tasks.loading">Загрузка...</div>
 </div>
 </div>
 
@@ -408,7 +417,7 @@ main::-webkit-scrollbar{display:none}
   <div class="ref-card">
     <div class="ref-card-title">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-      Реферальная ссылка
+      <span data-i18n="friends.ref_title">Реферальная ссылка</span>
     </div>
     <div class="ref-link-wrap">
       <div class="ref-link-val" id="ref-link-val">Загрузка...</div>
@@ -418,7 +427,7 @@ main::-webkit-scrollbar{display:none}
     </div>
     <button class="ref-share-btn" onclick="shareRefLink()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      Поделиться в Telegram
+      <span data-i18n="friends.share">Поделиться в Telegram</span>
     </button>
   </div>
 
@@ -426,15 +435,15 @@ main::-webkit-scrollbar{display:none}
   <div class="ref-stats-row">
     <div class="ref-stat">
       <div class="ref-stat-val" id="ref-count">—</div>
-      <div class="ref-stat-lbl">Друзей<br>приглашено</div>
+      <div class="ref-stat-lbl" data-i18n-html="friends.stat_count_lbl">Друзей<br>приглашено</div>
     </div>
     <div class="ref-stat">
       <div class="ref-stat-val" id="ref-pending">—</div>
-      <div class="ref-stat-lbl">Ожидает<br>CORE</div>
+      <div class="ref-stat-lbl" data-i18n-html="friends.stat_pending_lbl">Ожидает<br>CORE</div>
     </div>
     <div class="ref-stat">
       <div class="ref-stat-val" id="ref-earned">—</div>
-      <div class="ref-stat-lbl">Заработано<br>всего</div>
+      <div class="ref-stat-lbl" data-i18n-html="friends.stat_earned_lbl">Заработано<br>всего</div>
     </div>
   </div>
 
@@ -443,13 +452,13 @@ main::-webkit-scrollbar{display:none}
     <div class="ref-info-ico">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
     </div>
-    <div class="ref-info-text">
+    <div class="ref-info-text" data-i18n-html="friends.info_text">
       Получай <strong>5% от дохода</strong> каждого приглашённого друга — автоматически при каждом его сборе майнинга. Чем активнее друг майнит, тем больше ты зарабатываешь.
     </div>
   </div>
 
   <!-- Collect referral bonuses -->
-  <button class="ref-collect" id="ref-collect-btn" onclick="collectReferral()" disabled>
+  <button class="ref-collect" id="ref-collect-btn" onclick="collectReferral()" disabled data-i18n="friends.no_bonus">
     Нет накопленного бонуса
   </button>
 
@@ -458,38 +467,38 @@ main::-webkit-scrollbar{display:none}
 <div id="page-wallet" class="page" style="display:none">
 
 <div class="wl-bal-card">
-  <div class="wl-bal-lbl">Баланс CORE</div>
+  <div class="wl-bal-lbl" data-i18n="wallet.balance">Баланс CORE</div>
   <div class="wl-bal-amt" id="wl-bal">0.000000</div>
 </div>
 
 <div class="wl-tabs">
-  <button class="wl-tab active" id="wl-tab-dep" onclick="wlSwitchTab('dep')">↓ Пополнить</button>
-  <button class="wl-tab" id="wl-tab-wd" onclick="wlSwitchTab('wd')">↑ Вывести</button>
+  <button class="wl-tab active" id="wl-tab-dep" onclick="wlSwitchTab('dep')" data-i18n="wallet.tab_dep">↓ Пополнить</button>
+  <button class="wl-tab" id="wl-tab-wd" onclick="wlSwitchTab('wd')" data-i18n="wallet.tab_wd">↑ Вывести</button>
 </div>
 
 <div class="wl-panel" id="wl-panel-dep">
-  <div class="wl-field-lbl">Сумма пополнения</div>
+  <div class="wl-field-lbl" data-i18n="wallet.dep_lbl">Сумма пополнения</div>
   <div class="wl-inp-wrap">
     <input class="wl-inp" id="wl-dep-amt" type="number" inputmode="decimal" placeholder="0.00" min="0">
     <span class="wl-inp-tag">CORE</span>
   </div>
-  <div class="wl-hint">Мин. 1 000 · Макс. 10 000 000 CORE</div>
-  <button class="wl-btn wl-btn-dep" onclick="wlDeposit()">ПОПОЛНИТЬ</button>
+  <div class="wl-hint" data-i18n="wallet.dep_hint">Мин. 1 000 · Макс. 10 000 000 CORE</div>
+  <button class="wl-btn wl-btn-dep" onclick="wlDeposit()" data-i18n="wallet.dep_btn">ПОПОЛНИТЬ</button>
 </div>
 
 <div class="wl-panel wl-panel-wd-active" id="wl-panel-wd" style="display:none">
-  <div class="wl-field-lbl">Адрес кошелька</div>
+  <div class="wl-field-lbl" data-i18n="wallet.wd_addr_lbl">Адрес кошелька</div>
   <div class="wl-inp-wrap wl-inp-wrap-wd">
-    <input class="wl-inp" id="wl-wd-addr" type="text" placeholder="EQAbc... (TON кошелёк)" autocomplete="off" autocorrect="off" spellcheck="false">
+    <input class="wl-inp" id="wl-wd-addr" type="text" placeholder="EQAbc..." data-i18n-placeholder="wallet.wd_addr_ph" autocomplete="off" autocorrect="off" spellcheck="false">
   </div>
-  <div class="wl-field-lbl">Сумма вывода</div>
+  <div class="wl-field-lbl" data-i18n="wallet.wd_amt_lbl">Сумма вывода</div>
   <div class="wl-inp-wrap wl-inp-wrap-wd">
     <input class="wl-inp" id="wl-wd-amt" type="number" inputmode="decimal" placeholder="0.00" min="0">
     <span class="wl-inp-tag">CORE</span>
   </div>
-  <div class="wl-hint wl-hint-avail">Доступно: <span id="wl-wd-avail">0.000000</span> CORE · Комиссия: 10%</div>
-  <div class="wl-hint">Мин. 1 000 CORE · Макс. 10 000 000 CORE</div>
-  <button class="wl-btn wl-btn-wd" onclick="wlWithdraw()">ВЫВЕСТИ</button>
+  <div class="wl-hint wl-hint-avail"><span data-i18n="wallet.avail_lbl">Доступно:</span> <span id="wl-wd-avail">0.000000</span> CORE · <span data-i18n="wallet.fee_lbl">Комиссия: 10%</span></div>
+  <div class="wl-hint" data-i18n="wallet.wd_hint">Мин. 1 000 CORE · Макс. 10 000 000 CORE</div>
+  <button class="wl-btn wl-btn-wd" onclick="wlWithdraw()" data-i18n="wallet.wd_btn">ВЫВЕСТИ</button>
 </div>
 
 </div>
@@ -499,28 +508,28 @@ main::-webkit-scrollbar{display:none}
 <!-- DEPOSIT MODAL -->
 <div id="dep-modal" style="display:none" class="modal-overlay">
   <div class="modal-sheet">
-    <div class="modal-title">💳 Пополнение CORE</div>
+    <div class="modal-title" data-i18n="dep.title">💳 Пополнение CORE</div>
     <div class="modal-row" id="dep-addr-row">
-      <span class="modal-row-lbl">Адрес Core</span>
+      <span class="modal-row-lbl" data-i18n="dep.addr_lbl">Адрес Core</span>
       <span class="modal-row-val" id="dep-modal-addr">Загрузка...</span>
-      <button class="modal-copy" id="dep-copy-addr" onclick="depCopy('dep-modal-addr')" style="display:none">Копировать</button>
+      <button class="modal-copy" id="dep-copy-addr" onclick="depCopy('dep-modal-addr')" style="display:none" data-i18n="dep.copy">Копировать</button>
     </div>
     <div class="modal-row" id="dep-memo-row">
       <span class="modal-row-lbl">MEMO</span>
       <span class="modal-row-val" id="dep-modal-memo">...</span>
-      <button class="modal-copy" id="dep-copy-memo" onclick="depCopy('dep-modal-memo')" style="display:none">Копировать</button>
+      <button class="modal-copy" id="dep-copy-memo" onclick="depCopy('dep-modal-memo')" style="display:none" data-i18n="dep.copy">Копировать</button>
     </div>
     <div class="modal-row">
-      <span class="modal-row-lbl">Сумма CORE</span>
+      <span class="modal-row-lbl" data-i18n="dep.amount_lbl">Сумма CORE</span>
       <span class="modal-row-val" id="dep-modal-core">—</span>
     </div>
     <div class="modal-notice" id="dep-modal-notice">⏳ Получаем реквизиты...</div>
     <div class="modal-btns" id="dep-btns-pre">
-      <button class="modal-btn modal-btn-cancel" onclick="depModalClose()">Отмена</button>
-      <button class="modal-btn modal-btn-pay" id="dep-pay-btn" onclick="depSendRequest()" disabled>Я оплатил</button>
+      <button class="modal-btn modal-btn-cancel" onclick="depModalClose()" data-i18n="dep.cancel">Отмена</button>
+      <button class="modal-btn modal-btn-pay" id="dep-pay-btn" onclick="depSendRequest()" disabled data-i18n="dep.pay_btn">Я оплатил</button>
     </div>
     <div class="modal-btns" id="dep-btns-post" style="display:none">
-      <button class="modal-btn modal-btn-pay" onclick="depModalClose()">OK</button>
+      <button class="modal-btn modal-btn-pay" onclick="depModalClose()" data-i18n="dep.ok">OK</button>
     </div>
   </div>
 </div>
@@ -528,26 +537,26 @@ main::-webkit-scrollbar{display:none}
 <!-- WITHDRAW MODAL -->
 <div id="wd-modal" style="display:none" class="modal-overlay">
   <div class="modal-sheet">
-    <div class="modal-title">↑ Заявка на вывод</div>
+    <div class="modal-title" data-i18n="wd.title">↑ Заявка на вывод</div>
     <div class="modal-row">
-      <span class="modal-row-lbl">Сумма</span>
+      <span class="modal-row-lbl" data-i18n="wd.amount_lbl">Сумма</span>
       <span class="modal-row-val" id="wd-modal-core">—</span>
     </div>
     <div class="modal-row">
-      <span class="modal-row-lbl">Адрес</span>
+      <span class="modal-row-lbl" data-i18n="wd.addr_lbl">Адрес</span>
       <span class="modal-row-val" id="wd-modal-addr" style="word-break:break-all;font-size:.82em">—</span>
     </div>
     <div class="modal-row" id="wd-modal-id-row" style="display:none">
-      <span class="modal-row-lbl">№ заявки</span>
+      <span class="modal-row-lbl" data-i18n="wd.id_lbl">№ заявки</span>
       <span class="modal-row-val" id="wd-modal-id">—</span>
     </div>
-    <div class="modal-notice" id="wd-modal-notice">Нажмите «Подтвердить» для отправки заявки.</div>
+    <div class="modal-notice" id="wd-modal-notice" data-i18n="wd.notice">Нажмите «Подтвердить» для отправки заявки.</div>
     <div class="modal-btns" id="wd-btns-pre">
-      <button class="modal-btn modal-btn-cancel" onclick="wdModalClose()">Отмена</button>
-      <button class="modal-btn modal-btn-pay" id="wd-confirm-btn" onclick="wdSendRequest()">Подтвердить</button>
+      <button class="modal-btn modal-btn-cancel" onclick="wdModalClose()" data-i18n="wd.cancel">Отмена</button>
+      <button class="modal-btn modal-btn-pay" id="wd-confirm-btn" onclick="wdSendRequest()" data-i18n="wd.confirm_btn">Подтвердить</button>
     </div>
     <div class="modal-btns" id="wd-btns-post" style="display:none">
-      <button class="modal-btn modal-btn-pay" onclick="wdModalClose()">OK</button>
+      <button class="modal-btn modal-btn-pay" onclick="wdModalClose()" data-i18n="wd.ok">OK</button>
     </div>
   </div>
 </div>
@@ -555,46 +564,202 @@ main::-webkit-scrollbar{display:none}
 <!-- TASK CREATE MODAL -->
 <div id="task-modal" style="display:none" class="modal-overlay">
   <div class="modal-sheet">
-    <div class="modal-title">📋 Создать задание</div>
-    <label class="task-inp-lbl">Ссылка для перехода</label>
-    <input class="task-inp" id="task-link" type="url" placeholder="https://...">
+    <div class="modal-title" data-i18n="tasks.create_title">📋 Создать задание</div>
+    <label class="task-inp-lbl" data-i18n="tasks.link_lbl">Ссылка для перехода</label>
+    <input class="task-inp" id="task-link" type="url" placeholder="https://" data-i18n-placeholder="tasks.placeholder_link">
     <label class="task-inp-lbl">
-      Название проекта
+      <span data-i18n="tasks.name_lbl">Название проекта</span>
       <span class="task-char"><span id="task-title-cnt">0</span>/20</span>
     </label>
-    <input class="task-inp" id="task-title-inp" type="text" maxlength="20" placeholder="Мой проект" oninput="document.getElementById('task-title-cnt').textContent=this.value.length">
+    <input class="task-inp" id="task-title-inp" type="text" maxlength="20" placeholder="Мой проект" data-i18n-placeholder="tasks.placeholder_name" oninput="document.getElementById('task-title-cnt').textContent=this.value.length">
     <label class="task-inp-lbl">
-      Описание
+      <span data-i18n="tasks.desc_lbl">Описание</span>
       <span class="task-char"><span id="task-desc-cnt">0</span>/50</span>
     </label>
-    <input class="task-inp" id="task-desc-inp" type="text" maxlength="50" placeholder="Краткое описание" oninput="document.getElementById('task-desc-cnt').textContent=this.value.length">
-    <label class="task-inp-lbl">Сумма (мин. 10 000 CORE)</label>
+    <input class="task-inp" id="task-desc-inp" type="text" maxlength="50" placeholder="Краткое описание" data-i18n-placeholder="tasks.placeholder_desc" oninput="document.getElementById('task-desc-cnt').textContent=this.value.length">
+    <label class="task-inp-lbl" data-i18n="tasks.amt_lbl">Сумма (мин. 10 000 CORE)</label>
     <input class="task-inp" id="task-amt-inp" type="number" inputmode="decimal" placeholder="10000" min="10000" oninput="taskAmtCalc()">
-    <div class="task-price-info" id="task-price-info">100 CORE = 1 переход · 50 CORE награда · 50 CORE сжигается</div>
+    <div class="task-price-info" id="task-price-info" data-i18n="tasks.price_info">100 CORE = 1 переход · 50 CORE награда · 50 CORE сжигается</div>
     <div class="modal-btns" style="margin-top:14px">
-      <button class="modal-btn modal-btn-cancel" onclick="taskModalClose()">Отмена</button>
-      <button class="modal-btn modal-btn-pay" id="task-create-btn" onclick="taskCreate()">Создать</button>
+      <button class="modal-btn modal-btn-cancel" onclick="taskModalClose()" data-i18n="tasks.cancel">Отмена</button>
+      <button class="modal-btn modal-btn-pay" id="task-create-btn" onclick="taskCreate()" data-i18n="tasks.create">Создать</button>
     </div>
   </div>
 </div>
 
 <nav class="bot-nav">
-  <button class="nav-btn active" onclick="showPage('mining',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></span>Майнинг</button>
-  <button class="nav-btn" onclick="showPage('halving',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>Халвинг</button>
-  <button class="nav-btn" onclick="showPage('tasks',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Задания</button>
-  <button class="nav-btn" onclick="showPage('friends',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Друзья</button>
-  <button class="nav-btn" onclick="showPage('wallet',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12h2"/><path d="M2 10h20"/></svg></span>Кошелёк</button>
+  <button class="nav-btn active" onclick="showPage('mining',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></span><span data-i18n="nav.mining">Майнинг</span></button>
+  <button class="nav-btn" onclick="showPage('halving',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span><span data-i18n="nav.halving">Халвинг</span></button>
+  <button class="nav-btn" onclick="showPage('tasks',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span data-i18n="nav.tasks">Задания</span></button>
+  <button class="nav-btn" onclick="showPage('friends',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span data-i18n="nav.friends">Друзья</span></button>
+  <button class="nav-btn" onclick="showPage('wallet',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12h2"/><path d="M2 10h20"/></svg></span><span data-i18n="nav.wallet">Кошелёк</span></button>
 </nav>
 </div></div>
 
 <script>
+/* ── LOCALIZATION ── */
+const LANG={
+ru:{
+  hdr:{balance:'Баланс',income:'Доход/сек'},
+  spl:{init:'ИНИЦИАЛИЗАЦИЯ',conn:'ПОДКЛЮЧЕНИЕ',load:'ЗАГРУЗКА ДАННЫХ',sync:'СИНХРОНИЗАЦИЯ',done:'ГОТОВО'},
+  mine:{active:'Майнинг активен',collect_ready:'Накоплено — забери!',mined:'Добыто',collect_btn:'ЗАБРАТЬ',my_gpus:'Мои видеокарты'},
+  rate:{per_sec:'сек'},
+  gpu:{buy:'КУПИТЬ',more:'ЕЩЁ',income_sec:'Доход/сек'},
+  tier:{legend:'ЛЕГЕНДА',epic:'ЭПИК',rare:'РЕДКИЙ',uncommon:'НЕОБЫЧНЫЙ',common:'ОБЫЧНЫЙ'},
+  hlv:{
+    epoch_label:'Эпоха халвинга',mult_prefix:'Множитель дохода:',until:'до халвинга',
+    pool_title:'⚡ Пул текущего цикла',pool_total:'2 000 000 CORE',withdrawn_suffix:'выведено',
+    stat_count:'Всего халвингов',stat_remain:'Осталось до халвинга',stat_rate:'Текущий доход майнеров',
+    desc:'Каждый вывод CORE расходует общий пул. Когда пул достигает 2 000 000 — происходит халвинг: доход всех майнеров уменьшается вдвое и пул обновляется снова.',
+  },
+  tasks:{
+    title:'Задания',add_btn:'+ Добавить',
+    create_title:'📋 Создать задание',link_lbl:'Ссылка для перехода',
+    name_lbl:'Название проекта',desc_lbl:'Описание',amt_lbl:'Сумма (мин. 10 000 CORE)',
+    placeholder_link:'https://',placeholder_name:'Мой проект',placeholder_desc:'Краткое описание',
+    price_info:'100 CORE = 1 переход · 50 CORE награда · 50 CORE сжигается',
+    price_calc:'%c переходов · %r CORE выплат · %b CORE сжигается',
+    cancel:'Отмена',create:'Создать',
+    loading:'Загрузка...',err:'Ошибка загрузки',
+    empty:'Нет доступных заданий.<br>Будьте первым — добавьте своё!',
+    remain:'Осталось: %n из %m',own:'Моё задание',done:'✅ Выполнено',go:'Выполнить',
+    claim:'Забрать 50 CORE',claim_toast:'+ %n CORE получено!',retry:'Повторить',
+    link_err:'Укажите ссылку',name_err:'Укажите название',amt_err:'Минимум 10 000 CORE',
+    created:'Задание создано — %n переходов',
+  },
+  friends:{
+    ref_title:'Реферальная ссылка',share:'Поделиться в Telegram',
+    stat_count_lbl:'Друзей<br>приглашено',stat_pending_lbl:'Ожидает<br>CORE',stat_earned_lbl:'Заработано<br>всего',
+    info_text:'Получай <strong>5% от дохода</strong> каждого приглашённого друга — автоматически при каждом его сборе майнинга. Чем активнее друг майнит, тем больше ты зарабатываешь.',
+    no_bonus:'Нет накопленного бонуса',bonus_btn:'Забрать бонус  •  %n CORE',
+    share_text:'Майни CORE вместе со мной — присоединяйся к Core Mining!',
+    link_loading:'Ссылка загружается...',link_copied:'Ссылка скопирована',link_select:'Выделите и скопируйте ссылку',
+    open_tg:'Откройте приложение в Telegram',
+    ref_bonus_toast:'+%n CORE от рефералов',retry_err:'Ошибка, попробуйте снова',
+  },
+  wallet:{
+    balance:'Баланс CORE',tab_dep:'↓ Пополнить',tab_wd:'↑ Вывести',
+    dep_lbl:'Сумма пополнения',dep_hint:'Мин. 1 000 · Макс. 10 000 000 CORE',dep_btn:'ПОПОЛНИТЬ',
+    wd_addr_lbl:'Адрес кошелька',wd_addr_ph:'EQAbc... (TON кошелёк)',
+    wd_amt_lbl:'Сумма вывода',avail_lbl:'Доступно:',fee_lbl:'Комиссия: 10%',
+    wd_hint:'Мин. 1 000 CORE · Макс. 10 000 000 CORE',wd_btn:'ВЫВЕСТИ',
+    dep_min:'Минимум 1 000 CORE',dep_max:'Максимум 10 000 000 CORE',
+    wd_no_addr:'Введите адрес кошелька',wd_min:'Минимум 1 000 CORE',wd_max:'Максимум 10 000 000 CORE',
+  },
+  dep:{
+    title:'💳 Пополнение CORE',addr_lbl:'Адрес Core',amount_lbl:'Сумма CORE',
+    loading:'⏳ Получаем реквизиты...',loading_val:'Загрузка...',
+    notice:'Отправьте Core на этот адрес с указанным MEMO, затем нажмите «Я оплатил».',
+    sending:'Отправка...',success:'✅ Заявка отправлена администратору. CORE будут зачислены после подтверждения.',
+    no_addr:'Уточните у администратора',copy:'Копировать',copied:'Скопировано',copy_err:'Не удалось скопировать',
+    cancel:'Отмена',pay_btn:'Я оплатил',ok:'OK',
+  },
+  wd:{
+    title:'↑ Заявка на вывод',amount_lbl:'Сумма',addr_lbl:'Адрес',id_lbl:'№ заявки',
+    notice:'Нажмите «Подтвердить» для отправки заявки.',
+    sending:'Отправка заявки...',success:'✅ Заявка отправлена. После подтверждения средства будут выплачены.',
+    cancel:'Отмена',confirm_btn:'Подтвердить',ok:'OK',
+  },
+  nav:{mining:'Майнинг',halving:'Халвинг',tasks:'Задания',friends:'Друзья',wallet:'Кошелёк'},
+  err:{server:'Нет подключения к серверу',conn:'Ошибка соединения',insuff:'Недостаточно CORE',buy:'Ошибка покупки'},
+  toast:{collect_other_device:'Уже забрано на другом устройстве'},
+},
+en:{
+  hdr:{balance:'Balance',income:'Income/sec'},
+  spl:{init:'INITIALIZING',conn:'CONNECTING',load:'LOADING DATA',sync:'SYNCING',done:'READY'},
+  mine:{active:'Mining active',collect_ready:'Ready to collect!',mined:'Mined',collect_btn:'COLLECT',my_gpus:'My GPUs'},
+  rate:{per_sec:'sec'},
+  gpu:{buy:'BUY',more:'MORE',income_sec:'Income/sec'},
+  tier:{legend:'LEGEND',epic:'EPIC',rare:'RARE',uncommon:'UNCOMMON',common:'COMMON'},
+  hlv:{
+    epoch_label:'Halving Epoch',mult_prefix:'Income multiplier:',until:'until halving',
+    pool_title:'⚡ Current cycle pool',pool_total:'2,000,000 CORE',withdrawn_suffix:'withdrawn',
+    stat_count:'Total halvings',stat_remain:'Until next halving',stat_rate:'Current miner income',
+    desc:'Each CORE withdrawal consumes the shared pool. When the pool reaches 2,000,000 — a halving occurs: all miners\' income is halved and the pool resets.',
+  },
+  tasks:{
+    title:'Tasks',add_btn:'+ Add',
+    create_title:'📋 Create task',link_lbl:'Visit link',
+    name_lbl:'Project name',desc_lbl:'Description',amt_lbl:'Amount (min. 10,000 CORE)',
+    placeholder_link:'https://',placeholder_name:'My project',placeholder_desc:'Brief description',
+    price_info:'100 CORE = 1 visit · 50 CORE reward · 50 CORE burned',
+    price_calc:'%c visits · %r CORE payouts · %b CORE burned',
+    cancel:'Cancel',create:'Create',
+    loading:'Loading...',err:'Load error',
+    empty:'No tasks available.<br>Be the first — add yours!',
+    remain:'Remaining: %n of %m',own:'My task',done:'✅ Done',go:'Perform',
+    claim:'Claim 50 CORE',claim_toast:'+ %n CORE received!',retry:'Retry',
+    link_err:'Enter a link',name_err:'Enter a title',amt_err:'Minimum 10,000 CORE',
+    created:'Task created — %n visits',
+  },
+  friends:{
+    ref_title:'Referral link',share:'Share in Telegram',
+    stat_count_lbl:'Friends<br>invited',stat_pending_lbl:'Pending<br>CORE',stat_earned_lbl:'Total<br>earned',
+    info_text:'Earn <strong>5% of income</strong> from every invited friend — automatically on each mining collection. The more actively your friend mines, the more you earn.',
+    no_bonus:'No accumulated bonus',bonus_btn:'Collect bonus  •  %n CORE',
+    share_text:'Mine CORE with me — join Core Mining!',
+    link_loading:'Link is loading...',link_copied:'Link copied',link_select:'Select and copy the link',
+    open_tg:'Open the app in Telegram',
+    ref_bonus_toast:'+%n CORE from referrals',retry_err:'Error, please try again',
+  },
+  wallet:{
+    balance:'CORE Balance',tab_dep:'↓ Deposit',tab_wd:'↑ Withdraw',
+    dep_lbl:'Deposit amount',dep_hint:'Min. 1,000 · Max. 10,000,000 CORE',dep_btn:'DEPOSIT',
+    wd_addr_lbl:'Wallet address',wd_addr_ph:'EQAbc... (TON wallet)',
+    wd_amt_lbl:'Withdrawal amount',avail_lbl:'Available:',fee_lbl:'Fee: 10%',
+    wd_hint:'Min. 1,000 CORE · Max. 10,000,000 CORE',wd_btn:'WITHDRAW',
+    dep_min:'Minimum 1,000 CORE',dep_max:'Maximum 10,000,000 CORE',
+    wd_no_addr:'Enter wallet address',wd_min:'Minimum 1,000 CORE',wd_max:'Maximum 10,000,000 CORE',
+  },
+  dep:{
+    title:'💳 CORE Deposit',addr_lbl:'Core Address',amount_lbl:'CORE Amount',
+    loading:'⏳ Getting details...',loading_val:'Loading...',
+    notice:'Send Core to this address with the specified MEMO, then click "I paid".',
+    sending:'Sending...',success:'✅ Request sent to admin. CORE will be credited after confirmation.',
+    no_addr:'Ask administrator',copy:'Copy',copied:'Copied',copy_err:'Failed to copy',
+    cancel:'Cancel',pay_btn:'I paid',ok:'OK',
+  },
+  wd:{
+    title:'↑ Withdrawal Request',amount_lbl:'Amount',addr_lbl:'Address',id_lbl:'Request #',
+    notice:'Click Confirm to submit request.',
+    sending:'Submitting...',success:'✅ Request submitted. Funds will be sent after confirmation.',
+    cancel:'Cancel',confirm_btn:'Confirm',ok:'OK',
+  },
+  nav:{mining:'Mining',halving:'Halving',tasks:'Tasks',friends:'Friends',wallet:'Wallet'},
+  err:{server:'No server connection',conn:'Connection error',insuff:'Insufficient CORE',buy:'Purchase error'},
+  toast:{collect_other_device:'Already collected on another device'},
+},
+};
+let currentLang=localStorage.getItem('core_lang')||'ru';
+function t(key){
+  const parts=key.split('.');
+  let v=LANG[currentLang];
+  for(const p of parts){v=v&&v[p];}
+  if(v===undefined){let f=LANG.ru;for(const p of parts)f=f&&f[p];v=f;}
+  return v||key;
+}
+function applyLang(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n);});
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{el.innerHTML=t(el.dataset.i18nHtml);});
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{el.placeholder=t(el.dataset.i18nPlaceholder);});
+  updateRateDisplay();
+  buildCards();
+}
+function setLang(lang){
+  currentLang=lang;
+  try{localStorage.setItem('core_lang',lang);}catch(e){}
+  document.getElementById('lang-ru').classList.toggle('active',lang==='ru');
+  document.getElementById('lang-en').classList.toggle('active',lang==='en');
+  applyLang();
+}
+
 const COIN_SRC="data:image/png;base64,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";
 const TIER={
-  5:{col:"#f0c840",glow:"rgba(240,200,64,.5)",  bg:"#1c1408",fanSpd:6.2,imgH:90,label:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg> ЛЕГЕНДА",bdrA:"bb",glowPx:14},
-  4:{col:"#38d8f0",glow:"rgba(56,216,240,.4)",  bg:"#06141e",fanSpd:4.8,imgH:82,label:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><polygon points='12 2 22 12 12 22 2 12'/></svg> ЭПИК",   bdrA:"88",glowPx:10},
-  3:{col:"#3de070",glow:"rgba(61,224,112,.35)", bg:"#081a0a",fanSpd:3.8,imgH:76,label:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><polygon points='12 4 22 20 2 20'/></svg> РЕДКИЙ", bdrA:"66",glowPx:7},
-  2:{col:"#9060d0",glow:"rgba(144,96,208,.3)",  bg:"#0e0818",fanSpd:2.8,imgH:72,label:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><circle cx='12' cy='12' r='10'/></svg> НЕОБЫЧНЫЙ",bdrA:"44",glowPx:4},
-  1:{col:"#607880",glow:"rgba(96,120,128,.2)",  bg:"#0a0c10",fanSpd:1.8,imgH:68,label:"<svg width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' style='vertical-align:middle;display:inline-block'><circle cx='12' cy='12' r='10'/></svg> ОБЫЧНЫЙ",bdrA:"28",glowPx:2},
+  5:{col:"#f0c840",glow:"rgba(240,200,64,.5)",  bg:"#1c1408",fanSpd:6.2,imgH:90,labelSvg:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>",labelKey:"tier.legend",bdrA:"bb",glowPx:14},
+  4:{col:"#38d8f0",glow:"rgba(56,216,240,.4)",  bg:"#06141e",fanSpd:4.8,imgH:82,labelSvg:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><polygon points='12 2 22 12 12 22 2 12'/></svg>",labelKey:"tier.epic",   bdrA:"88",glowPx:10},
+  3:{col:"#3de070",glow:"rgba(61,224,112,.35)", bg:"#081a0a",fanSpd:3.8,imgH:76,labelSvg:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><polygon points='12 4 22 20 2 20'/></svg>",labelKey:"tier.rare", bdrA:"66",glowPx:7},
+  2:{col:"#9060d0",glow:"rgba(144,96,208,.3)",  bg:"#0e0818",fanSpd:2.8,imgH:72,labelSvg:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><circle cx='12' cy='12' r='10'/></svg>",labelKey:"tier.uncommon",bdrA:"44",glowPx:4},
+  1:{col:"#607880",glow:"rgba(96,120,128,.2)",  bg:"#0a0c10",fanSpd:1.8,imgH:68,labelSvg:"<svg width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' style='vertical-align:middle;display:inline-block'><circle cx='12' cy='12' r='10'/></svg>",labelKey:"tier.common",bdrA:"28",glowPx:2},
 };
 
 // count = how many owned; basePrice = starting price for first purchase
@@ -633,14 +798,14 @@ function buildCards(){
       const p=nextPrice(g);
       bottomRow=`<button class="buy-btn" onclick="buyGpu(${i})">
         <img class="coin-ico" src="${COIN_SRC}" alt="">
-        <span>КУПИТЬ</span>
+        <span>${t('gpu.buy')}</span>
         <span class="btn-price">${fmtPrice(p)}</span>
       </button>`;
     } else {
       const p=nextPrice(g);
       bottomRow=`<button class="more-btn" onclick="buyGpu(${i})">
         <img class="coin-ico" src="${COIN_SRC}" alt="">
-        <span>ЕЩЁ</span>
+        <span>${t('gpu.more')}</span>
         <span class="btn-price">${fmtPrice(p)}</span>
       </button>`;
     }
@@ -652,7 +817,7 @@ function buildCards(){
     div.innerHTML=`
       <div class="gpu-img" style="height:${tc.imgH}px">
         <canvas id="gc${i}" style="height:${tc.imgH}px"></canvas>
-        <div class="tier-pill" style="color:${col};border-color:${col}60">${tc.label}</div>
+        <div class="tier-pill" style="color:${col};border-color:${col}60">${tc.labelSvg} ${t(tc.labelKey)}</div>
         ${countBadge}
         ${owned?"":"<div class=\"buy-overlay\"><span class=\"buy-lock\"><svg width='26' height='26' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='11' width='18' height='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg></span></div>"}
       </div>
@@ -660,7 +825,7 @@ function buildCards(){
         <div class="gpu-name">${g.name}${g.count>1?" <span style='color:var(--tx2);font-size:9px;font-weight:700'>×"+g.count+"</span>":""}</div>
         <div class="inc-row">
           <img class="coin-ico" src="${COIN_SRC}" alt="">
-          <span class="inc-lbl">Доход/сек</span>
+          <span class="inc-lbl">${t('gpu.income_sec')}</span>
           <span class="inc-val" style="color:${col}">${(incSec*Math.max(g.count,1)).toFixed(6)}</span>
         </div>
         ${bottomRow}
@@ -680,10 +845,10 @@ function fmtPrice(n){
 }
 
 async function buyGpu(idx){
-  if(!authToken){showToast('Нет подключения к серверу');return;}
+  if(!authToken){showToast(t('err.server'));return;}
   const g=GPUS[idx];
   const price=nextPrice(g);
-  if(st.balance<price){showToast('Недостаточно CORE');return;}
+  if(st.balance<price){showToast(t('err.insuff'));return;}
   try{
     const res=await fetch(API_BASE+'/api/buy-gpu',{
       method:'POST',
@@ -693,7 +858,7 @@ async function buyGpu(idx){
     if(res.status===401){clearJwt();authToken=null;return;}
     if(!res.ok){
       const err=await res.json().catch(()=>({}));
-      showToast(err.error==='Insufficient balance'?'Недостаточно CORE':'Ошибка покупки');
+      showToast(err.error==='Insufficient balance'?t('err.insuff'):t('err.buy'));
       return;
     }
     const d=await res.json();
@@ -707,13 +872,13 @@ async function buyGpu(idx){
     updateUI();
     saveLocal();
   }catch(e){
-    showToast('Ошибка соединения');
+    showToast(t('err.conn'));
   }
 }
 
 function updateRateDisplay(){
   const ps=perSec.toFixed(6);
-  document.getElementById("trate-val").textContent=`+${ps} CORE/сек`;
+  document.getElementById("trate-val").textContent=`+${ps} CORE/${t('rate.per_sec')}`;
   document.getElementById("hinc").textContent=`+${ps}`;
 }
 
@@ -827,12 +992,12 @@ function updateUI(){
     btn.textContent=hh+':'+mm+':'+ss;
     btn.disabled=true;
     if(dot&&!dot.classList.contains('stopped')){dot.classList.remove('stopped');}
-    if(titleEl)titleEl.textContent='Майнинг активен';
+    if(titleEl)titleEl.textContent=t('mine.active');
   }else{
     // Farming stopped or auth not yet complete — collect available
-    if(btn.disabled){btn.textContent='ЗАБРАТЬ';btn.disabled=false;}
+    if(btn.disabled){btn.textContent=t('mine.collect_btn');btn.disabled=false;}
     if(dot)dot.classList.add('stopped');
-    if(titleEl)titleEl.textContent='Накоплено — забери!';
+    if(titleEl)titleEl.textContent=t('mine.collect_ready');
   }
 }
 function fmtBal(n){return n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});}
@@ -851,7 +1016,7 @@ async function collect(){
   if(st.pending<.0005)return;
   const btn=document.getElementById("cbtn");
   if(btn.dataset.busy)return;
-  if(!authToken){showToast('Нет подключения к серверу');return;}
+  if(!authToken){showToast(t('err.server'));return;}
   btn.dataset.busy='1';
   try{
     const res=await fetch(API_BASE+'/api/collect',{
@@ -869,12 +1034,12 @@ async function collect(){
       }else{
         st.pending=0;
         if(d.lastCollectTime) collectTime=new Date(d.lastCollectTime).getTime();
-        showToast('Уже забрано на другом устройстве');
+        showToast(t('toast.collect_other_device'));
       }
       updateUI();saveLocal();
     }
   }catch(e){
-    showToast('Ошибка соединения');
+    showToast(t('err.conn'));
   }
   delete btn.dataset.busy;
 }
@@ -915,7 +1080,8 @@ function loadHalving(){
       document.getElementById('hlv-ring-label').textContent=fmtBig(remaining);
       document.getElementById('hlv-bar-pct').textContent=pct.toFixed(1)+'%';
       document.getElementById('hlv-bar-fill').style.width=pct+'%';
-      document.getElementById('hlv-withdrawn-lbl').textContent=fmtBig(cycleWithdrawn)+' выведено';
+      document.getElementById('hlv-ring-sub').textContent=t('hlv.until');
+      document.getElementById('hlv-withdrawn-lbl').textContent=fmtBig(cycleWithdrawn)+' '+t('hlv.withdrawn_suffix');
       document.getElementById('hlv-count').textContent=halvingCount;
       document.getElementById('hlv-remaining').textContent=fmtBig(remaining)+' CORE';
       document.getElementById('hlv-income-rate').textContent=(multiplier*100).toFixed(2).replace(/\.?0+$/,'')+'%';
@@ -937,16 +1103,16 @@ function wlRefresh(){
 }
 function wlDeposit(){
   const v=parseFloat(document.getElementById('wl-dep-amt').value)||0;
-  if(v<1000){showToast('Минимум 1 000 CORE');return;}
-  if(v>10000000){showToast('Максимум 10 000 000 CORE');return;}
-  if(!authToken){showToast('Нет подключения к серверу');return;}
+  if(v<1000){showToast(t('wallet.dep_min'));return;}
+  if(v>10000000){showToast(t('wallet.dep_max'));return;}
+  if(!authToken){showToast(t('err.server'));return;}
   // Reset modal to loading state
   document.getElementById('dep-modal-core').textContent=v.toLocaleString()+' CORE';
-  document.getElementById('dep-modal-addr').textContent='Загрузка...';
+  document.getElementById('dep-modal-addr').textContent=t('dep.loading_val');
   document.getElementById('dep-modal-memo').textContent='...';
   document.getElementById('dep-copy-addr').style.display='none';
   document.getElementById('dep-copy-memo').style.display='none';
-  document.getElementById('dep-modal-notice').textContent='⏳ Получаем реквизиты...';
+  document.getElementById('dep-modal-notice').textContent=t('dep.loading');
   document.getElementById('dep-btns-pre').style.display='flex';
   document.getElementById('dep-btns-post').style.display='none';
   document.getElementById('dep-pay-btn').disabled=true;
@@ -959,13 +1125,13 @@ function wlDeposit(){
   }).then(r=>r.json()).then(d=>{
     if(d.error){depModalClose();showToast(d.error);return;}
     _depId=d.depositId;
-    document.getElementById('dep-modal-addr').textContent=d.tonAddress||'Уточните у администратора';
+    document.getElementById('dep-modal-addr').textContent=d.tonAddress||t('dep.no_addr');
     document.getElementById('dep-modal-memo').textContent=d.memo||d.depositId;
     if(d.tonAddress){document.getElementById('dep-copy-addr').style.display='';}
     document.getElementById('dep-copy-memo').style.display='';
-    document.getElementById('dep-modal-notice').textContent='Отправьте Core на этот адрес с указанным MEMO, затем нажмите «Я оплатил».';
+    document.getElementById('dep-modal-notice').textContent=t('dep.notice');
     document.getElementById('dep-pay-btn').disabled=false;
-  }).catch(()=>{depModalClose();showToast('Ошибка соединения');});
+  }).catch(()=>{depModalClose();showToast(t('err.conn'));});
 }
 function depModalClose(){
   document.getElementById('dep-modal').style.display='none';
@@ -975,14 +1141,14 @@ function depSendRequest(){
   if(!_depId){showToast('Нет активной заявки');return;}
   const btn=document.getElementById('dep-pay-btn');
   btn.disabled=true;
-  document.getElementById('dep-modal-notice').textContent='Отправка...';
+  document.getElementById('dep-modal-notice').textContent=t('dep.sending');
   fetch(API_BASE+'/api/deposit/paid',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
     body:JSON.stringify({depositId:_depId}),
   }).then(r=>r.json()).then(d=>{
     if(d.error){btn.disabled=false;document.getElementById('dep-modal-notice').textContent='❌ '+d.error;return;}
-    document.getElementById('dep-modal-notice').textContent='✅ Заявка отправлена администратору. CORE будут зачислены после подтверждения.';
+    document.getElementById('dep-modal-notice').textContent=t('dep.success');
     document.getElementById('dep-btns-pre').style.display='none';
     document.getElementById('dep-btns-post').style.display='flex';
     _depId=null;
@@ -990,20 +1156,20 @@ function depSendRequest(){
 }
 function depCopy(id){
   const txt=document.getElementById(id).textContent;
-  navigator.clipboard.writeText(txt).then(()=>showToast('Скопировано')).catch(()=>showToast('Не удалось скопировать'));
+  navigator.clipboard.writeText(txt).then(()=>showToast(t('dep.copied'))).catch(()=>showToast(t('dep.copy_err')));
 }
 function wlWithdraw(){
   const addr=(document.getElementById('wl-wd-addr').value||'').trim();
   const amt=parseFloat(document.getElementById('wl-wd-amt').value)||0;
-  if(!addr){showToast('Введите адрес кошелька');return;}
-  if(amt<1000){showToast('Минимум 1 000 CORE');return;}
-  if(amt>10000000){showToast('Максимум 10 000 000 CORE');return;}
-  if(amt>st.balance){showToast('Недостаточно CORE');return;}
-  if(!authToken){showToast('Нет подключения к серверу');return;}
+  if(!addr){showToast(t('wallet.wd_no_addr'));return;}
+  if(amt<1000){showToast(t('wallet.wd_min'));return;}
+  if(amt>10000000){showToast(t('wallet.wd_max'));return;}
+  if(amt>st.balance){showToast(t('err.insuff'));return;}
+  if(!authToken){showToast(t('err.server'));return;}
   document.getElementById('wd-modal-core').textContent=amt.toLocaleString()+' CORE';
   document.getElementById('wd-modal-addr').textContent=addr;
   document.getElementById('wd-modal-id-row').style.display='none';
-  document.getElementById('wd-modal-notice').textContent='Нажмите «Подтвердить» для отправки заявки.';
+  document.getElementById('wd-modal-notice').textContent=t('wd.notice');
   document.getElementById('wd-btns-pre').style.display='flex';
   document.getElementById('wd-btns-post').style.display='none';
   document.getElementById('wd-confirm-btn').disabled=false;
@@ -1015,7 +1181,7 @@ function wdModalClose(){
 function wdSendRequest(){
   const btn=document.getElementById('wd-confirm-btn');
   btn.disabled=true;
-  document.getElementById('wd-modal-notice').textContent='Отправка заявки...';
+  document.getElementById('wd-modal-notice').textContent=t('wd.sending');
   const addr=document.getElementById('wl-wd-addr').value.trim();
   const amt=parseFloat(document.getElementById('wl-wd-amt').value)||0;
   fetch(API_BASE+'/api/withdraw/request',{
@@ -1026,13 +1192,13 @@ function wdSendRequest(){
     if(d.error){btn.disabled=false;document.getElementById('wd-modal-notice').textContent='❌ '+d.error;return;}
     document.getElementById('wd-modal-id').textContent=d.withdrawId;
     document.getElementById('wd-modal-id-row').style.display='';
-    document.getElementById('wd-modal-notice').textContent='✅ Заявка отправлена. После подтверждения средства будут выплачены.';
+    document.getElementById('wd-modal-notice').textContent=t('wd.success');
     document.getElementById('wd-btns-pre').style.display='none';
     document.getElementById('wd-btns-post').style.display='flex';
     st.balance=d.balance;
     updateUI();
     wlRefresh();
-  }).catch(()=>{btn.disabled=false;document.getElementById('wd-modal-notice').textContent='❌ Ошибка соединения';});
+  }).catch(()=>{btn.disabled=false;document.getElementById('wd-modal-notice').textContent='❌ '+t('err.conn');});
 }
 
 /* ── TASKS ── */
@@ -1044,29 +1210,29 @@ function loadTasks(){
       if(d.error){document.getElementById('tasks-list').innerHTML='<div class="tasks-empty">'+d.error+'</div>';return;}
       _tasksLoaded=true;
       renderTasks(d.tasks);
-    }).catch(()=>{document.getElementById('tasks-list').innerHTML='<div class="tasks-empty">Ошибка загрузки</div>';});
+    }).catch(()=>{document.getElementById('tasks-list').innerHTML='<div class="tasks-empty">'+t('tasks.err')+'</div>';});
 }
 function renderTasks(tasks){
   const list=document.getElementById('tasks-list');
   if(!tasks.length){
-    list.innerHTML='<div class="tasks-empty">Нет доступных заданий.<br>Будьте первым — добавьте своё!</div>';
+    list.innerHTML='<div class="tasks-empty">'+t('tasks.empty')+'</div>';
     return;
   }
-  list.innerHTML=tasks.map(t=>`
-    <div class="task-card" id="task-${t._id}">
+  list.innerHTML=tasks.map(task=>`
+    <div class="task-card" id="task-${task._id}">
       <div class="task-card-head">
-        <div class="task-card-title">${escHtml(t.title)}</div>
-        <div class="task-card-reward">+${t.reward} CORE</div>
+        <div class="task-card-title">${escHtml(task.title)}</div>
+        <div class="task-card-reward">+${task.reward} CORE</div>
       </div>
-      ${t.description?`<div class="task-card-desc">${escHtml(t.description)}</div>`:''}
-      <div class="task-card-link">${escHtml(t.link)}</div>
+      ${task.description?`<div class="task-card-desc">${escHtml(task.description)}</div>`:''}
+      <div class="task-card-link">${escHtml(task.link)}</div>
       <div class="task-card-foot">
-        <div class="task-card-slots">Осталось: ${t.remaining} из ${t.maxClicks}</div>
-        ${t.isOwn
-          ? `<button class="task-card-btn" disabled style="opacity:.5;cursor:default">Моё задание</button>`
-          : t.completedByMe
-            ? `<button class="task-card-btn" disabled style="opacity:.5;cursor:default">✅ Выполнено</button>`
-            : `<button class="task-card-btn" id="tbtn-${t._id}" onclick="taskGo('${t._id}','${escHtml(t.link)}')">Выполнить</button>`}
+        <div class="task-card-slots">${t('tasks.remain').replace('%n',task.remaining).replace('%m',task.maxClicks)}</div>
+        ${task.isOwn
+          ? `<button class="task-card-btn" disabled style="opacity:.5;cursor:default">${t('tasks.own')}</button>`
+          : task.completedByMe
+            ? `<button class="task-card-btn" disabled style="opacity:.5;cursor:default">${t('tasks.done')}</button>`
+            : `<button class="task-card-btn" id="tbtn-${task._id}" onclick="taskGo('${task._id}','${escHtml(task.link)}')">${t('tasks.go')}</button>`}
       </div>
     </div>`).join('');
 }
@@ -1074,7 +1240,7 @@ function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function taskGo(id,link){
   window.open(link,'_blank');
   const btn=document.getElementById('tbtn-'+id);
-  if(btn){btn.textContent='Забрать 50 CORE';btn.onclick=()=>taskClaim(id);}
+  if(btn){btn.textContent=t('tasks.claim');btn.onclick=()=>taskClaim(id);}
 }
 function taskClaim(id){
   const btn=document.getElementById('tbtn-'+id);
@@ -1084,17 +1250,17 @@ function taskClaim(id){
     headers:{'Authorization':'Bearer '+authToken},
   }).then(r=>r.json()).then(d=>{
     if(d.error){
-      if(btn){btn.disabled=false;btn.textContent='Ошибка';btn.classList.remove('done');}
+      if(btn){btn.disabled=false;btn.textContent=t('tasks.retry');btn.classList.remove('done');}
       showToast(d.error);return;
     }
-    showToast('+ '+d.reward+' CORE получено!');
+    showToast(t('tasks.claim_toast').replace('%n',d.reward));
     st.balance=d.balance;
     updateUI();
     wlRefresh();
-    if(btn){btn.disabled=true;btn.textContent='✅ Выполнено';btn.style.opacity='.5';btn.style.cursor='default';}
+    if(btn){btn.disabled=true;btn.textContent=t('tasks.done');btn.style.opacity='.5';btn.style.cursor='default';}
   }).catch(()=>{
-    if(btn){btn.disabled=false;btn.textContent='Повторить';btn.classList.remove('done');}
-    showToast('Ошибка соединения');
+    if(btn){btn.disabled=false;btn.textContent=t('tasks.retry');btn.classList.remove('done');}
+    showToast(t('err.conn'));
   });
 }
 function taskCreateOpen(){
@@ -1104,7 +1270,7 @@ function taskCreateOpen(){
   document.getElementById('task-amt-inp').value='';
   document.getElementById('task-title-cnt').textContent='0';
   document.getElementById('task-desc-cnt').textContent='0';
-  document.getElementById('task-price-info').textContent='100 CORE = 1 переход · 50 CORE награда · 50 CORE сжигается';
+  document.getElementById('task-price-info').textContent=t('tasks.price_info');
   document.getElementById('task-create-btn').disabled=false;
   document.getElementById('task-modal').style.display='flex';
 }
@@ -1116,19 +1282,19 @@ function taskAmtCalc(){
   const clicks=v>=10000?Math.floor(v/100):0;
   document.getElementById('task-price-info').textContent=
     v>=10000
-      ?`${clicks} переходов · ${(clicks*50).toLocaleString()} CORE выплат · ${(v-clicks*50).toLocaleString()} CORE сжигается`
-      :'100 CORE = 1 переход · 50 CORE награда · 50 CORE сжигается';
+      ?t('tasks.price_calc').replace('%c',clicks).replace('%r',(clicks*50).toLocaleString()).replace('%b',(v-clicks*50).toLocaleString())
+      :t('tasks.price_info');
 }
 function taskCreate(){
   const link=(document.getElementById('task-link').value||'').trim();
   const title=(document.getElementById('task-title-inp').value||'').trim();
   const desc=(document.getElementById('task-desc-inp').value||'').trim();
   const amt=parseFloat(document.getElementById('task-amt-inp').value)||0;
-  if(!link){showToast('Укажите ссылку');return;}
-  if(!title){showToast('Укажите название');return;}
-  if(amt<10000){showToast('Минимум 10 000 CORE');return;}
-  if(amt>st.balance){showToast('Недостаточно CORE');return;}
-  if(!authToken){showToast('Нет подключения');return;}
+  if(!link){showToast(t('tasks.link_err'));return;}
+  if(!title){showToast(t('tasks.name_err'));return;}
+  if(amt<10000){showToast(t('tasks.amt_err'));return;}
+  if(amt>st.balance){showToast(t('err.insuff'));return;}
+  if(!authToken){showToast(t('err.server'));return;}
   const btn=document.getElementById('task-create-btn');
   btn.disabled=true;
   fetch(API_BASE+'/api/tasks/create',{
@@ -1142,9 +1308,9 @@ function taskCreate(){
     updateUI();
     wlRefresh();
     taskModalClose();
-    showToast('Задание создано — '+d.maxClicks+' переходов');
+    showToast(t('tasks.created').replace('%n',d.maxClicks));
     loadTasks();
-  }).catch(()=>{btn.disabled=false;showToast('Ошибка соединения');});
+  }).catch(()=>{btn.disabled=false;showToast(t('err.conn'));});
 }
 
 /* ── LOCAL PERSISTENCE ── */
@@ -1207,7 +1373,7 @@ let collectCooldownUntil=0; // timestamp (ms) until next collect is allowed
 async function initAuth(){
   try{
     setSplashProgress(15);
-    setSplashStatus('ПОДКЛЮЧЕНИЕ');
+    setSplashStatus(t('spl.conn'));
     const tg=window.Telegram?.WebApp;
     const initData=tg?.initData;
     // Build a preliminary link right away from local Telegram data
@@ -1219,7 +1385,7 @@ async function initAuth(){
     }
     if(!initData){hideSplash();return;}
     setSplashProgress(35);
-    setSplashStatus('ЗАГРУЗКА ДАННЫХ');
+    setSplashStatus(t('spl.load'));
     const startParam=tg?.initDataUnsafe?.start_param||new URLSearchParams(window.location.search).get('ref')||'';
     const body={initData};
     if(startParam)body.referredBy=startParam;
@@ -1232,7 +1398,7 @@ async function initAuth(){
     if(!res.ok){hideSplash();return;}
     const data=await res.json();
     setSplashProgress(85);
-    setSplashStatus('СИНХРОНИЗАЦИЯ');
+    setSplashStatus(t('spl.sync'));
     authToken=data.token;
     saveJwt(data.token);
     refLink=data.user.referralLink;
@@ -1259,7 +1425,7 @@ async function initAuth(){
     updateUI();
     saveLocal();
     setSplashProgress(100);
-    setSplashStatus('ГОТОВО');
+    setSplashStatus(t('spl.done'));
     setTimeout(hideSplash,350);
     // Refresh friends page if it's currently open
     const fp=document.getElementById('page-friends');
@@ -1277,7 +1443,7 @@ async function loadFriendsData(){
     refLink='https://t.me/CoreMiningBot?start='+uid;
     linkEl.textContent=refLink;
   }else{
-    linkEl.textContent='Откройте приложение в Telegram';
+    linkEl.textContent=t('friends.open_tg');
   }
   if(!authToken)return;
   try{
@@ -1295,32 +1461,32 @@ async function loadFriendsData(){
     const btn=document.getElementById('ref-collect-btn');
     if(refPendingAmt>0.001){
       btn.disabled=false;
-      btn.textContent='Забрать бонус  •  '+fmtBal(refPendingAmt)+' CORE';
+      btn.textContent=t('friends.bonus_btn').replace('%n',fmtBal(refPendingAmt));
     }else{
       btn.disabled=true;
-      btn.textContent='Нет накопленного бонуса';
+      btn.textContent=t('friends.no_bonus');
     }
   }catch(e){/* silent */}
 }
 
 async function copyRefLink(){
   const link=refLink||'';
-  if(!link){showToast('Ссылка загружается...');return;}
+  if(!link){showToast(t('friends.link_loading'));return;}
   try{
     await navigator.clipboard.writeText(link);
-    showToast('Ссылка скопирована');
+    showToast(t('friends.link_copied'));
   }catch{
     const el=document.getElementById('ref-link-val');
     const r=document.createRange();r.selectNodeContents(el);
     const s=window.getSelection();s.removeAllRanges();s.addRange(r);
-    showToast('Выделите и скопируйте ссылку');
+    showToast(t('friends.link_select'));
   }
 }
 
 function shareRefLink(){
   const link=refLink||'';
-  if(!link){showToast('Ссылка загружается...');return;}
-  const text='Майни CORE вместе со мной — присоединяйся к Core Mining!';
+  if(!link){showToast(t('friends.link_loading'));return;}
+  const text=t('friends.share_text');
   const url='https://t.me/share/url?url='+encodeURIComponent(link)+'&text='+encodeURIComponent(text);
   const tg=window.Telegram?.WebApp;
   if(tg)tg.openTelegramLink(url);
@@ -1341,10 +1507,10 @@ async function collectReferral(){
     st.balance+=d.collected;
     refPendingAmt=0;
     updateUI();
-    showToast('+'+fmtBal(d.collected)+' CORE от рефералов');
+    showToast(t('friends.ref_bonus_toast').replace('%n',fmtBal(d.collected)));
     loadFriendsData();
   }catch{
-    showToast('Ошибка, попробуйте снова');
+    showToast(t('friends.retry_err'));
     btn.disabled=false;
   }
 }
@@ -1382,5 +1548,6 @@ loadLocal();
 initAuth();
 
 buildCards();
+setLang(currentLang);
 requestAnimationFrame(loop);
 </script>
