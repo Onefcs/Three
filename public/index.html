@@ -106,25 +106,30 @@ main::-webkit-scrollbar{display:none}
 .more-btn:active{opacity:.7}
 .btn-price{font-variant-numeric:tabular-nums}
 
-/* EXCHANGE PAGE */
-.ex-page{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:20px}
-.ex-card{width:100%;background:linear-gradient(160deg,#0d1020,#101422);border:1px solid #252a3e;border-radius:16px;padding:18px 16px;margin-bottom:10px}
-.ex-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);margin-bottom:14px;display:flex;align-items:center;gap:6px}
-.ex-rate-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:18px;padding:10px;background:rgba(74,144,232,.06);border:1px solid rgba(74,144,232,.18);border-radius:10px}
-.ex-rate-val{font-size:18px;font-weight:900;color:var(--tx);font-variant-numeric:tabular-nums}
-.ex-rate-sym{font-size:11px;color:var(--tx2);font-weight:700}
-.ex-arrow{color:var(--blue);display:flex;align-items:center}
-.ex-field{margin-bottom:12px}
-.ex-field-lbl{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.7px;color:var(--tx2);margin-bottom:5px;display:flex;align-items:center;gap:4px}
-.ex-inp-wrap{display:flex;align-items:center;background:rgba(255,255,255,.04);border:1px solid var(--bdr2);border-radius:10px;overflow:hidden;transition:border-color .15s}
-.ex-inp-wrap:focus-within{border-color:var(--blue)}
-.ex-inp{flex:1;background:none;border:none;outline:none;padding:11px 12px;font-size:16px;font-weight:800;color:var(--tx);font-variant-numeric:tabular-nums}
-.ex-inp-tag{padding:0 12px;font-size:10px;font-weight:900;color:var(--tx2);letter-spacing:.4px;white-space:nowrap}
-.ex-swap-ico{display:flex;justify-content:center;margin:4px 0;color:var(--blue);cursor:pointer;user-select:none;transition:transform .2s}
-.ex-swap-ico:active{transform:rotate(180deg)}
-.ex-btn{width:100%;background:var(--blue);border:none;border-radius:12px;padding:13px 0;font-size:15px;font-weight:900;color:#fff;cursor:pointer;letter-spacing:.6px;box-shadow:0 0 18px rgba(74,144,232,.3);transition:opacity .15s;margin-top:4px}
-.ex-btn:active{opacity:.7}
-.ex-notice{font-size:9px;color:var(--tx2);text-align:center;margin-top:6px;line-height:1.5}
+/* HALVING PAGE */
+.hlv-page{display:flex;flex-direction:column;align-items:stretch;padding:14px;gap:12px;overflow-y:auto}
+.hlv-hero{background:linear-gradient(160deg,#0d0d1f,#12102a);border:1px solid #3b2a6e;border-radius:20px;padding:22px 18px 18px;text-align:center;position:relative;overflow:hidden}
+.hlv-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% -20%,rgba(139,92,246,.22) 0%,transparent 65%);pointer-events:none}
+.hlv-epoch-label{font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#a78bfa;margin-bottom:4px}
+.hlv-epoch-num{font-size:44px;font-weight:900;line-height:1;background:linear-gradient(135deg,#c084fc,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:2px}
+.hlv-mult{font-size:13px;color:#c4b5fd;font-weight:600;margin-bottom:16px}
+.hlv-ring-wrap{display:flex;justify-content:center;margin-bottom:4px}
+.hlv-ring{transform:rotate(-90deg)}
+.hlv-ring-bg{fill:none;stroke:#1c1a2e;stroke-width:12}
+.hlv-ring-fill{fill:none;stroke-width:12;stroke-linecap:round;stroke-dasharray:408.4;stroke-dashoffset:0;transition:stroke-dashoffset .8s ease}
+.hlv-bar-wrap{background:var(--surf);border:1px solid var(--bdr);border-radius:16px;padding:14px 16px}
+.hlv-bar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.hlv-bar-title{font-size:12px;font-weight:800;color:var(--tx1)}
+.hlv-bar-pct{font-size:12px;font-weight:800;color:#8b5cf6}
+.hlv-bar-track{height:10px;background:#1c1a2e;border-radius:5px;overflow:hidden}
+.hlv-bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,#4338ca,#7c3aed,#a855f7);transition:width .8s ease;box-shadow:0 0 10px rgba(139,92,246,.5)}
+.hlv-bar-sub{display:flex;justify-content:space-between;margin-top:7px;font-size:10px;color:var(--tx3);font-variant-numeric:tabular-nums}
+.hlv-stats{background:var(--surf);border:1px solid var(--bdr);border-radius:16px;overflow:hidden}
+.hlv-stat-row{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-bottom:1px solid var(--bdr)}
+.hlv-stat-row:last-child{border-bottom:none}
+.hlv-stat-lbl{font-size:12px;color:var(--tx3)}
+.hlv-stat-val{font-size:13px;font-weight:800;color:var(--tx1);font-variant-numeric:tabular-nums}
+.hlv-desc{font-size:11px;color:var(--tx3);line-height:1.6;text-align:center;padding:0 6px}
 /* PLACEHOLDER PAGES */
 .ph-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:12px;padding:20px}
 .ph-ico{width:56px;height:56px;opacity:.4;display:flex;align-items:center;justify-content:center}
@@ -332,33 +337,58 @@ main::-webkit-scrollbar{display:none}
 
 </div>
 
-<div id="page-exchange" class="page" style="display:none">
-<div class="ex-card">
-  <div class="ex-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4"/><path d="M3 8l4-4 4 4"/><path d="M17 8v12"/><path d="M21 16l-4 4-4-4"/></svg> Обмен CORE <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14M5 8l4-4M5 8l4 4"/><path d="M19 16H5M19 16l-4-4M19 16l-4 4"/></svg> TON</div>
-  <div class="ex-rate-row">
-    <span class="ex-rate-val" id="ex-core-rate">1</span>
-    <span class="ex-rate-sym">CORE</span>
-    <span class="ex-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14M5 8l4-4M5 8l4 4"/><path d="M19 16H5M19 16l-4-4M19 16l-4 4"/></svg></span>
-    <span class="ex-rate-val" id="ex-ton-rate">0.0050</span>
-    <span class="ex-rate-sym">TON</span>
-  </div>
-  <div class="ex-field">
-    <div class="ex-field-lbl">Отдаёте</div>
-    <div class="ex-inp-wrap">
-      <input class="ex-inp" id="ex-from" type="number" inputmode="decimal" placeholder="0" oninput="exCalc()">
-      <span class="ex-inp-tag" id="ex-from-tag">CORE</span>
+<div id="page-halving" class="page" style="display:none">
+<div class="hlv-page">
+  <div class="hlv-hero">
+    <div class="hlv-epoch-label">Эпоха халвинга</div>
+    <div class="hlv-epoch-num" id="hlv-epoch">—</div>
+    <div class="hlv-mult">Множитель дохода: <span id="hlv-mult-val">×1</span></div>
+    <div class="hlv-ring-wrap">
+      <svg class="hlv-ring" width="158" height="158" viewBox="0 0 158 158">
+        <defs>
+          <linearGradient id="hlv-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#4338ca"/>
+            <stop offset="100%" stop-color="#a855f7"/>
+          </linearGradient>
+        </defs>
+        <circle class="hlv-ring-bg" cx="79" cy="79" r="65"/>
+        <circle class="hlv-ring-fill" id="hlv-ring-fill" cx="79" cy="79" r="65" stroke="url(#hlv-grad)"/>
+        <g transform="rotate(90,79,79)">
+          <text id="hlv-ring-label" x="79" y="72" text-anchor="middle" dominant-baseline="middle" fill="var(--tx1)" font-size="15" font-weight="800" font-family="inherit">—</text>
+          <text id="hlv-ring-sub" x="79" y="90" text-anchor="middle" dominant-baseline="middle" fill="#a78bfa" font-size="10" font-family="inherit">до халвинга</text>
+        </g>
+      </svg>
     </div>
   </div>
-  <div class="ex-swap-ico" onclick="exSwap()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3L4 7l4 4M4 7h12"/><path d="M16 21l4-4-4-4M20 17H8"/></svg></div>
-  <div class="ex-field">
-    <div class="ex-field-lbl">Получаете</div>
-    <div class="ex-inp-wrap">
-      <input class="ex-inp" id="ex-to" type="number" inputmode="decimal" placeholder="0" readonly>
-      <span class="ex-inp-tag" id="ex-to-tag">TON</span>
+
+  <div class="hlv-bar-wrap">
+    <div class="hlv-bar-header">
+      <div class="hlv-bar-title">⚡ Пул текущего цикла</div>
+      <div class="hlv-bar-pct" id="hlv-bar-pct">0%</div>
+    </div>
+    <div class="hlv-bar-track"><div class="hlv-bar-fill" id="hlv-bar-fill" style="width:0%"></div></div>
+    <div class="hlv-bar-sub">
+      <span id="hlv-withdrawn-lbl">0 выведено</span>
+      <span>2 000 000 CORE</span>
     </div>
   </div>
-  <button class="ex-btn" onclick="exExecute()">ОБМЕНЯТЬ</button>
-  <div class="ex-notice">Курс обновляется каждую минуту.<br>Комиссия сети TON — 0.05 TON.</div>
+
+  <div class="hlv-stats">
+    <div class="hlv-stat-row">
+      <span class="hlv-stat-lbl">Всего халвингов</span>
+      <span class="hlv-stat-val" id="hlv-count">0</span>
+    </div>
+    <div class="hlv-stat-row">
+      <span class="hlv-stat-lbl">Осталось до халвинга</span>
+      <span class="hlv-stat-val" id="hlv-remaining">2 000 000 CORE</span>
+    </div>
+    <div class="hlv-stat-row">
+      <span class="hlv-stat-lbl">Текущий доход майнеров</span>
+      <span class="hlv-stat-val" id="hlv-income-rate">100%</span>
+    </div>
+  </div>
+
+  <div class="hlv-desc">Каждый вывод CORE расходует общий пул. Когда пул достигает 2 000 000 — происходит халвинг: доход всех майнеров уменьшается вдвое и пул обновляется снова.</div>
 </div>
 </div>
 
@@ -550,7 +580,7 @@ main::-webkit-scrollbar{display:none}
 
 <nav class="bot-nav">
   <button class="nav-btn active" onclick="showPage('mining',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></span>Майнинг</button>
-  <button class="nav-btn" onclick="showPage('exchange',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4"/><path d="M3 8l4-4 4 4"/><path d="M17 8v12"/><path d="M21 16l-4 4-4-4"/></svg></span>Обмен</button>
+  <button class="nav-btn" onclick="showPage('halving',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>Халвинг</button>
   <button class="nav-btn" onclick="showPage('tasks',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Задания</button>
   <button class="nav-btn" onclick="showPage('friends',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Друзья</button>
   <button class="nav-btn" onclick="showPage('wallet',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12h2"/><path d="M2 10h20"/></svg></span>Кошелёк</button>
@@ -860,27 +890,36 @@ function showPage(id,btn){
   if(id==='friends') loadFriendsData();
   if(id==='wallet') wlRefresh();
   if(id==='tasks') loadTasks();
+  if(id==='halving') loadHalving();
 }
 
-const EX_RATE=0.005; // 1 CORE = 0.005 TON
-let exDir=1; // 1: CORE->TON, -1: TON->CORE
-function exCalc(){
-  const v=parseFloat(document.getElementById('ex-from').value)||0;
-  document.getElementById('ex-to').value=exDir===1?(v*EX_RATE).toFixed(4):(v/EX_RATE).toFixed(2);
+/* ── HALVING ── */
+function fmtBig(n){
+  if(n>=1000000)return (n/1000000).toFixed(3).replace(/\.?0+$/,'')+'M';
+  if(n>=1000)return (n/1000).toFixed(1).replace(/\.?0+$/,'')+'K';
+  return Math.round(n).toLocaleString('ru-RU');
 }
-function exSwap(){
-  exDir*=-1;
-  const ft=document.getElementById('ex-from-tag');
-  const tt=document.getElementById('ex-to-tag');
-  const cr=document.getElementById('ex-core-rate');
-  const tr=document.getElementById('ex-ton-rate');
-  if(exDir===1){ft.textContent='CORE';tt.textContent='TON';cr.textContent='1';tr.textContent='0.0050';}
-  else{ft.textContent='TON';tt.textContent='CORE';cr.textContent='0.0050';tr.textContent='1';}
-  document.getElementById('ex-from').value='';
-  document.getElementById('ex-to').value='';
-}
-function exExecute(){
-  showToast('Биржа скоро откроется');
+function loadHalving(){
+  if(!authToken)return;
+  fetch(API_BASE+'/api/halving',{headers:{'Authorization':'Bearer '+authToken}})
+    .then(r=>r.json()).then(d=>{
+      if(d.error)return;
+      const {halvingCount,cycleWithdrawn,poolSize,multiplier}=d;
+      const remaining=Math.max(0,poolSize-cycleWithdrawn);
+      const pct=Math.min(cycleWithdrawn/poolSize*100,100);
+      const circ=408.4;
+      const offset=circ*(cycleWithdrawn/poolSize);
+      document.getElementById('hlv-epoch').textContent=halvingCount+1;
+      document.getElementById('hlv-mult-val').textContent='×'+(multiplier===1?'1':multiplier.toFixed(4).replace(/\.?0+$/,''));
+      document.getElementById('hlv-ring-fill').style.strokeDashoffset=Math.min(offset,circ);
+      document.getElementById('hlv-ring-label').textContent=fmtBig(remaining);
+      document.getElementById('hlv-bar-pct').textContent=pct.toFixed(1)+'%';
+      document.getElementById('hlv-bar-fill').style.width=pct+'%';
+      document.getElementById('hlv-withdrawn-lbl').textContent=fmtBig(cycleWithdrawn)+' выведено';
+      document.getElementById('hlv-count').textContent=halvingCount;
+      document.getElementById('hlv-remaining').textContent=fmtBig(remaining)+' CORE';
+      document.getElementById('hlv-income-rate').textContent=(multiplier*100).toFixed(2).replace(/\.?0+$/,'')+'%';
+    }).catch(()=>{});
 }
 
 /* ── WALLET ── */

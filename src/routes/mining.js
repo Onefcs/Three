@@ -1,7 +1,13 @@
 const router = require('express').Router();
 const User = require('../models/User');
+const Halving = require('../models/Halving');
 const { requireAuth } = require('../middleware/telegramAuth');
 const { GPU_CATALOG, REFERRAL_PERCENT, COLLECT_COOLDOWN_MS } = require('../config');
+
+async function getMultiplier() {
+  const h = await Halving.getSingleton();
+  return Math.pow(0.5, h.halvingCount);
+}
 
 // POST /api/collect  — collect pending mining income (atomic, race-safe)
 router.post('/collect', requireAuth, async (req, res) => {
@@ -9,7 +15,8 @@ router.post('/collect', requireAuth, async (req, res) => {
     const user = await User.findOne({ telegramId: req.user.telegramId });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const earned = user.calcPending();
+    const multiplier = await getMultiplier();
+    const earned = user.calcPending() * multiplier;
     if (earned < 0.001) return res.json({ collected: 0, balance: user.balance });
 
     const now = new Date();
@@ -102,10 +109,11 @@ router.get('/status', requireAuth, async (req, res) => {
     const user = await User.findOne({ telegramId: req.user.telegramId });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
+    const multiplier = await getMultiplier();
     res.json({
       balance:         user.balance,
-      pending:         user.calcPending(),
-      perSec:          user.calcPerSec(),
+      pending:         user.calcPending() * multiplier,
+      perSec:          user.calcPerSec() * multiplier,
       lastCollectTime: user.lastCollectTime,
       nextCollectAt:   new Date(user.lastCollectTime.getTime() + COLLECT_COOLDOWN_MS),
       gpus:            user.gpus,

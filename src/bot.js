@@ -4,6 +4,9 @@ const { botToken, adminTelegramId, appUrl, botUsername } = require('./config');
 const User = require('./models/User');
 const Deposit = require('./models/Deposit');
 const Withdraw = require('./models/Withdraw');
+const Halving = require('./models/Halving');
+
+const HALVING_POOL = 2_000_000;
 
 function createBot() {
   if (!botToken) {
@@ -124,6 +127,28 @@ function createBot() {
         if (action === 'wd_confirm') {
           withdraw.status = 'confirmed';
           await withdraw.save();
+
+          // Track withdrawal against halving pool
+          try {
+            const hState = await Halving.findOneAndUpdate(
+              {},
+              { $inc: { cycleWithdrawn: withdraw.coreAmount } },
+              { new: true, upsert: true }
+            );
+            if (hState && hState.cycleWithdrawn >= HALVING_POOL) {
+              await Halving.updateOne(
+                {},
+                { $inc: { halvingCount: 1 }, $set: { cycleWithdrawn: Math.max(0, hState.cycleWithdrawn - HALVING_POOL) } }
+              );
+              if (adminTelegramId) {
+                await bot.sendMessage(
+                  adminTelegramId,
+                  `⚡ *ХАЛВИНГ!*\n\nВыведено ${HALVING_POOL.toLocaleString('ru-RU')} CORE суммарно. Доход всех майнеров уменьшен в 2 раза. Пул сброшен.`,
+                  { parse_mode: 'Markdown' }
+                );
+              }
+            }
+          } catch (e) { console.error('halving update error', e.message); }
 
           await bot.editMessageText(
             `✅ *ВЫВОД ПОДТВЕРЖДЁН*\n\n👤 ${withdraw.firstName} (${wdTag})\n` +
