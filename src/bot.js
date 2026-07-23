@@ -1,4 +1,5 @@
-const TelegramBot = require('node-telegram-bot-api');
+const _TBotModule = require('node-telegram-bot-api');
+const TelegramBot = _TBotModule.default || _TBotModule;
 const { botToken, adminTelegramId, appUrl, botUsername } = require('./config');
 const User = require('./models/User');
 const Deposit = require('./models/Deposit');
