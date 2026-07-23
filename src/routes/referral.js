@@ -6,8 +6,7 @@ const { botUsername } = require('../config');
 // GET /api/referral  — referral stats + link
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const user = await User.findOne({ telegramId: req.user.telegramId })
-      .populate('referralCount');
+    const user = await User.findOne({ telegramId: req.user.telegramId });
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
@@ -30,15 +29,17 @@ router.post('/collect', requireAuth, async (req, res) => {
   try {
     const user = await User.findOne({ telegramId: req.user.telegramId });
     if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.referralPending <= 0) return res.json({ collected: 0, balance: user.balance });
 
     const amount = user.referralPending;
-    if (amount <= 0) return res.json({ collected: 0, balance: user.balance });
+    const updated = await User.findOneAndUpdate(
+      { telegramId: req.user.telegramId, referralPending: { $gt: 0 } },
+      { $inc: { balance: amount }, $set: { referralPending: 0 } },
+      { new: true }
+    );
 
-    user.balance += amount;
-    user.referralPending = 0;
-    await user.save();
-
-    res.json({ collected: amount, balance: user.balance });
+    if (!updated) return res.json({ collected: 0, balance: user.balance });
+    res.json({ collected: amount, balance: updated.balance });
   } catch (err) {
     console.error('referral collect error', err);
     res.status(500).json({ error: 'Server error' });

@@ -61,43 +61,35 @@ router.post('/buy-gpu', requireAuth, async (req, res) => {
     const user = await User.findOne({ telegramId: req.user.telegramId });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Atomically collect pending income before purchase
-    const earned = user.calcPending();
-    const now = new Date();
-    if (earned > 0) {
-      const collected = await User.findOneAndUpdate(
-        { telegramId: req.user.telegramId, lastCollectTime: user.lastCollectTime },
-        { $inc: { balance: earned }, $set: { lastCollectTime: now, lastActive: now } },
-        { new: true }
-      );
-      if (collected) {
-        user.balance = collected.balance;
-        user.lastCollectTime = now;
-        if (user.referredBy) {
-          const bonus = earned * (REFERRAL_PERCENT / 100);
-          await User.updateOne(
-            { telegramId: user.referredBy },
-            { $inc: { referralPending: bonus, referralEarned: bonus } }
-          );
-        }
-      }
-    }
-
     const price = user.nextPrice(gpuId);
     if (user.balance < price) {
       return res.status(400).json({ error: 'Insufficient balance', price, balance: user.balance });
     }
 
-    user.balance -= price;
-    const slot = user.gpus.find(s => s.gpuId === gpuId);
-    if (slot) {
-      slot.count += 1;
+    const now = new Date();
+    const slotExists = user.gpus.some(s => s.gpuId === gpuId);
+    let updated;
+
+    if (slotExists) {
+      updated = await User.findOneAndUpdate(
+        { telegramId: req.user.telegramId, balance: { $gte: price }, 'gpus.gpuId': gpuId },
+        { $inc: { balance: -price, 'gpus.$.count': 1 }, $set: { lastActive: now } },
+        { new: true }
+      );
     } else {
-      user.gpus.push({ gpuId, count: 1 });
+      updated = await User.findOneAndUpdate(
+        { telegramId: req.user.telegramId, balance: { $gte: price }, 'gpus.gpuId': { $ne: gpuId } },
+        { $inc: { balance: -price }, $push: { gpus: { gpuId, count: 1 } }, $set: { lastActive: now } },
+        { new: true }
+      );
     }
 
-    await user.save();
-    res.json({ gpus: user.gpus, balance: user.balance, boughtGpuId: gpuId });
+    if (!updated) {
+      const fresh = await User.findOne({ telegramId: req.user.telegramId });
+      return res.status(400).json({ error: 'Insufficient balance', price, balance: fresh ? fresh.balance : 0 });
+    }
+
+    res.json({ gpus: updated.gpus, balance: updated.balance, boughtGpuId: gpuId });
   } catch (err) {
     console.error('buy-gpu error', err);
     res.status(500).json({ error: 'Server error' });

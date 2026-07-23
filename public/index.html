@@ -697,14 +697,7 @@ function exSwap(){
   document.getElementById('ex-to').value='';
 }
 function exExecute(){
-  const v=parseFloat(document.getElementById('ex-from').value)||0;
-  if(v<=0){showToast('Введите сумму');return;}
-  if(exDir===1&&v>st.balance){showToast('Недостаточно CORE');return;}
-  if(exDir===1){st.balance-=v;showToast('Обменяно '+v.toFixed(2)+' CORE → '+(v*EX_RATE).toFixed(4)+' TON');}
-  else{const got=v/EX_RATE;st.balance+=got;showToast('Обменяно '+v.toFixed(4)+' TON → '+got.toFixed(2)+' CORE');}
-  document.getElementById('ex-from').value='';
-  document.getElementById('ex-to').value='';
-  updateUI();
+  showToast('Биржа скоро откроется');
 }
 
 /* ── LOCAL PERSISTENCE ── */
@@ -734,7 +727,7 @@ function loadLocal(){
     }
     // st.balance stays 0 until server responds
     collectTime=d.collectTime||Date.now();
-    const elapsed=Math.min((Date.now()-collectTime)/1000,86400);
+    const elapsed=Math.min((Date.now()-collectTime)/1000,5*3600);
     st.pending=perSec*elapsed;
   }catch(e){}
 }

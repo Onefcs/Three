@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
+const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 const path = require('path');
 const { port, mongoUri } = require('./config');
@@ -10,13 +11,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Rate limiting: prevent API abuse
+const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 60, standardHeaders: true, legacyHeaders: false });
+const authLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false });
+const collectLimiter = rateLimit({ windowMs: 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false });
+
 // Serve frontend
 app.use(express.static(path.join(__dirname, '../public')));
 
 // API routes
-app.use('/api/auth',     require('./routes/auth'));
-app.use('/api/referral', require('./routes/referral'));
-app.use('/api',          require('./routes/mining'));
+app.use('/api/auth',            authLimiter, require('./routes/auth'));
+app.use('/api/collect',         collectLimiter);
+app.use('/api/referral/collect', collectLimiter);
+app.use('/api/referral',        apiLimiter, require('./routes/referral'));
+app.use('/api',                 apiLimiter, require('./routes/mining'));
 
 // Health check
 app.get('/health', (_, res) => res.json({ ok: true }));
