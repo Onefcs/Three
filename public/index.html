@@ -643,6 +643,7 @@ async function collect(){
         _collectAnim(d.collected);
       }else{
         st.pending=0;
+        if(d.lastCollectTime) collectTime=new Date(d.lastCollectTime).getTime();
         showToast('Уже забрано на другом устройстве');
       }
       updateUI();saveLocal();
@@ -892,6 +893,34 @@ async function collectReferral(){
     btn.disabled=false;
   }
 }
+
+// Sync state from server every 15 seconds so both devices stay in sync.
+// This ensures that if Device 1 collects, Device 2 learns about the cooldown
+// within ~15 seconds instead of only on the next collect attempt.
+async function syncStatus(){
+  if(!authToken)return;
+  try{
+    const res=await fetch(API_BASE+'/api/status',{
+      headers:{'Authorization':'Bearer '+authToken},
+    });
+    if(!res.ok)return;
+    const d=await res.json();
+    st.balance=d.balance;
+    if(d.nextCollectAt) collectCooldownUntil=new Date(d.nextCollectAt).getTime();
+    if(d.lastCollectTime) collectTime=new Date(d.lastCollectTime).getTime();
+    if(d.gpus&&d.gpus.length){
+      d.gpus.forEach(slot=>{
+        const gpu=GPUS.find(g=>g.id===slot.gpuId);
+        if(gpu)gpu.count=slot.count;
+      });
+      perSec=calcPerSec();
+    }
+    updateUI();
+  }catch(e){}
+}
+setInterval(syncStatus,15000);
+// Also sync immediately when the user switches back to this device/tab
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncStatus();});
 
 loadLocal();
 initAuth();

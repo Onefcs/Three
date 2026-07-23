@@ -29,7 +29,7 @@ router.post('/collect', requireAuth, async (req, res) => {
       // Either on cooldown or race lost — return fresh state with next allowed collect time
       const fresh = await User.findOne({ telegramId: req.user.telegramId });
       const nextCollectAt = new Date(fresh.lastCollectTime.getTime() + COLLECT_COOLDOWN_MS);
-      return res.json({ collected: 0, balance: fresh.balance, nextCollectAt });
+      return res.json({ collected: 0, balance: fresh.balance, nextCollectAt, lastCollectTime: fresh.lastCollectTime });
     }
 
     // Credit referrer 5%
