@@ -1025,7 +1025,9 @@ function renderTasks(tasks){
         <div class="task-card-slots">Осталось: ${t.remaining} из ${t.maxClicks}</div>
         ${t.isOwn
           ? `<button class="task-card-btn" disabled style="opacity:.5;cursor:default">Моё задание</button>`
-          : `<button class="task-card-btn" id="tbtn-${t._id}" onclick="taskGo('${t._id}','${escHtml(t.link)}')">Выполнить</button>`}
+          : t.completedByMe
+            ? `<button class="task-card-btn" disabled style="opacity:.5;cursor:default">✅ Выполнено</button>`
+            : `<button class="task-card-btn" id="tbtn-${t._id}" onclick="taskGo('${t._id}','${escHtml(t.link)}')">Выполнить</button>`}
       </div>
     </div>`).join('');
 }

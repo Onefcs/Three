@@ -11,20 +11,18 @@ const MIN_COST = MIN_CLICKS * COST_PER_CLICK; // 10 000 CORE minimum
 // GET /api/tasks — active tasks the user hasn't completed (own tasks included, marked isOwn)
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const tasks = await Task.find({
-      status: 'active',
-      completedBy: { $ne: req.user.telegramId },
-    }).sort({ createdAt: -1 }).limit(50);
+    const tasks = await Task.find({ status: 'active' }).sort({ createdAt: -1 }).limit(50);
 
     res.json({ tasks: tasks.map(t => ({
-      _id:         String(t._id),
-      title:       t.title,
-      description: t.description,
-      link:        t.link,
-      reward:      t.rewardPerClick,
-      remaining:   t.maxClicks - t.clickCount,
-      maxClicks:   t.maxClicks,
-      isOwn:       t.creatorId === req.user.telegramId,
+      _id:           String(t._id),
+      title:         t.title,
+      description:   t.description,
+      link:          t.link,
+      reward:        t.rewardPerClick,
+      remaining:     t.maxClicks - t.clickCount,
+      maxClicks:     t.maxClicks,
+      isOwn:         t.creatorId === req.user.telegramId,
+      completedByMe: t.completedBy.includes(req.user.telegramId),
     })) });
   } catch (err) {
     console.error('tasks list error', err);
