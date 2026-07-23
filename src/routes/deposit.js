@@ -5,7 +5,7 @@ const User = require('../models/User');
 const Deposit = require('../models/Deposit');
 const { adminTelegramId, depositTonAddress } = require('../config');
 
-// POST /api/deposit/request
+// POST /api/deposit/request — creates record and returns address/memo (no admin notify yet)
 router.post('/request', requireAuth, async (req, res) => {
   try {
     const coreAmount = Number(req.body.coreAmount);
@@ -29,16 +29,36 @@ router.post('/request', requireAuth, async (req, res) => {
       memo,
     });
 
-    // Notify admin
+    res.json({ depositId: String(deposit._id), coreAmount, tonAddress: depositTonAddress, memo });
+  } catch (err) {
+    console.error('deposit request error', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/deposit/paid — user confirms payment; notifies admin
+router.post('/paid', requireAuth, async (req, res) => {
+  try {
+    const { depositId } = req.body;
+    if (!depositId) return res.status(400).json({ error: 'depositId required' });
+
+    const deposit = await Deposit.findOne({
+      _id: depositId,
+      telegramId: req.user.telegramId,
+      status: 'pending',
+    });
+    if (!deposit) return res.status(404).json({ error: 'Заявка не найдена' });
+
+    const user = await User.findOne({ telegramId: req.user.telegramId });
     const bot = req.app.locals.bot;
-    if (bot && adminTelegramId) {
+    if (bot && adminTelegramId && user) {
       const userTag = user.username ? `@${user.username}` : user.firstName || req.user.telegramId;
       const text =
         `💰 *Заявка на пополнение*\n\n` +
         `👤 ${user.firstName || '—'} (${userTag})\n` +
         `🆔 \`${req.user.telegramId}\`\n` +
-        `💎 *${coreAmount.toLocaleString()} CORE*\n` +
-        `🔑 MEMO: \`${memo}\`\n` +
+        `💎 *${deposit.coreAmount.toLocaleString()} CORE*\n` +
+        `🔑 MEMO: \`${deposit.memo}\`\n` +
         `📅 ${new Date().toLocaleString('ru-RU')}`;
 
       try {
@@ -58,9 +78,9 @@ router.post('/request', requireAuth, async (req, res) => {
       }
     }
 
-    res.json({ depositId: String(deposit._id), coreAmount, tonAddress: depositTonAddress, memo });
+    res.json({ ok: true });
   } catch (err) {
-    console.error('deposit request error', err);
+    console.error('deposit paid error', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
