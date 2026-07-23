@@ -450,7 +450,7 @@ main::-webkit-scrollbar{display:none}
 <div class="wl-panel wl-panel-wd-active" id="wl-panel-wd" style="display:none">
   <div class="wl-field-lbl">Адрес кошелька</div>
   <div class="wl-inp-wrap wl-inp-wrap-wd">
-    <input class="wl-inp" id="wl-wd-addr" type="text" placeholder="0x... / адрес кошелька" autocomplete="off" autocorrect="off" spellcheck="false">
+    <input class="wl-inp" id="wl-wd-addr" type="text" placeholder="EQAbc... (TON кошелёк)" autocomplete="off" autocorrect="off" spellcheck="false">
   </div>
   <div class="wl-field-lbl">Сумма вывода</div>
   <div class="wl-inp-wrap wl-inp-wrap-wd">
@@ -469,19 +469,25 @@ main::-webkit-scrollbar{display:none}
 <!-- DEPOSIT MODAL -->
 <div id="dep-modal" style="display:none" class="modal-overlay">
   <div class="modal-sheet">
-    <div class="modal-title">💳 Заявка на пополнение</div>
+    <div class="modal-title">💳 Пополнение CORE</div>
+    <div class="modal-row" id="dep-addr-row">
+      <span class="modal-row-lbl">Адрес TON</span>
+      <span class="modal-row-val" id="dep-modal-addr">Загрузка...</span>
+      <button class="modal-copy" id="dep-copy-addr" onclick="depCopy('dep-modal-addr')" style="display:none">Копировать</button>
+    </div>
+    <div class="modal-row" id="dep-memo-row">
+      <span class="modal-row-lbl">MEMO</span>
+      <span class="modal-row-val" id="dep-modal-memo">...</span>
+      <button class="modal-copy" id="dep-copy-memo" onclick="depCopy('dep-modal-memo')" style="display:none">Копировать</button>
+    </div>
     <div class="modal-row">
-      <span class="modal-row-lbl">Сумма</span>
+      <span class="modal-row-lbl">Сумма CORE</span>
       <span class="modal-row-val" id="dep-modal-core">—</span>
     </div>
-    <div class="modal-row" id="dep-modal-id-row" style="display:none">
-      <span class="modal-row-lbl">№ заявки</span>
-      <span class="modal-row-val" id="dep-modal-id">—</span>
-    </div>
-    <div class="modal-notice" id="dep-modal-notice">Нажмите «Я оплатил», чтобы отправить заявку администратору.</div>
+    <div class="modal-notice" id="dep-modal-notice">⏳ Получаем реквизиты...</div>
     <div class="modal-btns" id="dep-btns-pre">
       <button class="modal-btn modal-btn-cancel" onclick="depModalClose()">Отмена</button>
-      <button class="modal-btn modal-btn-pay" id="dep-pay-btn" onclick="depSendRequest()">Я оплатил</button>
+      <button class="modal-btn modal-btn-pay" id="dep-pay-btn" onclick="depSendRequest()" disabled>Я оплатил</button>
     </div>
     <div class="modal-btns" id="dep-btns-post" style="display:none">
       <button class="modal-btn modal-btn-pay" onclick="depModalClose()">OK</button>
@@ -890,40 +896,48 @@ function wlRefresh(){
   const wb=document.getElementById('wl-bal');if(wb)wb.textContent=b.toFixed(6);
   const wa=document.getElementById('wl-wd-avail');if(wa)wa.textContent=b.toFixed(6);
 }
-let _depAmt=0;
 function wlDeposit(){
   const v=parseFloat(document.getElementById('wl-dep-amt').value)||0;
   if(v<1000){showToast('Минимум 1 000 CORE');return;}
   if(v>10000000){showToast('Максимум 10 000 000 CORE');return;}
   if(!authToken){showToast('Нет подключения к серверу');return;}
-  _depAmt=v;
+  // Reset modal to loading state
   document.getElementById('dep-modal-core').textContent=v.toLocaleString()+' CORE';
-  document.getElementById('dep-modal-id-row').style.display='none';
-  document.getElementById('dep-modal-notice').textContent='Нажмите «Я оплатил», чтобы отправить заявку администратору.';
+  document.getElementById('dep-modal-addr').textContent='Загрузка...';
+  document.getElementById('dep-modal-memo').textContent='...';
+  document.getElementById('dep-copy-addr').style.display='none';
+  document.getElementById('dep-copy-memo').style.display='none';
+  document.getElementById('dep-modal-notice').textContent='⏳ Получаем реквизиты...';
   document.getElementById('dep-btns-pre').style.display='flex';
   document.getElementById('dep-btns-post').style.display='none';
-  document.getElementById('dep-pay-btn').disabled=false;
+  document.getElementById('dep-pay-btn').disabled=true;
   document.getElementById('dep-modal').style.display='flex';
+  // Fetch deposit details immediately
+  fetch(API_BASE+'/api/deposit/request',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
+    body:JSON.stringify({coreAmount:v}),
+  }).then(r=>r.json()).then(d=>{
+    if(d.error){depModalClose();showToast(d.error);return;}
+    document.getElementById('dep-modal-addr').textContent=d.tonAddress||'Уточните у администратора';
+    document.getElementById('dep-modal-memo').textContent=d.memo||d.depositId;
+    if(d.tonAddress){document.getElementById('dep-copy-addr').style.display='';}
+    document.getElementById('dep-copy-memo').style.display='';
+    document.getElementById('dep-modal-notice').textContent='Отправьте TON на этот адрес с указанным MEMO, затем нажмите «Я оплатил».';
+    document.getElementById('dep-pay-btn').disabled=false;
+  }).catch(()=>{depModalClose();showToast('Ошибка соединения');});
 }
 function depModalClose(){
   document.getElementById('dep-modal').style.display='none';
 }
 function depSendRequest(){
-  const btn=document.getElementById('dep-pay-btn');
-  btn.disabled=true;
-  document.getElementById('dep-modal-notice').textContent='Отправка заявки...';
-  fetch(API_BASE+'/api/deposit/request',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
-    body:JSON.stringify({coreAmount:_depAmt}),
-  }).then(r=>r.json()).then(d=>{
-    if(d.error){btn.disabled=false;document.getElementById('dep-modal-notice').textContent='❌ '+d.error;return;}
-    document.getElementById('dep-modal-id').textContent=d.depositId;
-    document.getElementById('dep-modal-id-row').style.display='';
-    document.getElementById('dep-modal-notice').textContent='✅ Заявка отправлена. Ожидайте подтверждения администратора.';
-    document.getElementById('dep-btns-pre').style.display='none';
-    document.getElementById('dep-btns-post').style.display='flex';
-  }).catch(()=>{btn.disabled=false;document.getElementById('dep-modal-notice').textContent='❌ Ошибка соединения';});
+  document.getElementById('dep-modal-notice').textContent='✅ Заявка отправлена администратору. CORE будут зачислены после подтверждения.';
+  document.getElementById('dep-btns-pre').style.display='none';
+  document.getElementById('dep-btns-post').style.display='flex';
+}
+function depCopy(id){
+  const txt=document.getElementById(id).textContent;
+  navigator.clipboard.writeText(txt).then(()=>showToast('Скопировано')).catch(()=>showToast('Не удалось скопировать'));
 }
 function wlWithdraw(){
   const addr=(document.getElementById('wl-wd-addr').value||'').trim();

@@ -1,8 +1,9 @@
 const router = require('express').Router();
+const crypto = require('crypto');
 const { requireAuth } = require('../middleware/telegramAuth');
 const User = require('../models/User');
 const Deposit = require('../models/Deposit');
-const { adminTelegramId } = require('../config');
+const { adminTelegramId, depositTonAddress } = require('../config');
 
 // POST /api/deposit/request
 router.post('/request', requireAuth, async (req, res) => {
@@ -18,11 +19,14 @@ router.post('/request', requireAuth, async (req, res) => {
     const user = await User.findOne({ telegramId: req.user.telegramId });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
+    const memo = `DEP-${req.user.telegramId}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+
     const deposit = await Deposit.create({
       telegramId: req.user.telegramId,
       username:   user.username,
       firstName:  user.firstName,
       coreAmount,
+      memo,
     });
 
     // Notify admin
@@ -30,10 +34,11 @@ router.post('/request', requireAuth, async (req, res) => {
     if (bot && adminTelegramId) {
       const userTag = user.username ? `@${user.username}` : user.firstName || req.user.telegramId;
       const text =
-        `💰 *Заявка на пополнение CORE*\n\n` +
+        `💰 *Заявка на пополнение*\n\n` +
         `👤 ${user.firstName || '—'} (${userTag})\n` +
         `🆔 \`${req.user.telegramId}\`\n` +
         `💎 *${coreAmount.toLocaleString()} CORE*\n` +
+        `🔑 MEMO: \`${memo}\`\n` +
         `📅 ${new Date().toLocaleString('ru-RU')}`;
 
       try {
@@ -53,7 +58,7 @@ router.post('/request', requireAuth, async (req, res) => {
       }
     }
 
-    res.json({ depositId: String(deposit._id), coreAmount });
+    res.json({ depositId: String(deposit._id), coreAmount, tonAddress: depositTonAddress, memo });
   } catch (err) {
     console.error('deposit request error', err);
     res.status(500).json({ error: 'Server error' });
