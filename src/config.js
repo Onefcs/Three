@@ -18,5 +18,5 @@ module.exports = {
   },
 
   REFERRAL_PERCENT: 5, // 5% of referee's collected income goes to referrer
-  COLLECT_COOLDOWN_MS: 60 * 1000, // minimum ms between collects (prevents double-collect)
+  COLLECT_COOLDOWN_MS: 5 * 60 * 60 * 1000, // 5-hour farm window; collect resets the timer
 };

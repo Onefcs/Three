@@ -45,9 +45,10 @@ userSchema.methods.calcPerSec = function () {
   }, 0);
 };
 
-// Calculate pending mining income since last collect
+// Calculate pending mining income since last collect (capped at 5-hour farm window)
 userSchema.methods.calcPending = function () {
-  const secondsElapsed = (Date.now() - this.lastCollectTime.getTime()) / 1000;
+  const FARM_SECS = 5 * 60 * 60;
+  const secondsElapsed = Math.min((Date.now() - this.lastCollectTime.getTime()) / 1000, FARM_SECS);
   return this.calcPerSec() * secondsElapsed;
 };
 
