@@ -1501,6 +1501,29 @@ let refLink=null;
 let refPendingAmt=0;
 let collectCooldownUntil=0; // timestamp (ms) until next collect is allowed
 
+async function getHwid(){
+  try{
+    const c=document.createElement('canvas');
+    const ctx=c.getContext('2d');
+    ctx.fillStyle='#069';ctx.fillRect(0,0,120,20);
+    ctx.fillStyle='#ff3';ctx.font='15px Arial';ctx.fillText('CoreMining⛏',2,15);
+    let wgl='';
+    try{const gl=c.getContext('webgl')||c.getContext('experimental-webgl');if(gl){const e=gl.getExtension('WEBGL_debug_renderer_info');if(e)wgl=gl.getParameter(e.UNMASKED_VENDOR_WEBGL)+'|'+gl.getParameter(e.UNMASKED_RENDERER_WEBGL);}}catch(_){}
+    const raw=[
+      navigator.hardwareConcurrency||0,
+      navigator.deviceMemory||0,
+      screen.width+'x'+screen.height+'x'+screen.colorDepth,
+      navigator.platform||'',
+      Intl.DateTimeFormat().resolvedOptions().timeZone,
+      navigator.language||'',
+      wgl,
+      c.toDataURL().slice(-80),
+    ].join('||');
+    const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,16);
+  }catch(_){return '';}
+}
+
 async function initAuth(){
   try{
     setSplashProgress(15);
@@ -1520,6 +1543,7 @@ async function initAuth(){
     const startParam=tg?.initDataUnsafe?.start_param||new URLSearchParams(window.location.search).get('ref')||'';
     const body={initData};
     if(startParam)body.referredBy=startParam;
+    try{body.hwid=await getHwid();}catch(_){}
     const res=await fetch(API_BASE+'/api/auth',{
       method:'POST',
       headers:{'Content-Type':'application/json'},

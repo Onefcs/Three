@@ -385,7 +385,7 @@ td.mono{font-family:var(--mono);font-size:12px}
         <div class="tab active" onclick="switchTab('overview')">Обзор</div>
         <div class="tab" onclick="switchTab('gpus')">Майнеры</div>
         <div class="tab" onclick="switchTab('logs')">Логи</div>
-        <div class="tab" onclick="switchTab('ips')">IP / Связи</div>
+        <div class="tab" onclick="switchTab('ips')">IP / Железо</div>
       </div>
       <!-- Overview -->
       <div class="tab-pane active" id="tab-overview">
@@ -661,6 +661,7 @@ function renderPlayerModal(u) {
     <div class="info-item"><div class="label">Зарегистрирован</div><div class="value">${formatDate(u.createdAt)}</div></div>
     <div class="info-item"><div class="label">Последняя активность</div><div class="value">${timeAgo(u.lastActive)}</div></div>
     <div class="info-item info-full"><div class="label">IP (последний)</div><div class="value mono">${esc(u.lastIp || '—')}</div></div>
+    <div class="info-item info-full"><div class="label">Hardware ID (HWID)</div><div class="value mono">${esc(u.hwid || '—')}</div></div>
   `;
 
   // Ban section
@@ -704,17 +705,34 @@ function renderPlayerModal(u) {
     }).join('');
   }
 
-  // IPs
+  // IPs + Hardware
   const ipsContent = document.getElementById('pm-ips-content');
-  if (!u.knownIps || !u.knownIps.length) {
-    ipsContent.innerHTML = '<div class="empty">Нет данных об IP</div>';
+  let html = '';
+
+  // Hardware fingerprint section
+  html += `<div style="margin-bottom:18px">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600;margin-bottom:10px">🖥 Совпадение по железу (HWID)</div>`;
+  if (!u.hwid) {
+    html += '<div style="font-size:12px;color:var(--muted)">HWID не получен (пользователь не заходил в приложение)</div>';
+  } else if (!u.relatedByHwid || !u.relatedByHwid.length) {
+    html += `<div style="font-size:12px;color:var(--muted)">Других аккаунтов с таким железом не найдено</div><div class="ip-label" style="margin-top:6px">${esc(u.hwid)}</div>`;
   } else {
-    let html = '';
+    html += `<div class="ip-label" style="margin-bottom:8px">${esc(u.hwid)}</div><div class="ip-users">` +
+      u.relatedByHwid.map(r =>
+        `<div class="ip-user ${r.isBanned ? 'banned' : ''}" onclick="closePlayerModal();openPlayer('${r.telegramId}')">${esc(r.name || r.telegramId)}${r.isBanned ? ' 🚫' : ''}</div>`
+      ).join('') + '</div>';
+  }
+  html += '</div><div style="border-top:1px solid var(--border);margin-bottom:18px"></div>';
+
+  // IP section
+  html += `<div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600;margin-bottom:10px">🌐 Совпадение по IP</div>`;
+  if (!u.knownIps || !u.knownIps.length) {
+    html += '<div style="font-size:12px;color:var(--muted)">Нет данных об IP</div>';
+  } else {
     u.knownIps.forEach(ip => {
       html += `<div class="ip-block"><div class="ip-label">📍 ${esc(ip)}</div>`;
-      const related = u.relatedByIp.filter(r => true); // show all related for primary IP
-      if (ip === u.lastIp && related.length) {
-        html += '<div class="ip-users">' + related.map(r =>
+      if (ip === u.lastIp && u.relatedByIp && u.relatedByIp.length) {
+        html += '<div class="ip-users">' + u.relatedByIp.map(r =>
           `<div class="ip-user ${r.isBanned ? 'banned' : ''}" onclick="closePlayerModal();openPlayer('${r.telegramId}')">${esc(r.name || r.telegramId)}${r.isBanned ? ' 🚫' : ''}</div>`
         ).join('') + '</div>';
       } else if (ip === u.lastIp) {
@@ -722,8 +740,9 @@ function renderPlayerModal(u) {
       }
       html += '</div>';
     });
-    ipsContent.innerHTML = html;
   }
+
+  ipsContent.innerHTML = html;
 }
 
 async function loadPlayerLogs(telegramId) {

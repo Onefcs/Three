@@ -28,6 +28,7 @@ const userSchema = new mongoose.Schema({
   banReason:  { type: String, default: '' },
   lastIp:     { type: String, default: '' },
   knownIps:   { type: [String], default: [] },
+  hwid:       { type: String, default: '' },
 
   createdAt:  { type: Date, default: Date.now },
   lastActive: { type: Date, default: Date.now },

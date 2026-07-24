@@ -133,11 +133,14 @@ router.get('/players/:telegramId', requireAdmin, async (req, res) => {
     const secondsElapsed = Math.min((Date.now() - new Date(user.lastCollectTime).getTime()) / 1000, FARM_SECS);
     const pending = perSec / multiplier * secondsElapsed * multiplier;
 
-    const [referrer, referralCount, relatedByIp] = await Promise.all([
+    const [referrer, referralCount, relatedByIp, relatedByHwid] = await Promise.all([
       user.referredBy ? User.findOne({ telegramId: user.referredBy }, 'telegramId username firstName').lean() : null,
       User.countDocuments({ referredBy: user.telegramId }),
       user.lastIp
         ? User.find({ lastIp: user.lastIp, telegramId: { $ne: user.telegramId } }, 'telegramId username firstName isBanned lastActive').limit(20).lean()
+        : [],
+      user.hwid
+        ? User.find({ hwid: user.hwid, telegramId: { $ne: user.telegramId } }, 'telegramId username firstName isBanned lastActive').limit(20).lean()
         : [],
     ]);
 
@@ -158,11 +161,17 @@ router.get('/players/:telegramId', requireAdmin, async (req, res) => {
       referralPending: user.referralPending || 0,
       lastIp: user.lastIp || '',
       knownIps: user.knownIps || [],
+      hwid: user.hwid || '',
       isBanned: user.isBanned || false,
       banReason: user.banReason || '',
       createdAt: user.createdAt,
       lastActive: user.lastActive,
       relatedByIp: relatedByIp.map(u => ({
+        telegramId: u.telegramId,
+        name: u.firstName || u.username || u.telegramId,
+        isBanned: u.isBanned || false,
+      })),
+      relatedByHwid: relatedByHwid.map(u => ({
         telegramId: u.telegramId,
         name: u.firstName || u.username || u.telegramId,
         isBanned: u.isBanned || false,
@@ -286,17 +295,39 @@ router.post('/broadcast', requireAdmin, async (req, res) => {
     const users = await User.find({ isBanned: { $ne: true } }, 'telegramId').lean();
     let sent = 0, failed = 0;
 
+    const replyMarkup = (linkUrl && linkText)
+      ? { inline_keyboard: [[{ text: linkText, url: linkUrl }]] }
+      : undefined;
+
+    async function trySend(telegramId) {
+      const mkOpts = { parse_mode: 'Markdown', ...(replyMarkup ? { reply_markup: replyMarkup } : {}) };
+      const plainOpts = replyMarkup ? { reply_markup: replyMarkup } : {};
+
+      if (imageUrl) {
+        try {
+          await bot.sendPhoto(telegramId, imageUrl, { caption: text, ...mkOpts });
+          return;
+        } catch (_) {}
+        // photo failed — try text only with markdown
+        try {
+          await bot.sendMessage(telegramId, text, mkOpts);
+          return;
+        } catch (_) {}
+        // markdown failed — plain text
+        await bot.sendMessage(telegramId, text, plainOpts);
+      } else {
+        try {
+          await bot.sendMessage(telegramId, text, mkOpts);
+          return;
+        } catch (_) {}
+        // markdown parse error — retry without parse_mode
+        await bot.sendMessage(telegramId, text, plainOpts);
+      }
+    }
+
     for (const u of users) {
       try {
-        const opts = { parse_mode: 'Markdown' };
-        if (linkUrl && linkText) {
-          opts.reply_markup = { inline_keyboard: [[{ text: linkText, url: linkUrl }]] };
-        }
-        if (imageUrl) {
-          await bot.sendPhoto(u.telegramId, imageUrl, { caption: text, ...opts });
-        } else {
-          await bot.sendMessage(u.telegramId, text, opts);
-        }
+        await trySend(u.telegramId);
         sent++;
         if (sent % 25 === 0) await new Promise(r => setTimeout(r, 1000));
       } catch (_) {

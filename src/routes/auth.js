@@ -9,7 +9,7 @@ const { jwtSecret, botUsername, appUrl, COLLECT_COOLDOWN_MS } = require('../conf
 // Body: { initData: string, referredBy?: string }
 router.post('/', async (req, res) => {
   try {
-    const { initData, referredBy } = req.body;
+    const { initData, referredBy, hwid } = req.body;
     if (!initData) return res.status(400).json({ error: 'initData required' });
 
     const tgUser = verifyTelegramInitData(initData);
@@ -31,6 +31,7 @@ router.post('/', async (req, res) => {
         photoUrl:  tgUser.photo_url  || '',
         lastIp:    ip,
         knownIps:  ip ? [ip] : [],
+        hwid:      hwid || '',
       };
 
       // Validate referral
@@ -54,6 +55,7 @@ router.post('/', async (req, res) => {
         user.lastIp = ip;
         if (!user.knownIps.includes(ip)) user.knownIps.push(ip);
       }
+      if (hwid) user.hwid = hwid;
       await user.save();
     }
 
