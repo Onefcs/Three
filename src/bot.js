@@ -5,6 +5,7 @@ const User = require('./models/User');
 const Deposit = require('./models/Deposit');
 const Withdraw = require('./models/Withdraw');
 const Halving = require('./models/Halving');
+const SocialSubmission = require('./models/SocialSubmission');
 
 const HALVING_POOL = 2_000_000;
 
@@ -195,6 +196,61 @@ function createBot() {
           await bot.answerCallbackQuery(query.id, { text: '❌ Отклонено' });
         }
       } /* end withdraw block */
+
+      /* ── SOCIAL PROMOTION ── */
+      else if (action === 'soc_confirm' || action === 'soc_reject') {
+        const sub = await SocialSubmission.findById(recordId);
+        if (!sub) return bot.answerCallbackQuery(query.id, { text: 'Заявка не найдена' });
+        if (sub.status !== 'pending') return bot.answerCallbackQuery(query.id, { text: 'Уже обработана' });
+
+        const platNames = { youtube: 'YouTube', tiktok: 'TikTok', x: 'X (Twitter)' };
+        const platName = platNames[sub.platform] || sub.platform;
+        const userTag = sub.username ? `@${sub.username}` : sub.firstName;
+
+        if (action === 'soc_confirm') {
+          sub.status = 'approved';
+          await sub.save();
+
+          // Grant RTX 3070
+          const gpuId = 'rtx3070';
+          const slotExists = await User.findOne({ telegramId: sub.telegramId, 'gpus.gpuId': gpuId });
+          if (slotExists) {
+            await User.updateOne({ telegramId: sub.telegramId, 'gpus.gpuId': gpuId }, { $inc: { 'gpus.$.count': 1 } });
+          } else {
+            await User.updateOne({ telegramId: sub.telegramId }, { $push: { gpus: { gpuId, count: 1 } } });
+          }
+
+          await bot.editMessageText(
+            `✅ *ОДОБРЕНО*\n\n👤 ${sub.firstName} (${userTag})\n📱 ${platName}\n🔗 ${sub.link}`,
+            { chat_id: query.message.chat.id, message_id: query.message.message_id, parse_mode: 'Markdown' }
+          );
+          try {
+            await bot.sendMessage(
+              sub.telegramId,
+              `✅ Ваша заявка на *${platName}* одобрена! RTX 3070 добавлен в ваш майнинг-парк 🎉`,
+              { parse_mode: 'Markdown' }
+            );
+          } catch (_) {}
+          await bot.answerCallbackQuery(query.id, { text: '✅ Одобрено' });
+
+        } else {
+          sub.status = 'rejected';
+          await sub.save();
+
+          await bot.editMessageText(
+            `❌ *ОТКЛОНЕНО*\n\n👤 ${sub.firstName} (${userTag})\n📱 ${platName}\n🔗 ${sub.link}`,
+            { chat_id: query.message.chat.id, message_id: query.message.message_id, parse_mode: 'Markdown' }
+          );
+          try {
+            await bot.sendMessage(
+              sub.telegramId,
+              `❌ Заявка на *${platName}* отклонена. Обратитесь в поддержку.`,
+              { parse_mode: 'Markdown' }
+            );
+          } catch (_) {}
+          await bot.answerCallbackQuery(query.id, { text: '❌ Отклонено' });
+        }
+      } /* end social block */
 
     } catch (err) {
       console.error('bot callback error', err);

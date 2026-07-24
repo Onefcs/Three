@@ -66,7 +66,7 @@ main::-webkit-scrollbar{display:none}
 
 /* GPU GRID */
 .gpu-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
-.gpu-card{background:var(--card);border:1px solid;border-radius:12px;overflow:hidden;transition:filter .15s}
+.gpu-card{background:var(--card);border:1px solid;border-radius:12px;overflow:hidden;transition:filter .15s;display:flex;flex-direction:column}
 .gpu-card.buyable{opacity:.88}
 .gpu-img{position:relative;width:100%;overflow:hidden}
 .gpu-img canvas{width:100%;display:block}
@@ -79,7 +79,7 @@ main::-webkit-scrollbar{display:none}
 .buy-overlay{position:absolute;inset:0;background:rgba(0,0,0,.36);
   display:flex;align-items:center;justify-content:center}
 .buy-lock{width:28px;height:28px;display:flex;align-items:center;justify-content:center}
-.gpu-info{padding:5px 7px 7px}
+.gpu-info{padding:5px 7px 7px;display:flex;flex-direction:column;flex:1}
 .gpu-name{font-size:11px;font-weight:800;color:var(--tx);margin-bottom:4px}
 .inc-row{display:flex;align-items:center;gap:3px;margin-bottom:5px}
 .inc-lbl{font-size:7px;color:var(--tx2)}
@@ -87,12 +87,12 @@ main::-webkit-scrollbar{display:none}
 /* first buy — full green */
 .buy-btn{width:100%;background:var(--acc);border:none;border-radius:7px;padding:7px 0;
   font-size:10px;font-weight:900;color:#000;cursor:pointer;letter-spacing:.3px;
-  transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:4px}
+  transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:4px;margin-top:auto}
 .buy-btn:active{opacity:.7}
 /* add more — subtle outline */
 .more-btn{width:100%;background:transparent;border:1px solid var(--acc);border-radius:7px;padding:5px 0;
   font-size:9px;font-weight:800;color:var(--acc);cursor:pointer;letter-spacing:.2px;
-  transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center;gap:4px}
+  transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center;gap:4px;margin-top:auto}
 .more-btn:hover{background:var(--acc);color:#000}
 .more-btn:active{opacity:.7}
 .btn-price{font-variant-numeric:tabular-nums}
@@ -268,6 +268,24 @@ main::-webkit-scrollbar{display:none}
 .task-inp-lbl:first-child{margin-top:0}
 .task-char{font-size:9px;color:var(--tx3);font-weight:700;letter-spacing:0}
 .task-price-info{font-size:10px;color:var(--tx2);text-align:center;margin:10px 0 2px;line-height:1.6;padding:8px 10px;background:rgba(61,224,112,.05);border:1px solid rgba(61,224,112,.12);border-radius:9px}
+/* SOCIAL TASKS */
+.soc-section{margin-bottom:4px}
+.soc-sec-title{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2);margin-bottom:8px;padding:0 2px}
+.soc-cards{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.soc-card{background:var(--card);border:1px solid var(--bdr2);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px}
+.soc-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.soc-icon.yt{background:rgba(255,48,48,.14)}
+.soc-icon.tt{background:rgba(255,255,255,.07)}
+.soc-icon.x{background:rgba(255,255,255,.07)}
+.soc-info{flex:1;min-width:0}
+.soc-name{font-size:12px;font-weight:900;color:var(--tx);margin-bottom:2px}
+.soc-desc{font-size:10px;color:var(--tx2);line-height:1.4}
+.soc-btn{padding:7px 12px;border-radius:9px;border:none;font-size:10px;font-weight:900;cursor:pointer;flex-shrink:0;letter-spacing:.3px;transition:opacity .15s;white-space:nowrap}
+.soc-btn:active{opacity:.7}
+.soc-btn.submit{background:var(--acc);color:#000}
+.soc-btn.pending{background:transparent;color:#f0a030;border:1px solid #f0a03066;cursor:default}
+.soc-btn.approved{background:transparent;color:var(--acc);border:1px solid var(--acc)66;cursor:default}
+.soc-btn.rejected{background:transparent;color:#e05050;border:1px solid #e0505066}
 </style>
 
 <div id="splash">
@@ -389,6 +407,48 @@ main::-webkit-scrollbar{display:none}
   <div class="tasks-title" data-i18n="tasks.title">Задания</div>
   <button class="tasks-add-btn" onclick="taskCreateOpen()" data-i18n="tasks.add_btn">+ Добавить</button>
 </div>
+
+<!-- Social promotion tasks -->
+<div class="soc-section">
+  <div class="soc-sec-title">📣 Продвижение · +RTX 3070</div>
+  <div class="soc-cards">
+
+    <div class="soc-card">
+      <div class="soc-icon yt">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#ff3030"><path d="M22.5 6.5s-.25-1.8-1-2.6c-1-1.05-2.1-1.06-2.61-1.12C16.08 2.6 12 2.6 12 2.6s-4.08 0-6.89.18C4.6 2.84 3.5 2.85 2.5 3.9c-.75.8-1 2.6-1 2.6S1.2 8.55 1.2 10.62v1.95c0 2.06.3 4.12.3 4.12s.25 1.8 1 2.6c1 1.06 2.3.96 2.89 1.06C7.4 20.52 12 20.55 12 20.55s4.08-.01 6.89-.2c.51-.06 1.61-.07 2.61-1.12.75-.8 1-2.6 1-2.6s.3-2.06.3-4.12v-1.95c0-2.07-.3-4.13-.3-4.13zM9.74 14.85V8.45l7.02 3.22-7.02 3.18z"/></svg>
+      </div>
+      <div class="soc-info">
+        <div class="soc-name">YouTube</div>
+        <div class="soc-desc">Разместите пост или видео о Core Mining</div>
+      </div>
+      <button class="soc-btn submit" id="soc-btn-youtube" onclick="socModalOpen('youtube')">Отправить</button>
+    </div>
+
+    <div class="soc-card">
+      <div class="soc-icon tt">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.07 8.07 0 004.77 1.52V6.75a4.85 4.85 0 01-1-.06z"/></svg>
+      </div>
+      <div class="soc-info">
+        <div class="soc-name">TikTok</div>
+        <div class="soc-desc">Разместите пост или видео о Core Mining</div>
+      </div>
+      <button class="soc-btn submit" id="soc-btn-tiktok" onclick="socModalOpen('tiktok')">Отправить</button>
+    </div>
+
+    <div class="soc-card">
+      <div class="soc-icon x">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </div>
+      <div class="soc-info">
+        <div class="soc-name">X (Twitter)</div>
+        <div class="soc-desc">Разместите пост о Core Mining</div>
+      </div>
+      <button class="soc-btn submit" id="soc-btn-x" onclick="socModalOpen('x')">Отправить</button>
+    </div>
+
+  </div>
+</div>
+
 <div id="tasks-list">
   <div class="tasks-empty" data-i18n="tasks.loading">Загрузка...</div>
 </div>
@@ -540,6 +600,23 @@ main::-webkit-scrollbar{display:none}
     </div>
     <div class="modal-btns" id="wd-btns-post" style="display:none">
       <button class="modal-btn modal-btn-pay" onclick="wdModalClose()" data-i18n="wd.ok">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- SOCIAL SUBMIT MODAL -->
+<div id="soc-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)socModalClose()">
+  <div class="modal-sheet">
+    <div class="modal-title" id="soc-modal-title">📣 YouTube</div>
+    <div style="font-size:11px;color:var(--tx2);line-height:1.6;margin-bottom:14px">
+      Разместите пост или видео о <strong style="color:var(--tx)">Core Mining</strong> на своём канале и вставьте ссылку ниже.<br><br>
+      ⚠️ Аккаунт не должен быть пустым или накрученным. Модераторы вручную проверяют каждую заявку. После одобрения вы получите <strong style="color:var(--acc)">RTX 3070</strong>!
+    </div>
+    <label class="task-inp-lbl">Ссылка на пост / видео</label>
+    <input class="task-inp" type="url" id="soc-link-input" placeholder="https://...">
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="socModalClose()">Отмена</button>
+      <button class="modal-btn modal-btn-pay" id="soc-submit-btn" onclick="socSubmit()">Отправить</button>
     </div>
   </div>
 </div>
@@ -739,9 +816,9 @@ function setLang(lang){
 const COIN_SRC="data:image/png;base64,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";
 const TIER={
   5:{col:"#f0c840",glow:"rgba(240,200,64,.5)",  bg:"#1c1408",fanSpd:6.2,imgH:90,labelSvg:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>",labelKey:"tier.legend",bdrA:"bb",glowPx:14},
-  4:{col:"#38d8f0",glow:"rgba(56,216,240,.4)",  bg:"#06141e",fanSpd:4.8,imgH:82,labelSvg:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><polygon points='12 2 22 12 12 22 2 12'/></svg>",labelKey:"tier.epic",   bdrA:"88",glowPx:10},
-  3:{col:"#3de070",glow:"rgba(61,224,112,.35)", bg:"#081a0a",fanSpd:3.8,imgH:76,labelSvg:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><polygon points='12 4 22 20 2 20'/></svg>",labelKey:"tier.rare", bdrA:"66",glowPx:7},
-  2:{col:"#9060d0",glow:"rgba(144,96,208,.3)",  bg:"#0e0818",fanSpd:2.8,imgH:72,labelSvg:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><circle cx='12' cy='12' r='10'/></svg>",labelKey:"tier.uncommon",bdrA:"44",glowPx:4},
+  4:{col:"#a060e0",glow:"rgba(160,96,224,.4)",  bg:"#12081c",fanSpd:4.8,imgH:82,labelSvg:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><polygon points='12 2 22 12 12 22 2 12'/></svg>",labelKey:"tier.epic",   bdrA:"88",glowPx:10},
+  3:{col:"#4a90e8",glow:"rgba(74,144,232,.4)",  bg:"#080e1c",fanSpd:3.8,imgH:76,labelSvg:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><polygon points='12 4 22 20 2 20'/></svg>",labelKey:"tier.rare", bdrA:"66",glowPx:7},
+  2:{col:"#3de070",glow:"rgba(61,224,112,.28)", bg:"#091809",fanSpd:2.8,imgH:72,labelSvg:"<svg width='8' height='8' viewBox='0 0 24 24' fill='currentColor' style='vertical-align:middle;display:inline-block'><circle cx='12' cy='12' r='10'/></svg>",labelKey:"tier.uncommon",bdrA:"44",glowPx:4},
   1:{col:"#607880",glow:"rgba(96,120,128,.2)",  bg:"#0a0c10",fanSpd:1.8,imgH:68,labelSvg:"<svg width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' style='vertical-align:middle;display:inline-block'><circle cx='12' cy='12' r='10'/></svg>",labelKey:"tier.common",bdrA:"28",glowPx:2},
 };
 
@@ -1036,7 +1113,7 @@ function showPage(id,btn){
   if(btn)btn.classList.add('active');
   if(id==='friends') loadFriendsData();
   if(id==='wallet') wlRefresh();
-  if(id==='tasks') loadTasks();
+  if(id==='tasks'){loadTasks();loadSocialStatus();}
   if(id==='halving') loadHalving();
 }
 
@@ -1293,6 +1370,78 @@ function taskCreate(){
     showToast(t('tasks.created').replace('%n',d.maxClicks));
     loadTasks();
   }).catch(()=>{btn.disabled=false;showToast(t('err.conn'));});
+}
+
+/* ── SOCIAL PROMOTION ── */
+let socStatuses={};
+let socCurrentPlatform=null;
+
+async function loadSocialStatus(){
+  if(!authToken)return;
+  try{
+    const res=await fetch(API_BASE+'/api/social/status',{headers:{'Authorization':'Bearer '+authToken}});
+    if(!res.ok)return;
+    socStatuses=await res.json();
+    renderSocCards();
+  }catch(e){}
+}
+
+function renderSocCards(){
+  const labels={youtube:'YouTube',tiktok:'TikTok',x:'X (Twitter)'};
+  ['youtube','tiktok','x'].forEach(pid=>{
+    const btn=document.getElementById('soc-btn-'+pid);
+    if(!btn)return;
+    const s=socStatuses[pid];
+    if(!s||s.status==='rejected'){
+      btn.className='soc-btn submit';
+      btn.textContent=s&&s.status==='rejected'?'Отправить снова':'Отправить';
+      btn.onclick=()=>socModalOpen(pid);
+    }else if(s.status==='pending'){
+      btn.className='soc-btn pending';
+      btn.textContent='⏳ На проверке';
+      btn.onclick=null;
+    }else if(s.status==='approved'){
+      btn.className='soc-btn approved';
+      btn.textContent='✓ Одобрено';
+      btn.onclick=null;
+    }
+  });
+}
+
+function socModalOpen(platform){
+  socCurrentPlatform=platform;
+  const names={youtube:'YouTube',tiktok:'TikTok',x:'X (Twitter)'};
+  document.getElementById('soc-modal-title').textContent='📣 '+names[platform];
+  document.getElementById('soc-link-input').value='';
+  const btn=document.getElementById('soc-submit-btn');
+  btn.disabled=false;btn.textContent='Отправить';
+  document.getElementById('soc-modal').style.display='flex';
+}
+
+function socModalClose(){
+  document.getElementById('soc-modal').style.display='none';
+  socCurrentPlatform=null;
+}
+
+async function socSubmit(){
+  const link=document.getElementById('soc-link-input').value.trim();
+  if(!link||!/^https?:\/\/.+/.test(link)){showToast('Укажите корректную ссылку');return;}
+  const btn=document.getElementById('soc-submit-btn');
+  btn.disabled=true;btn.textContent='Отправка...';
+  try{
+    const res=await fetch(API_BASE+'/api/social/submit',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+authToken,'Content-Type':'application/json'},
+      body:JSON.stringify({platform:socCurrentPlatform,link}),
+    });
+    const d=await res.json();
+    if(!res.ok){showToast(d.error||t('err.server'));btn.disabled=false;btn.textContent='Отправить';return;}
+    showToast('Заявка отправлена на модерацию!');
+    const p=socCurrentPlatform;
+    socModalClose();
+    socStatuses[p]={status:'pending',link};
+    renderSocCards();
+  }catch(e){showToast(t('err.conn'));btn.disabled=false;btn.textContent='Отправить';}
 }
 
 /* ── LOCAL PERSISTENCE ── */
