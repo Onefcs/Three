@@ -227,6 +227,23 @@ router.post('/players/:telegramId/balance', requireAdmin, async (req, res) => {
   }
 });
 
+// POST /api/admin/players/:telegramId/give-balance  — add to balance
+router.post('/players/:telegramId/give-balance', requireAdmin, async (req, res) => {
+  try {
+    const amount = parseFloat(req.body?.amount);
+    if (isNaN(amount) || amount <= 0) return res.status(400).json({ error: 'Invalid amount' });
+    const user = await User.findOneAndUpdate(
+      { telegramId: req.params.telegramId },
+      { $inc: { balance: amount } },
+      { new: true }
+    );
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ ok: true, balance: Math.round(user.balance * 100) / 100 });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // GET /api/admin/tasks
 router.get('/tasks', requireAdmin, async (req, res) => {
   try {

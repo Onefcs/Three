@@ -467,8 +467,12 @@ td.mono{font-family:var(--mono);font-size:11px}
           </div>
           <div class="balance-row">
             <div class="ban-title" style="width:100%;margin-bottom:8px">Изменить баланс</div>
-            <input type="number" id="pm-bal-input" placeholder="0" min="0" inputmode="numeric">
+            <input type="number" id="pm-bal-input" placeholder="Новый баланс" min="0" inputmode="numeric">
             <button class="btn btn-ghost btn-sm" onclick="setBalance()">Установить</button>
+          </div>
+          <div class="balance-row" style="margin-top:0;padding-top:0;border-top:none">
+            <input type="number" id="pm-give-input" placeholder="Сумма начисления" min="0" inputmode="numeric">
+            <button class="btn btn-success btn-sm" onclick="giveBalance()">Начислить</button>
           </div>
         </div>
       </div>
@@ -804,6 +808,19 @@ async function setBalance() {
   try {
     await apiFetch('/api/admin/players/'+currentPlayerData.telegramId+'/balance',{method:'POST',body:{balance:bal}});
     currentPlayerData.balance=bal; renderPlayerModal(currentPlayerData); loadPlayers(playersCurrentPage);
+  } catch(e) { alert('Ошибка: '+e.message); }
+}
+
+async function giveBalance() {
+  if (!currentPlayerData) return;
+  const amount = parseFloat(document.getElementById('pm-give-input').value);
+  if (isNaN(amount)||amount<=0) return alert('Введите сумму больше 0');
+  if (!confirm(`Начислить ${fmtC(amount)} CORE пользователю ${currentPlayerData.firstName||currentPlayerData.username||currentPlayerData.telegramId}?`)) return;
+  try {
+    const d = await apiFetch('/api/admin/players/'+currentPlayerData.telegramId+'/give-balance',{method:'POST',body:{amount}});
+    currentPlayerData.balance = d.balance;
+    document.getElementById('pm-give-input').value = '';
+    renderPlayerModal(currentPlayerData); loadPlayers(playersCurrentPage);
   } catch(e) { alert('Ошибка: '+e.message); }
 }
 
