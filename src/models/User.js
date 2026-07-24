@@ -30,6 +30,9 @@ const userSchema = new mongoose.Schema({
   knownIps:   { type: [String], default: [] },
   hwid:       { type: String, default: '' },
 
+  checkInStreak: { type: Number, default: 0 },
+  lastCheckIn:   { type: Date,   default: null },
+
   createdAt:  { type: Date, default: Date.now },
   lastActive: { type: Date, default: Date.now },
 }, { versionKey: false });

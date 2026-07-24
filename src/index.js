@@ -34,6 +34,7 @@ app.use('/api',                  apiLimiter,     require('./routes/mining'));
 
 app.use('/api/promo',      apiLimiter, require('./routes/promo'));
 app.use('/api/leaderboard', apiLimiter, require('./routes/leaderboard'));
+app.use('/api/checkin',    apiLimiter, require('./routes/checkin'));
 
 // Admin routes
 app.use('/api/admin', require('./routes/admin'));
