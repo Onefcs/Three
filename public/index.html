@@ -1595,14 +1595,16 @@ async function initAuth(){
     refLink=data.user.referralLink;
     // Server is always source of truth — override local state completely
     st.balance=data.user.balance;
+    // Reset all GPU counts first so another account's cached counts don't bleed in
+    GPUS.forEach(g=>g.count=0);
     if(data.user.gpus&&data.user.gpus.length){
       data.user.gpus.forEach(slot=>{
         const gpu=GPUS.find(g=>g.id===slot.gpuId);
         if(gpu)gpu.count=slot.count;
       });
-      perSec=calcPerSec();
-      buildCards();
     }
+    perSec=calcPerSec();
+    buildCards();
     // Recalculate pending from server's lastCollectTime, capped at 5-hour farm window
     if(data.user.lastCollectTime){
       collectTime=new Date(data.user.lastCollectTime).getTime();
