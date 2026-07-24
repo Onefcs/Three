@@ -102,33 +102,46 @@ main::-webkit-scrollbar{display:none}
 .ci-btn.has-reward{color:var(--acc)}
 .ci-dot{position:absolute;top:1px;right:1px;width:7px;height:7px;background:#ff5f5f;border-radius:50%;border:1.5px solid var(--surf);display:none}
 .ci-btn.has-reward .ci-dot{display:block}
-.ci-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;display:flex;align-items:flex-end;justify-content:center}
-.ci-sheet{background:var(--surf);border-radius:20px 20px 0 0;border-top:1px solid var(--bdr);width:100%;max-width:430px;padding:16px 14px 36px;max-height:92vh;overflow-y:auto;scrollbar-width:none}
-.ci-sheet::-webkit-scrollbar{display:none}
-.ci-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.ci-title{font-size:16px;font-weight:900;color:var(--tx)}
-.ci-x{background:none;border:none;color:var(--tx2);font-size:22px;cursor:pointer;line-height:1}
-.ci-streak-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;background:linear-gradient(135deg,#091a0b,#0d1b0f);border:1px solid var(--bdr2);border-radius:14px;padding:12px 20px}
-.ci-streak-num{font-size:28px;font-weight:900;color:var(--acc)}
-.ci-streak-lbl{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
-.ci-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-bottom:14px}
-.ci-day{border:1px solid var(--bdr);border-radius:8px;padding:5px 3px 6px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;background:var(--card)}
-.ci-day-n{font-size:9px;font-weight:800;color:var(--tx3);line-height:1}
-.ci-day-r{font-size:11px;font-weight:900;color:var(--tx3);line-height:1}
-.ci-day.ci-claimed{border-color:rgba(61,224,112,.4);background:rgba(61,224,112,.06)}
-.ci-day.ci-claimed .ci-day-n,.ci-day.ci-claimed .ci-day-r{color:var(--acc)}
-.ci-day.ci-today{border-color:var(--acc);background:rgba(61,224,112,.13);animation:cipulse 2s ease infinite}
-.ci-day.ci-today .ci-day-n,.ci-day.ci-today .ci-day-r{color:var(--acc)}
-.ci-day.ci-special{border-color:#5b21b6}
-.ci-day.ci-special .ci-day-r{font-size:7px;color:#a78bfa;letter-spacing:0;font-weight:800;white-space:nowrap}
-.ci-day.ci-claimed.ci-special{border-color:rgba(124,58,237,.6);background:rgba(124,58,237,.1)}
-.ci-day.ci-claimed.ci-special .ci-day-n,.ci-day.ci-claimed.ci-special .ci-day-r{color:#a78bfa}
-.ci-day.ci-today.ci-special{border-color:#a78bfa;box-shadow:0 0 10px rgba(167,139,250,.3)}
+.ci-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:300;display:flex;align-items:flex-end;justify-content:center}
+.ci-sheet{background:var(--surf);border-radius:24px 24px 0 0;width:100%;max-width:430px;padding:0 0 44px;overflow:hidden;animation:ci-slide-up .32s cubic-bezier(.34,1.1,.64,1) both}
+@keyframes ci-slide-up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.ci-handle{width:36px;height:4px;background:var(--bdr2);border-radius:2px;margin:12px auto 0}
+.ci-top{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 0}
+.ci-title{font-size:17px;font-weight:900;color:var(--tx);letter-spacing:-.3px}
+.ci-x{background:var(--card);border:1px solid var(--bdr);color:var(--tx2);width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.ci-x:active{background:var(--bdr)}
+.ci-streak-banner{margin:14px 14px 0;background:linear-gradient(135deg,#060f06 0%,#0d1b0d 100%);border:1px solid var(--bdr2);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden}
+.ci-streak-banner::after{content:'';position:absolute;right:-20px;top:-20px;width:120px;height:120px;background:radial-gradient(circle,rgba(61,224,112,.09),transparent 65%);pointer-events:none}
+.ci-streak-ico{width:46px;height:46px;display:flex;align-items:center;justify-content:center;background:rgba(61,224,112,.09);border-radius:14px;border:1px solid rgba(61,224,112,.18);flex-shrink:0}
+.ci-streak-info{flex:1;min-width:0}
+.ci-streak-num{font-size:30px;font-weight:900;color:var(--acc);line-height:1;font-variant-numeric:tabular-nums}
+.ci-streak-lbl{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px;font-weight:700;margin-top:3px}
+.ci-streak-badge{font-size:10px;font-weight:800;color:var(--acc);background:rgba(61,224,112,.1);border:1px solid rgba(61,224,112,.22);border-radius:20px;padding:5px 10px;white-space:nowrap;flex-shrink:0}
+.ci-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 14px 14px;padding-top:6px}
+.ci-day{border:1px solid var(--bdr);border-radius:11px;padding:7px 4px 7px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--card);position:relative}
+.ci-day-n{font-size:8px;font-weight:700;color:var(--tx3);line-height:1;position:absolute;top:5px;right:6px}
+.ci-day-ico{width:24px;height:24px;display:flex;align-items:center;justify-content:center;margin-top:8px}
+.ci-day-r{font-size:9px;font-weight:800;color:var(--tx3);line-height:1}
+.ci-day.ci-claimed{border-color:rgba(61,224,112,.28);background:rgba(61,224,112,.05)}
+.ci-day.ci-claimed .ci-day-n{color:var(--acc)}
+.ci-day.ci-claimed .ci-day-r{color:var(--acc)}
+.ci-day.ci-today{border-color:var(--acc);background:rgba(61,224,112,.1);animation:cipulse 2s ease infinite}
+.ci-day.ci-today .ci-day-n{color:var(--acc)}
+.ci-day.ci-today .ci-day-r{color:var(--acc)}
+.ci-today-tag{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--acc);color:#000;font-size:7px;font-weight:900;padding:2px 6px;border-radius:4px;white-space:nowrap;letter-spacing:.4px}
+.ci-day.ci-special{border-color:rgba(124,58,237,.42)}
+.ci-day.ci-special .ci-day-r{color:#a78bfa}
+.ci-day.ci-claimed.ci-special{border-color:rgba(124,58,237,.58);background:rgba(91,33,182,.09)}
+.ci-day.ci-claimed.ci-special .ci-day-n,.ci-day.ci-claimed.ci-special .ci-day-r{color:#c4b5fd}
+.ci-day.ci-today.ci-special{border-color:#a78bfa;animation:cipulse-p 2s ease infinite}
 .ci-day.ci-today.ci-special .ci-day-n,.ci-day.ci-today.ci-special .ci-day-r{color:#c4b5fd}
-@keyframes cipulse{0%,100%{box-shadow:0 0 8px var(--acc-glow)}50%{box-shadow:0 0 18px rgba(61,224,112,.5)}}
-.ci-claim{width:100%;background:var(--acc);border:none;border-radius:12px;padding:14px 0;font-size:15px;font-weight:900;color:#000;cursor:pointer;letter-spacing:.5px;transition:opacity .15s}
-.ci-claim:disabled{opacity:.4;cursor:default;background:var(--card);color:var(--tx2)}
-.ci-claim-msg{text-align:center;font-size:12px;color:var(--tx2);margin-top:8px;min-height:16px}
+@keyframes cipulse{0%,100%{box-shadow:0 0 10px var(--acc-glow)}50%{box-shadow:0 0 22px rgba(61,224,112,.5)}}
+@keyframes cipulse-p{0%,100%{box-shadow:0 0 10px rgba(124,58,237,.3)}50%{box-shadow:0 0 22px rgba(124,58,237,.6)}}
+.ci-claim-wrap{padding:0 14px}
+.ci-claim{width:100%;background:linear-gradient(135deg,var(--acc) 0%,#22a852 100%);border:none;border-radius:14px;padding:16px 0;font-size:15px;font-weight:900;color:#000;cursor:pointer;letter-spacing:.5px;transition:transform .12s,box-shadow .12s;box-shadow:0 4px 24px var(--acc-glow)}
+.ci-claim:active:not(:disabled){transform:scale(.97)}
+.ci-claim:disabled{background:var(--card);color:var(--tx3);box-shadow:none;border:1px solid var(--bdr);cursor:default}
+.ci-claim-msg{text-align:center;font-size:12px;font-weight:600;color:var(--tx2);margin-top:10px;min-height:18px;padding:0 10px}
 .ci-claim-msg.ok{color:var(--acc)}
 .ci-claim-msg.err{color:#f85149}
 
@@ -743,22 +756,35 @@ main::-webkit-scrollbar{display:none}
 <!-- CHECK-IN MODAL -->
 <div id="ci-overlay" class="ci-overlay" style="display:none" onclick="if(event.target===this)closeCheckin()">
   <div class="ci-sheet">
+    <div class="ci-handle"></div>
     <div class="ci-top">
       <div class="ci-title">Ежедневный вход</div>
-      <button class="ci-x" onclick="closeCheckin()">✕</button>
+      <button class="ci-x" onclick="closeCheckin()" aria-label="Закрыть">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
     </div>
-    <div class="ci-streak-row">
-      <div style="font-size:26px">🔥</div>
-      <div>
+    <div class="ci-streak-banner">
+      <div class="ci-streak-ico">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C9 7.5 5 10.5 5 14.5C5 18.6 8.1 22 12 22C15.9 22 19 18.6 19 14.5C19 10.5 15 7.5 12 2Z" fill="var(--acc)" opacity="0.22"/>
+          <path d="M12 5.5C10 9.5 7.5 11.5 7.5 14.5C7.5 17.5 9.5 19.5 12 19.5C14.5 19.5 16.5 17.5 16.5 14.5C16.5 11.5 14 9.5 12 5.5Z" fill="var(--acc)"/>
+          <ellipse cx="12" cy="16" rx="2.2" ry="2.8" fill="#000" opacity="0.18"/>
+        </svg>
+      </div>
+      <div class="ci-streak-info">
         <div class="ci-streak-num" id="ci-streak-num">0</div>
         <div class="ci-streak-lbl">дней подряд</div>
       </div>
+      <div class="ci-streak-badge" id="ci-day-badge">День 1</div>
     </div>
     <div class="ci-grid" id="ci-grid"></div>
-    <button class="ci-claim" id="ci-claim-btn" onclick="doCheckin()">Получить награду</button>
-    <div class="ci-claim-msg" id="ci-claim-msg"></div>
+    <div class="ci-claim-wrap">
+      <button class="ci-claim" id="ci-claim-btn" onclick="doCheckin()">Получить награду</button>
+      <div class="ci-claim-msg" id="ci-claim-msg"></div>
+    </div>
   </div>
 </div>
+<div id="ci-anim-layer" style="position:fixed;inset:0;pointer-events:none;z-index:400;overflow:hidden"></div>
 
 <nav class="bot-nav">
   <button class="nav-btn active" onclick="showPage('mining',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></span><span data-i18n="nav.mining">Майнинг</span></button>
@@ -1801,6 +1827,12 @@ requestAnimationFrame(loop);
 /* ── CHECK-IN ── */
 const CI_GPU_DAYS = {15:'RTX 3060Ti', 30:'RTX 3060Ti'};
 let ciState = null;
+
+const _CI_COIN_SVG = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px"><circle cx="12" cy="12" r="10" fill="rgba(61,224,112,.12)" stroke="#3de070" stroke-width="1.5"/><circle cx="12" cy="12" r="6.5" fill="rgba(61,224,112,.07)" stroke="rgba(61,224,112,.28)" stroke-width="1"/><text x="12" y="16.5" text-anchor="middle" font-size="9" font-weight="900" fill="#3de070" font-family="-apple-system,system-ui,sans-serif">C</text></svg>`;
+const _CI_GPU_SVG  = `<svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px"><rect x="2" y="7" width="20" height="11" rx="2" fill="rgba(124,58,237,.08)"/><rect x="6" y="10" width="12" height="5" rx="1" fill="rgba(167,139,250,.12)" stroke="#a78bfa" stroke-width="1"/><line x1="7" y1="7" x2="7" y2="5"/><line x1="10" y1="7" x2="10" y2="5"/><line x1="14" y1="7" x2="14" y2="5"/><line x1="17" y1="7" x2="17" y2="5"/><line x1="7" y1="18" x2="7" y2="20"/><line x1="10" y1="18" x2="10" y2="20"/><line x1="14" y1="18" x2="14" y2="20"/><line x1="17" y1="18" x2="17" y2="20"/></svg>`;
+const _CI_CHECK_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="#3de070" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><polyline points="20 6 9 17 4 12"/></svg>`;
+const _CI_CHECK_P_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><polyline points="20 6 9 17 4 12"/></svg>`;
+
 async function loadCiStatus(){
   if(!authToken)return;
   try{
@@ -1813,6 +1845,7 @@ async function loadCiStatus(){
 function openCheckin(){
   if(!ciState)return;
   document.getElementById('ci-streak-num').textContent=ciState.streak||0;
+  _ciUpdateBadge();
   renderCiGrid();
   const btn=document.getElementById('ci-claim-btn');
   const msg=document.getElementById('ci-claim-msg');
@@ -1822,20 +1855,65 @@ function openCheckin(){
   document.getElementById('ci-overlay').style.display='flex';
 }
 function closeCheckin(){document.getElementById('ci-overlay').style.display='none';}
+function _ciUpdateBadge(){
+  const el=document.getElementById('ci-day-badge');
+  if(!el)return;
+  const claimed=ciState.claimedInCycle||0;
+  el.textContent=ciState.canCheckIn?'День '+(claimed+1):claimed+'/30';
+}
 function renderCiGrid(){
   const grid=document.getElementById('ci-grid');
   const claimed=ciState.claimedInCycle||0;
-  const canClaim=ciState.canCheckIn;
-  const todayDay=canClaim?claimed+1:null;
+  const todayDay=ciState.canCheckIn?claimed+1:null;
   grid.innerHTML=Array.from({length:30},(_,i)=>{
     const day=i+1;
-    const isSpecial=CI_GPU_DAYS[day];
+    const isSpecial=!!CI_GPU_DAYS[day];
     const isClaimed=day<=claimed;
     const isToday=day===todayDay;
     const cls=['ci-day',isClaimed?'ci-claimed':'',isToday?'ci-today':'',isSpecial?'ci-special':''].filter(Boolean).join(' ');
-    const rewardTxt=isSpecial?CI_GPU_DAYS[day]:(isClaimed||isToday?'10🪙':'10');
-    return`<div class="${cls}"><div class="ci-day-n">${day}</div><div class="ci-day-r">${isSpecial?'🖥️':'🪙'}<br>${isSpecial?CI_GPU_DAYS[day]:'10'}</div></div>`;
+    const ico=isClaimed?(isSpecial?_CI_CHECK_P_SVG:_CI_CHECK_SVG):isSpecial?_CI_GPU_SVG:_CI_COIN_SVG;
+    const rewardTxt=isSpecial?'GPU':'10 C';
+    const badge=isToday?'<div class="ci-today-tag">СЕГОДНЯ</div>':'';
+    return`<div class="${cls}" id="ci-cell-${day}">${badge}<div class="ci-day-n">${day}</div><div class="ci-day-ico">${ico}</div><div class="ci-day-r">${rewardTxt}</div></div>`;
   }).join('');
+}
+function _ciAnimCount(el,from,to){
+  const dur=550,start=performance.now();
+  (function tick(now){
+    const t=Math.min((now-start)/dur,1),e=1-Math.pow(1-t,3);
+    el.textContent=Math.round(from+(to-from)*e);
+    if(t<1)requestAnimationFrame(tick);
+  })(start);
+}
+function _ciSpawnParticles(isGpu){
+  const layer=document.getElementById('ci-anim-layer');
+  const btn=document.getElementById('ci-claim-btn');
+  if(!layer||!btn)return;
+  const rect=btn.getBoundingClientRect();
+  const coinImgSrc=(document.querySelector('.coin-ico')||{}).src||'';
+  const count=isGpu?7:15;
+  for(let i=0;i<count;i++){
+    const el=document.createElement('div');
+    const sx=rect.left+rect.width/2+(Math.random()-.5)*rect.width*.75;
+    const sy=rect.top+6;
+    el.style.cssText=`position:fixed;left:${sx-10}px;top:${sy-10}px;width:20px;height:20px;pointer-events:none;z-index:401`;
+    if(isGpu){
+      el.innerHTML=_CI_GPU_SVG;
+    } else if(coinImgSrc){
+      el.innerHTML=`<img src="${coinImgSrc}" style="width:20px;height:20px;border-radius:50%;object-fit:cover">`;
+    } else {
+      el.innerHTML=_CI_COIN_SVG;
+    }
+    layer.appendChild(el);
+    const dx=(Math.random()-.5)*110;
+    const dy=-(90+Math.random()*170);
+    const rot=(Math.random()>.5?1:-1)*(200+Math.random()*400);
+    const anim=el.animate([
+      {transform:'translate(0,0) rotate(0deg) scale(1)',opacity:1},
+      {transform:`translate(${dx}px,${dy}px) rotate(${rot}deg) scale(.15)`,opacity:0}
+    ],{duration:850+Math.random()*450,delay:i*55,easing:'cubic-bezier(.25,.46,.45,.94)',fill:'both'});
+    anim.onfinish=()=>el.remove();
+  }
 }
 async function doCheckin(){
   const btn=document.getElementById('ci-claim-btn');
@@ -1845,24 +1923,35 @@ async function doCheckin(){
     const r=await fetch(API_BASE+'/api/checkin',{method:'POST',headers:{'Authorization':'Bearer '+authToken}});
     const d=await r.json();
     if(!r.ok){msg.className='ci-claim-msg err';msg.textContent=d.error||'Ошибка';btn.disabled=false;return;}
-    // Update state
+    const prevStreak=ciState.streak||0;
     ciState.streak=d.streak;
     ciState.canCheckIn=false;
     ciState.claimedInCycle=((d.streak-1)%30)+1;
-    document.getElementById('ci-streak-num').textContent=d.streak;
     document.getElementById('ci-hdr-btn').classList.remove('has-reward');
     btn.textContent='Вернитесь завтра';
     msg.className='ci-claim-msg ok';
+    _ciSpawnParticles(!!d.gpuId);
+    _ciAnimCount(document.getElementById('ci-streak-num'),prevStreak,d.streak);
+    _ciUpdateBadge();
+    renderCiGrid();
+    const day=((d.streak-1)%30)+1;
+    const cell=document.getElementById('ci-cell-'+day);
+    if(cell){
+      cell.animate([
+        {transform:'scale(1)',boxShadow:'none'},
+        {transform:'scale(1.2)',boxShadow:d.gpuId?'0 0 22px rgba(124,58,237,.7)':'0 0 22px var(--acc-glow)'},
+        {transform:'scale(.96)',boxShadow:'none'},
+        {transform:'scale(1)',boxShadow:'none'}
+      ],{duration:420,easing:'ease'});
+    }
     if(d.gpuId){
-      msg.textContent='Получена видеокарта RTX 3060Ti!';
-      // Update local GPU data
+      msg.textContent='Получена видеокарта RTX 3060Ti! 🎉';
       const gpu=GPUS.find(g=>g.id===d.gpuId);
       if(gpu){gpu.count+=1;perSec=calcPerSec();buildCards();}
     } else {
       msg.textContent='+'+d.reward+' CORE начислено!';
       st.balance+=d.reward;updateUI();
     }
-    renderCiGrid();
   }catch(e){msg.className='ci-claim-msg err';msg.textContent='Ошибка сети';btn.disabled=false;}
 }
 
