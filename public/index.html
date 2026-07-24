@@ -127,21 +127,6 @@ main::-webkit-scrollbar{display:none}
 .ph-title{font-size:14px;font-weight:900;color:var(--tx);opacity:.6;text-align:center}
 .ph-sub{font-size:11px;color:var(--tx2);text-align:center;line-height:1.5;max-width:220px}
 
-/* LEADERBOARD */
-.lb-page{display:flex;flex-direction:column;align-items:stretch;padding:14px;gap:12px;overflow-y:auto}
-.lb-tabs{display:flex;background:var(--card);border-radius:10px;padding:3px;gap:3px;border:1px solid var(--bdr)}
-.lb-tab{flex:1;padding:7px 4px;border:none;background:none;border-radius:8px;font-size:11px;font-weight:800;color:var(--tx2);cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:.3px}
-.lb-tab.active{background:var(--acc);color:#000}
-.lb-list{display:flex;flex-direction:column;gap:6px}
-.lb-row{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:10px 12px}
-.lb-row.lb-self{border-color:var(--acc);background:rgba(var(--acc-rgb,.6 1 .4),.06)}
-.lb-rank{font-size:12px;font-weight:900;color:var(--tx2);min-width:26px;text-align:center}
-.lb-rank.top1{color:#f5c518;font-size:14px}
-.lb-rank.top2{color:#c0c0c0;font-size:13px}
-.lb-rank.top3{color:#cd7f32;font-size:13px}
-.lb-name{flex:1;font-size:13px;font-weight:700;color:var(--tx1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lb-val{font-size:12px;font-weight:800;color:var(--acc);font-variant-numeric:tabular-nums;text-align:right}
-.lb-empty{text-align:center;color:var(--tx2);font-size:12px;padding:28px 0}
 /* PROMO CODE */
 .promo-box{background:var(--surf);border:1px solid var(--bdr);border-radius:14px;padding:14px;margin-top:12px}
 .promo-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2);margin-bottom:10px}
@@ -161,9 +146,8 @@ main::-webkit-scrollbar{display:none}
 .lang-btn.active{background:var(--acc);color:#000}
 
 /* NAV */
-.bot-nav{flex-shrink:0;display:flex;overflow-x:auto;scrollbar-width:none;background:var(--surf);border-top:1px solid var(--bdr);padding-bottom:env(safe-area-inset-bottom,0)}
-.bot-nav::-webkit-scrollbar{display:none}
-.nav-btn{flex:0 0 calc(100%/6);min-width:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 4px;background:none;border:none;cursor:pointer;color:var(--tx3);font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;transition:color .15s;position:relative;white-space:nowrap}
+.bot-nav{flex-shrink:0;display:flex;background:var(--surf);border-top:1px solid var(--bdr);padding-bottom:env(safe-area-inset-bottom,0)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 4px;background:none;border:none;cursor:pointer;color:var(--tx3);font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;transition:color .15s;position:relative}
 .nav-btn.active{color:var(--acc)}
 .nav-btn.active::after{content:"";position:absolute;top:0;left:22%;right:22%;height:2px;background:var(--acc);border-radius:0 0 2px 2px;box-shadow:0 0 7px var(--acc)}
 .nav-ico{width:20px;height:20px;display:flex;align-items:center;justify-content:center}.nav-ico svg{display:block}
@@ -610,16 +594,6 @@ main::-webkit-scrollbar{display:none}
 
 </div>
 
-<div id="page-leaderboard" class="page" style="display:none">
-<div class="lb-page">
-  <div class="lb-tabs">
-    <button class="lb-tab active" id="lb-tab-balance" onclick="lbSwitch('balance',this)">Баланс</button>
-    <button class="lb-tab" id="lb-tab-income" onclick="lbSwitch('income',this)">Доход/с</button>
-    <button class="lb-tab" id="lb-tab-referrals" onclick="lbSwitch('referrals',this)">Рефералы</button>
-  </div>
-  <div class="lb-list" id="lb-list"><div class="lb-empty">Загрузка...</div></div>
-</div>
-</div>
 
 </main>
 
@@ -728,7 +702,6 @@ main::-webkit-scrollbar{display:none}
   <button class="nav-btn" onclick="showPage('tasks',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span data-i18n="nav.tasks">Задания</span></button>
   <button class="nav-btn" onclick="showPage('friends',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span data-i18n="nav.friends">Друзья</span></button>
   <button class="nav-btn" onclick="showPage('wallet',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12h2"/><path d="M2 10h20"/></svg></span><span data-i18n="nav.wallet">Кошелёк</span></button>
-  <button class="nav-btn" onclick="showPage('leaderboard',this)"><span class="nav-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg></span>Топ</button>
 </nav>
 </div></div>
 
@@ -1190,7 +1163,6 @@ function showPage(id,btn){
   if(id==='wallet') wlRefresh();
   if(id==='tasks'){loadTasks();loadSocialStatus();}
   if(id==='halving') loadHalving();
-  if(id==='leaderboard') lbLoad();
 }
 
 /* ── HALVING ── */
@@ -1790,31 +1762,4 @@ async function redeemPromo(){
   finally{btn.disabled=false;}
 }
 
-/* ── LEADERBOARD ── */
-let lbType='balance';
-async function lbLoad(){
-  const list=document.getElementById('lb-list');
-  list.innerHTML='<div class="lb-empty">Загрузка...</div>';
-  try{
-    const r=await fetch(API_BASE+'/api/leaderboard?type='+lbType,{headers:{'Authorization':'Bearer '+authToken}});
-    const d=await r.json();
-    if(!d.top||!d.top.length){list.innerHTML='<div class="lb-empty">Нет данных</div>';return;}
-    list.innerHTML=d.top.map(u=>{
-      const rankCls=u.rank===1?'top1':u.rank===2?'top2':u.rank===3?'top3':'';
-      const medal=u.rank===1?'🥇':u.rank===2?'🥈':u.rank===3?'🥉':u.rank;
-      let val='';
-      if(lbType==='balance')val=(u.value>=1e6?(u.value/1e6).toFixed(2)+'M':u.value>=1e3?(u.value/1e3).toFixed(1)+'K':u.value.toFixed(2))+' CORE';
-      else if(lbType==='income')val=u.value<0.001?(u.value*3600).toFixed(4)+'/ч':u.value.toFixed(6)+'/с';
-      else val=u.value+' реф.';
-      return`<div class="lb-row"><div class="lb-rank ${rankCls}">${medal}</div><div class="lb-name">${esc2(u.name)}</div><div class="lb-val">${val}</div></div>`;
-    }).join('');
-  }catch(e){list.innerHTML='<div class="lb-empty">Ошибка загрузки</div>';}
-}
-function lbSwitch(type,btn){
-  lbType=type;
-  document.querySelectorAll('.lb-tab').forEach(t=>t.classList.remove('active'));
-  btn.classList.add('active');
-  lbLoad();
-}
-function esc2(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 </script>
