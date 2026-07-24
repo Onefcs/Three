@@ -157,6 +157,11 @@ td.mono{font-family:var(--mono);font-size:11px}
 .modal-close{background:var(--bg);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:0;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .modal-close:active{color:var(--text)}
 .modal-body{padding:16px 18px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+.modal-footer{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0}
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.form-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);font-family:var(--font);outline:none;transition:border-color .15s}
+.form-input:focus{border-color:var(--accent)}
+.err-msg{font-size:12px;color:var(--danger);padding:8px 10px;background:rgba(248,81,73,.1);border-radius:6px;border:1px solid rgba(248,81,73,.3)}
 
 /* ════════════════════════════ TABS */
 .tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -208,6 +213,37 @@ td.mono{font-family:var(--mono);font-size:11px}
 .balance-row{display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap}
 .balance-row input{width:140px;flex-shrink:0}
 
+/* ════════════════════════════ CHART */
+.chart-wrap{background:#010409;border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:20px}
+.chart-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px}
+#user-chart{width:100%;display:block}
+
+/* ════════════════════════════ SUSPICIOUS */
+.sus-group{border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
+.sus-key{font-family:var(--mono);font-size:12px;color:var(--warning);margin-bottom:8px;font-weight:700;word-break:break-all}
+.sus-count{font-size:11px;color:var(--muted);margin-left:8px}
+.sus-users{display:flex;flex-wrap:wrap;gap:6px}
+.sus-user{padding:5px 11px;background:#010409;border:1px solid var(--border);border-radius:20px;font-size:13px;cursor:pointer;transition:border-color .15s}
+.sus-user:active{border-color:var(--accent)}
+.sus-user.banned{border-color:rgba(248,81,73,.4);color:var(--danger)}
+.sus-tabs{display:flex;gap:8px;margin-bottom:16px}
+.sus-tab{padding:8px 16px;border:1px solid var(--border);border-radius:var(--r);background:var(--card);color:var(--muted);cursor:pointer;font-size:13px;font-weight:600;transition:all .15s}
+.sus-tab.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ════════════════════════════ PROMO */
+.promo-card{display:flex;align-items:center;gap:10px;background:#010409;border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;flex-wrap:wrap}
+.promo-code{font-family:var(--mono);font-size:15px;font-weight:800;color:var(--accent);flex:1;min-width:100px}
+.promo-meta{font-size:12px;color:var(--muted);flex:1;min-width:80px}
+.promo-actions{display:flex;gap:6px;flex-shrink:0}
+
+/* ════════════════════════════ FINANCE */
+.fin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:767px){.fin-grid{grid-template-columns:1fr 1fr}}
+.fin-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px}
+.fin-label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:4px}
+.fin-val{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.fin-section-title{font-size:13px;font-weight:700;margin:16px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+
 /* ════════════════════════════ BROADCAST */
 .broadcast-result{margin-top:12px;padding:12px 14px;border-radius:var(--r);font-size:13px}
 .broadcast-result.ok{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3);color:var(--success)}
@@ -226,11 +262,12 @@ td.mono{font-family:var(--mono);font-size:11px}
 
 /* ════════════════════════════ BOTTOM NAV */
 #bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--nav);border-top:1px solid var(--border);display:none;z-index:30;padding-bottom:var(--safe-b)}
-.bn-items{display:flex;align-items:stretch}
-.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;cursor:pointer;color:var(--muted);gap:3px;min-height:54px;transition:color .15s;-webkit-tap-highlight-color:transparent}
+.bn-items{display:flex;align-items:stretch;overflow-x:auto;scrollbar-width:none}
+.bn-items::-webkit-scrollbar{display:none}
+.bn-item{flex:0 0 auto;min-width:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 8px 8px;cursor:pointer;color:var(--muted);gap:3px;min-height:54px;transition:color .15s;-webkit-tap-highlight-color:transparent}
 .bn-item.active{color:var(--accent)}
 .bn-item svg{width:22px;height:22px;flex-shrink:0}
-.bn-label{font-size:10px;font-weight:600;letter-spacing:.2px}
+.bn-label{font-size:9px;font-weight:600;letter-spacing:.2px;white-space:nowrap}
 
 /* ════════════════════════════ MOBILE OVERRIDES */
 @media (max-width: 767px) {
@@ -296,6 +333,18 @@ td.mono{font-family:var(--mono);font-size:11px}
         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2.5A.5.5 0 0 1 2.5 2h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 2.5zm0 4A.5.5 0 0 1 2.5 6h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 6.5zm0 4A.5.5 0 0 1 2.5 10h6a.5.5 0 0 1 0 1h-6A.5.5 0 0 1 2 10.5z"/></svg>
         Задания
       </div>
+      <div class="sb-item" data-page="suspicious" onclick="gotoPage('suspicious')">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
+        Подозрит.
+      </div>
+      <div class="sb-item" data-page="promo" onclick="gotoPage('promo')">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/></svg>
+        Промокоды
+      </div>
+      <div class="sb-item" data-page="finance" onclick="gotoPage('finance')">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H1.5a.5.5 0 0 1-.5-.5zm-1-8A1.5 1.5 0 0 1 1.5 1h13A1.5 1.5 0 0 1 16 2.5v2A1.5 1.5 0 0 1 14.5 6h-13A1.5 1.5 0 0 1 0 4.5v-2zM1.5 2a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5h-13zM0 11.5A1.5 1.5 0 0 1 1.5 10h13a1.5 1.5 0 0 1 1.5 1.5v2a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-2zm1.5-.5a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5h-13z"/></svg>
+        Финансы
+      </div>
       <div class="sb-item" data-page="broadcast" onclick="gotoPage('broadcast')">
         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13 2.5a1.5 1.5 0 0 1 3 0v11a1.5 1.5 0 0 1-3 0v-.214c-2.162-1.241-4.49-1.843-6.912-2.083l.405 2.712A1 1 0 0 1 5.5 15.5h-2a1 1 0 0 1-.976-1.215l.41-2.801C1.862 11.074 1 9.957 1 8.5c0-1.457.862-2.574 1.934-2.984l-.41-2.8A1 1 0 0 1 3.5.5h2a1 1 0 0 1 .993 1.129L6.084 4.4C8.51 4.16 10.84 3.558 13 2.714V2.5z"/></svg>
         Рассылка
@@ -328,6 +377,55 @@ td.mono{font-family:var(--mono);font-size:11px}
         </div>
         <div class="progress-track"><div class="progress-fill" id="halving-fill" style="width:0%"></div></div>
       </div>
+      <div class="chart-wrap">
+        <div class="chart-title">Новые пользователи — последние 30 дней</div>
+        <canvas id="user-chart" height="160"></canvas>
+      </div>
+    </div>
+
+    <!-- ── SUSPICIOUS ── -->
+    <div id="page-suspicious" class="page" style="display:none">
+      <div class="page-header">
+        <div><div class="page-title">Подозрительные</div><div class="page-sub">Аккаунты с совпадающим IP или HWID</div></div>
+        <button class="btn btn-ghost btn-sm" onclick="loadSuspicious()">↻</button>
+      </div>
+      <div class="sus-tabs">
+        <button class="sus-tab active" id="sus-tab-ip" onclick="susSwitchTab('ip')">По IP</button>
+        <button class="sus-tab" id="sus-tab-hwid" onclick="susSwitchTab('hwid')">По HWID</button>
+      </div>
+      <div id="sus-ip-list"></div>
+      <div id="sus-hwid-list" style="display:none"></div>
+    </div>
+
+    <!-- ── PROMO ── -->
+    <div id="page-promo" class="page" style="display:none">
+      <div class="page-header">
+        <div><div class="page-title">Промокоды</div></div>
+        <button class="btn btn-ghost btn-sm" onclick="loadPromo()">↻</button>
+      </div>
+      <div class="task-create-form">
+        <h3>+ Создать промокод</h3>
+        <div class="form-row">
+          <div class="form-group" style="margin:0"><label>Код (латиница)</label><input type="text" id="pr-code" placeholder="SUPER2025" style="text-transform:uppercase"></div>
+          <div class="form-group" style="margin:0"><label>Бонус CORE</label><input type="number" id="pr-value" placeholder="1000" min="0.01" inputmode="decimal"></div>
+        </div>
+        <div class="form-row" style="margin-top:12px">
+          <div class="form-group" style="margin:0"><label>Макс. активаций (0=∞)</label><input type="number" id="pr-max" value="0" min="0" inputmode="numeric"></div>
+          <div class="form-group" style="margin:0"><label>Истекает (необязательно)</label><input type="datetime-local" id="pr-expires"></div>
+        </div>
+        <div id="pr-err" class="err" style="display:none"></div>
+        <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="createPromo()">Создать</button>
+      </div>
+      <div id="promo-list"></div>
+    </div>
+
+    <!-- ── FINANCE ── -->
+    <div id="page-finance" class="page" style="display:none">
+      <div class="page-header">
+        <div><div class="page-title">Финансы</div><div class="page-sub">Экономический отчёт</div></div>
+        <button class="btn btn-ghost btn-sm" onclick="loadFinance()">↻</button>
+      </div>
+      <div id="finance-content"><div class="empty"><span class="spin"></span></div></div>
     </div>
 
     <!-- ── PLAYERS ── -->
@@ -425,6 +523,18 @@ td.mono{font-family:var(--mono);font-size:11px}
         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2.5A.5.5 0 0 1 2.5 2h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 2.5zm0 4A.5.5 0 0 1 2.5 6h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 6.5zm0 4A.5.5 0 0 1 2.5 10h6a.5.5 0 0 1 0 1h-6A.5.5 0 0 1 2 10.5z"/></svg>
         <span class="bn-label">Задания</span>
       </div>
+      <div class="bn-item" data-page="suspicious" onclick="gotoPage('suspicious')">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
+        <span class="bn-label">Подозрит.</span>
+      </div>
+      <div class="bn-item" data-page="promo" onclick="gotoPage('promo')">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/></svg>
+        <span class="bn-label">Промо</span>
+      </div>
+      <div class="bn-item" data-page="finance" onclick="gotoPage('finance')">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H1.5a.5.5 0 0 1-.5-.5zm-1-8A1.5 1.5 0 0 1 1.5 1h13A1.5 1.5 0 0 1 16 2.5v2A1.5 1.5 0 0 1 14.5 6h-13A1.5 1.5 0 0 1 0 4.5v-2zM1.5 2a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5h-13zM0 11.5A1.5 1.5 0 0 1 1.5 10h13a1.5 1.5 0 0 1 1.5 1.5v2a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-2zm1.5-.5a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5h-13z"/></svg>
+        <span class="bn-label">Финансы</span>
+      </div>
       <div class="bn-item" data-page="broadcast" onclick="gotoPage('broadcast')">
         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13 2.5a1.5 1.5 0 0 1 3 0v11a1.5 1.5 0 0 1-3 0v-.214c-2.162-1.241-4.49-1.843-6.912-2.083l.405 2.712A1 1 0 0 1 5.5 15.5h-2a1 1 0 0 1-.976-1.215l.41-2.801C1.862 11.074 1 9.957 1 8.5c0-1.457.862-2.574 1.934-2.984l-.41-2.8A1 1 0 0 1 3.5.5h2a1 1 0 0 1 .993 1.129L6.084 4.4C8.51 4.16 10.84 3.558 13 2.714V2.5z"/></svg>
         <span class="bn-label">Рассылка</span>
@@ -436,6 +546,53 @@ td.mono{font-family:var(--mono);font-size:11px}
     </div>
   </div>
 
+</div>
+
+<!-- ══════════════════════════════════════════════ TASK EDIT MODAL -->
+<div class="modal-overlay hidden" id="task-edit-modal" onclick="if(event.target===this)closeTaskEdit()">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-title">Редактировать задание</div>
+      <button class="modal-close" onclick="closeTaskEdit()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="te-id">
+      <div class="form-group">
+        <label class="form-label">Заголовок</label>
+        <input class="form-input" id="te-title" type="text" placeholder="Название задания">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Описание</label>
+        <input class="form-input" id="te-desc" type="text" placeholder="Короткое описание (опционально)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ссылка</label>
+        <input class="form-input" id="te-link" type="url" placeholder="https://...">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group">
+          <label class="form-label">Макс. выполнений</label>
+          <input class="form-input" id="te-clicks" type="number" min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Награда (CORE)</label>
+          <input class="form-input" id="te-reward" type="number" min="0.000001" step="any">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Статус</label>
+        <select class="form-input" id="te-status">
+          <option value="active">Активно</option>
+          <option value="completed">Завершено</option>
+        </select>
+      </div>
+      <div class="err-msg" id="te-err" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeTaskEdit()">Отмена</button>
+      <button class="btn btn-primary" onclick="saveTaskEdit()">Сохранить</button>
+    </div>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════════════════ PLAYER MODAL -->
@@ -565,6 +722,9 @@ function gotoPage(id) {
   if (id==='dashboard') loadDashboard();
   if (id==='players') loadPlayers(1);
   if (id==='tasks') loadTasks();
+  if (id==='suspicious') loadSuspicious();
+  if (id==='promo') loadPromo();
+  if (id==='finance') loadFinance();
 }
 
 /* ─── DASHBOARD ─── */
@@ -585,8 +745,193 @@ async function loadDashboard() {
     const hc = document.getElementById('halving-card'); hc.style.display = 'block';
     document.getElementById('halving-sub').textContent = `${fmtC(d.cycleWithdrawn)} / ${fmtC(POOL)} (${pct.toFixed(1)}%)`;
     document.getElementById('halving-fill').style.width = pct+'%';
+    loadUserChart();
   } catch(e) {
     grid.innerHTML = `<div class="stat-card"><div class="stat-label">Ошибка</div><div class="stat-val danger" style="font-size:13px">${e.message}</div></div>`;
+  }
+}
+
+async function loadUserChart() {
+  try {
+    const d = await apiFetch('/api/admin/chart/users');
+    drawUserChart(d.data);
+  } catch(e) {}
+}
+
+function drawUserChart(data) {
+  const canvas = document.getElementById('user-chart');
+  if (!canvas || !data || !data.length) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth || 400;
+  const H = 160;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+  const max = Math.max(...data.map(d => d.count), 1);
+  const pad = 1.5;
+  const barW = W / data.length;
+  const areaH = H - 22;
+  // Grid lines
+  ctx.strokeStyle = '#30363d44'; ctx.lineWidth = 1;
+  [0.25,0.5,0.75,1].forEach(f => {
+    const y = areaH - f * areaH;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+  });
+  // Bars
+  data.forEach((d, i) => {
+    const barH = (d.count / max) * areaH;
+    const x = i * barW + pad;
+    const y = areaH - barH;
+    const isLast = i === data.length - 1;
+    ctx.fillStyle = isLast ? '#58a6ff' : '#58a6ff55';
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(x, y, barW - pad*2, barH, [3,3,0,0]) : ctx.rect(x, y, barW - pad*2, barH);
+    ctx.fill();
+    // Tooltip on last bar
+    if (isLast && d.count > 0) {
+      ctx.fillStyle = '#e6edf3';
+      ctx.font = `bold ${10*dpr/dpr}px system-ui`;
+      ctx.textAlign = 'center';
+      ctx.fillText(d.count, x + (barW-pad*2)/2, y - 4);
+    }
+  });
+  // X-axis labels
+  ctx.fillStyle = '#8b949e'; ctx.font = '9px system-ui';
+  ctx.textAlign = 'left'; ctx.fillText(data[0].date.slice(5), 2, H - 4);
+  ctx.textAlign = 'center'; ctx.fillText(data[Math.floor(data.length/2)].date.slice(5), W/2, H - 4);
+  ctx.textAlign = 'right'; ctx.fillText(data[data.length-1].date.slice(5), W - 2, H - 4);
+}
+
+/* ─── SUSPICIOUS ─── */
+let susData = null;
+let susTab = 'ip';
+
+async function loadSuspicious() {
+  document.getElementById('sus-ip-list').innerHTML = '<div class="empty"><span class="spin"></span></div>';
+  document.getElementById('sus-hwid-list').innerHTML = '';
+  try {
+    susData = await apiFetch('/api/admin/suspicious');
+    renderSusList();
+  } catch(e) {
+    document.getElementById('sus-ip-list').innerHTML = `<div class="empty">${e.message}</div>`;
+  }
+}
+
+function susSwitchTab(tab) {
+  susTab = tab;
+  document.getElementById('sus-tab-ip').classList.toggle('active', tab==='ip');
+  document.getElementById('sus-tab-hwid').classList.toggle('active', tab==='hwid');
+  document.getElementById('sus-ip-list').style.display = tab==='ip' ? '' : 'none';
+  document.getElementById('sus-hwid-list').style.display = tab==='hwid' ? '' : 'none';
+  renderSusList();
+}
+
+function renderSusList() {
+  if (!susData) return;
+  const list = susTab==='ip' ? susData.byIp : susData.byHwid;
+  const el = document.getElementById(susTab==='ip' ? 'sus-ip-list' : 'sus-hwid-list');
+  el.style.display = '';
+  if (!list.length) { el.innerHTML = '<div class="empty">Подозрительных аккаунтов не найдено</div>'; return; }
+  el.innerHTML = list.map(g => `
+    <div class="sus-group">
+      <div class="sus-key">${esc(g._id)}<span class="sus-count">${g.count} аккаунта</span></div>
+      <div class="sus-users">${g.users.map(u => `
+        <div class="sus-user${u.isBanned?' banned':''}" onclick="openPlayer('${u.telegramId}')">
+          ${esc(u.firstName||u.username||u.telegramId)}${u.isBanned?' 🚫':''}
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+/* ─── PROMO ─── */
+async function loadPromo() {
+  document.getElementById('promo-list').innerHTML = '<div class="empty"><span class="spin"></span></div>';
+  try {
+    const d = await apiFetch('/api/admin/promo');
+    if (!d.promos.length) { document.getElementById('promo-list').innerHTML = '<div class="empty">Промокодов нет</div>'; return; }
+    document.getElementById('promo-list').innerHTML = d.promos.map(p => {
+      const used = p.maxUses>0 ? `${p.usedCount}/${p.maxUses}` : `${p.usedCount}/∞`;
+      const exp = p.expiresAt ? new Date(p.expiresAt).toLocaleDateString('ru') : '∞';
+      return `<div class="promo-card">
+        <div class="promo-code">${esc(p.code)}</div>
+        <div class="promo-meta">+${fmtC(p.value)} CORE · ${used} · до ${exp}</div>
+        <div class="promo-actions">
+          <button class="btn btn-sm ${p.isActive?'btn-ghost':'btn-success'}" onclick="togglePromo('${p._id}')">${p.isActive?'Откл.':'Вкл.'}</button>
+          <button class="btn btn-danger btn-sm" onclick="deletePromo('${p._id}','${esc(p.code)}')">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { document.getElementById('promo-list').innerHTML = `<div class="empty">${e.message}</div>`; }
+}
+
+async function createPromo() {
+  const code = document.getElementById('pr-code').value.trim().toUpperCase();
+  const value = document.getElementById('pr-value').value;
+  const maxUses = document.getElementById('pr-max').value;
+  const expiresAt = document.getElementById('pr-expires').value;
+  const errEl = document.getElementById('pr-err');
+  errEl.style.display='none';
+  try {
+    await apiFetch('/api/admin/promo',{method:'POST',body:{code,value:parseFloat(value),maxUses:parseInt(maxUses)||0,expiresAt:expiresAt||null}});
+    document.getElementById('pr-code').value='';
+    document.getElementById('pr-value').value='';
+    loadPromo();
+  } catch(e) { errEl.textContent=e.message; errEl.style.display='block'; }
+}
+
+async function togglePromo(id) {
+  try { await apiFetch(`/api/admin/promo/${id}/toggle`,{method:'PATCH',body:{}}); loadPromo(); }
+  catch(e) { alert('Ошибка: '+e.message); }
+}
+
+async function deletePromo(id, code) {
+  if (!confirm(`Удалить промокод ${code}?`)) return;
+  try { await apiFetch(`/api/admin/promo/${id}`,{method:'DELETE'}); loadPromo(); }
+  catch(e) { alert('Ошибка: '+e.message); }
+}
+
+/* ─── FINANCE ─── */
+async function loadFinance() {
+  document.getElementById('finance-content').innerHTML = '<div class="empty"><span class="spin"></span></div>';
+  try {
+    const d = await apiFetch('/api/admin/finance');
+    const depConf = d.deposits.find(x=>x._id==='confirmed');
+    const wdConf  = d.withdrawals.find(x=>x._id==='confirmed');
+    const depPend = d.deposits.find(x=>x._id==='pending');
+    const wdPend  = d.withdrawals.find(x=>x._id==='pending');
+    document.getElementById('finance-content').innerHTML = `
+      <div class="fin-section-title">Активность</div>
+      <div class="fin-grid">
+        <div class="fin-card"><div class="fin-label">DAU (24ч)</div><div class="fin-val accent">${fmt(d.dau)}</div></div>
+        <div class="fin-card"><div class="fin-label">WAU (7д)</div><div class="fin-val accent">${fmt(d.wau)}</div></div>
+        <div class="fin-card"><div class="fin-label">Новых сегодня</div><div class="fin-val success">${fmt(d.newToday)}</div></div>
+        <div class="fin-card"><div class="fin-label">Новых за неделю</div><div class="fin-val success">${fmt(d.newWeek)}</div></div>
+      </div>
+      <div class="fin-section-title">Баланс в обороте</div>
+      <div class="fin-grid">
+        <div class="fin-card"><div class="fin-label">Всего CORE</div><div class="fin-val">${fmtC(d.totalBalance)}</div></div>
+        <div class="fin-card"><div class="fin-label">Средний</div><div class="fin-val">${fmtC(d.avgBalance)}</div></div>
+        <div class="fin-card"><div class="fin-label">Максимум</div><div class="fin-val warning">${fmtC(d.maxBalance)}</div></div>
+        <div class="fin-card"><div class="fin-label">Рефералов выдано</div><div class="fin-val">${fmtC(d.referralTotal)}</div></div>
+      </div>
+      <div class="fin-section-title">Транзакции</div>
+      <div class="fin-grid">
+        <div class="fin-card"><div class="fin-label">Депозиты подтв.</div><div class="fin-val success">${fmtC(depConf?.total||0)}<div style="font-size:12px;color:var(--muted);margin-top:2px">${fmt(depConf?.count||0)} шт.</div></div></div>
+        <div class="fin-card"><div class="fin-label">Депозиты ожид.</div><div class="fin-val warning">${fmtC(depPend?.total||0)}<div style="font-size:12px;color:var(--muted);margin-top:2px">${fmt(depPend?.count||0)} шт.</div></div></div>
+        <div class="fin-card"><div class="fin-label">Выводы подтв.</div><div class="fin-val danger">${fmtC(wdConf?.total||0)}<div style="font-size:12px;color:var(--muted);margin-top:2px">${fmt(wdConf?.count||0)} шт.</div></div></div>
+        <div class="fin-card"><div class="fin-label">Выводы ожид.</div><div class="fin-val warning">${fmtC(wdPend?.total||0)}<div style="font-size:12px;color:var(--muted);margin-top:2px">${fmt(wdPend?.count||0)} шт.</div></div></div>
+      </div>
+      <div class="fin-section-title">Халвинг</div>
+      <div class="fin-grid">
+        <div class="fin-card"><div class="fin-label">Эпоха</div><div class="fin-val">${d.halvingCount}</div></div>
+        <div class="fin-card"><div class="fin-label">Множитель</div><div class="fin-val">×${d.multiplier}</div></div>
+        <div class="fin-card"><div class="fin-label">Выведено в цикле</div><div class="fin-val">${fmtC(d.cycleWithdrawn)}</div></div>
+        <div class="fin-card"><div class="fin-label">До халвинга</div><div class="fin-val warning">${fmtC(Math.max(0,2000000-d.cycleWithdrawn))}</div></div>
+      </div>`;
+  } catch(e) {
+    document.getElementById('finance-content').innerHTML = `<div class="empty">${e.message}</div>`;
   }
 }
 
@@ -825,12 +1170,15 @@ async function giveBalance() {
 }
 
 /* ─── TASKS ─── */
+let tasksCache = {};
 async function loadTasks() {
   const loading = '<div class="empty"><span class="spin"></span></div>';
   document.getElementById('tasks-tbody-dt').innerHTML = `<tr><td colspan="7">${loading}</td></tr>`;
   document.getElementById('tasks-cards').innerHTML = loading;
   try {
     const d = await apiFetch('/api/admin/tasks');
+    tasksCache = {};
+    d.tasks.forEach(t => tasksCache[t._id] = t);
     if (!d.tasks.length) {
       document.getElementById('tasks-tbody-dt').innerHTML='<tr><td colspan="7" class="empty">Нет заданий</td></tr>';
       document.getElementById('tasks-cards').innerHTML='<div class="empty">Нет заданий</div>';
@@ -846,7 +1194,10 @@ async function loadTasks() {
         <td class="mono">${t.rewardPerClick}</td>
         <td><span class="badge ${t.creatorId==='admin'?'badge-admin':''}">${t.creatorId==='admin'?'👑 Admin':esc(t.creatorId)}</span></td>
         <td><span class="badge ${t.status==='active'?'badge-active':'badge-pending'}">${t.status==='active'?'Актив':'Завершено'}</span></td>
-        <td><button class="btn btn-danger btn-sm" onclick="deleteTask('${t._id}','${esc(t.title)}')">✕</button></td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-ghost btn-sm" style="margin-right:4px" onclick="openTaskEdit('${t._id}')">✎</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteTask('${t._id}','${esc(t.title)}')">✕</button>
+        </td>
       </tr>`;
     }).join('');
     document.getElementById('tasks-cards').innerHTML = d.tasks.map(t => {
@@ -857,7 +1208,10 @@ async function loadTasks() {
             <div class="task-card-title">${esc(t.title)}</div>
             ${t.description?`<div class="task-card-desc">${esc(t.description)}</div>`:''}
           </div>
-          <button class="btn btn-danger btn-sm" onclick="deleteTask('${t._id}','${esc(t.title)}')">✕</button>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-ghost btn-sm" onclick="openTaskEdit('${t._id}')">✎</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteTask('${t._id}','${esc(t.title)}')">✕</button>
+          </div>
         </div>
         <div class="task-card-meta">
           <span class="badge ${t.status==='active'?'badge-active':'badge-pending'}">${t.status==='active'?'Активно':'Завершено'}</span>
@@ -891,6 +1245,40 @@ async function createTask() {
     document.getElementById('t-link').value='';
     loadTasks();
   } catch(e) { errEl.textContent=e.message; errEl.style.display='block'; }
+}
+
+function openTaskEdit(id) {
+  const t = tasksCache[id];
+  if (!t) return;
+  document.getElementById('te-id').value = t._id;
+  document.getElementById('te-title').value = t.title || '';
+  document.getElementById('te-desc').value = t.description || '';
+  document.getElementById('te-link').value = t.link || '';
+  document.getElementById('te-clicks').value = t.maxClicks || '';
+  document.getElementById('te-reward').value = t.rewardPerClick || '';
+  document.getElementById('te-status').value = t.status || 'active';
+  document.getElementById('te-err').style.display = 'none';
+  document.getElementById('task-edit-modal').classList.remove('hidden');
+}
+function closeTaskEdit() {
+  document.getElementById('task-edit-modal').classList.add('hidden');
+}
+async function saveTaskEdit() {
+  const id = document.getElementById('te-id').value;
+  const errEl = document.getElementById('te-err');
+  errEl.style.display = 'none';
+  try {
+    await apiFetch('/api/admin/tasks/'+id, {method:'PATCH', body:{
+      title: document.getElementById('te-title').value.trim(),
+      description: document.getElementById('te-desc').value.trim(),
+      link: document.getElementById('te-link').value.trim(),
+      maxClicks: document.getElementById('te-clicks').value,
+      rewardPerClick: document.getElementById('te-reward').value,
+      status: document.getElementById('te-status').value,
+    }});
+    closeTaskEdit();
+    loadTasks();
+  } catch(e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
 }
 
 async function deleteTask(id, title) {

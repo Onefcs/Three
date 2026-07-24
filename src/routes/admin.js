@@ -7,6 +7,7 @@ const Withdraw = require('../models/Withdraw');
 const Halving = require('../models/Halving');
 const UserLog = require('../models/UserLog');
 const { adminUsername, adminPassword, jwtSecret, GPU_CATALOG } = require('../config');
+const PromoCode = require('../models/PromoCode');
 
 const ADMIN_SECRET = (process.env.ADMIN_JWT_SECRET || jwtSecret) + '-admin';
 
@@ -355,6 +356,159 @@ router.post('/broadcast', requireAdmin, async (req, res) => {
     res.json({ ok: true, sent, failed, total: users.length });
   } catch (err) {
     console.error('broadcast error', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/admin/chart/users — daily new registrations last 30 days
+router.get('/chart/users', requireAdmin, async (req, res) => {
+  try {
+    const days = 30;
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const raw = await User.aggregate([
+      { $match: { createdAt: { $gte: since } } },
+      { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+    ]);
+    const map = Object.fromEntries(raw.map(r => [r._id, r.count]));
+    const result = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      const key = d.toISOString().slice(0, 10);
+      result.push({ date: key, count: map[key] || 0 });
+    }
+    res.json({ data: result });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/admin/suspicious — accounts sharing IP or HWID
+router.get('/suspicious', requireAdmin, async (req, res) => {
+  try {
+    const [byIp, byHwid] = await Promise.all([
+      User.aggregate([
+        { $match: { lastIp: { $ne: '' } } },
+        { $group: { _id: '$lastIp', count: { $sum: 1 }, users: { $push: { telegramId: '$telegramId', username: '$username', firstName: '$firstName', isBanned: '$isBanned', lastActive: '$lastActive' } } } },
+        { $match: { count: { $gt: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 100 },
+      ]),
+      User.aggregate([
+        { $match: { hwid: { $ne: '' } } },
+        { $group: { _id: '$hwid', count: { $sum: 1 }, users: { $push: { telegramId: '$telegramId', username: '$username', firstName: '$firstName', isBanned: '$isBanned', lastActive: '$lastActive' } } } },
+        { $match: { count: { $gt: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 100 },
+      ]),
+    ]);
+    res.json({ byIp, byHwid });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// PATCH /api/admin/tasks/:id — edit task
+router.patch('/tasks/:id', requireAdmin, async (req, res) => {
+  try {
+    const { title, description, link, maxClicks, rewardPerClick, status } = req.body || {};
+    const update = {};
+    if (title !== undefined) { if (title.length > 60) return res.status(400).json({ error: 'Название слишком длинное' }); update.title = title.trim(); }
+    if (description !== undefined) update.description = description.trim();
+    if (link !== undefined) { if (!/^https?:\/\/.+/.test(link)) return res.status(400).json({ error: 'Некорректная ссылка' }); update.link = link.trim(); }
+    if (maxClicks !== undefined) update.maxClicks = Math.max(1, parseInt(maxClicks));
+    if (rewardPerClick !== undefined) update.rewardPerClick = Math.max(1, parseInt(rewardPerClick));
+    if (status !== undefined) update.status = status;
+    await Task.updateOne({ _id: req.params.id }, { $set: update });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/admin/promo
+router.get('/promo', requireAdmin, async (req, res) => {
+  try {
+    const promos = await PromoCode.find().sort({ createdAt: -1 }).lean();
+    res.json({ promos });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/admin/promo
+router.post('/promo', requireAdmin, async (req, res) => {
+  try {
+    const { code, value, maxUses, expiresAt } = req.body || {};
+    if (!code || !code.trim()) return res.status(400).json({ error: 'Введите код' });
+    const val = parseFloat(value);
+    if (isNaN(val) || val <= 0) return res.status(400).json({ error: 'Введите корректную сумму' });
+    const promo = await PromoCode.create({
+      code: code.trim().toUpperCase(),
+      value: val,
+      maxUses: parseInt(maxUses) || 0,
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
+    });
+    res.json({ ok: true, promo });
+  } catch (err) {
+    if (err.code === 11000) return res.status(400).json({ error: 'Такой код уже существует' });
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// DELETE /api/admin/promo/:id
+router.delete('/promo/:id', requireAdmin, async (req, res) => {
+  try {
+    await PromoCode.deleteOne({ _id: req.params.id });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// PATCH /api/admin/promo/:id/toggle
+router.patch('/promo/:id/toggle', requireAdmin, async (req, res) => {
+  try {
+    const promo = await PromoCode.findById(req.params.id);
+    if (!promo) return res.status(404).json({ error: 'Not found' });
+    promo.isActive = !promo.isActive;
+    await promo.save();
+    res.json({ ok: true, isActive: promo.isActive });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/admin/finance
+router.get('/finance', requireAdmin, async (req, res) => {
+  try {
+    const now = Date.now();
+    const day = 24 * 60 * 60 * 1000;
+    const [depositStats, withdrawStats, balanceStats, halvingState, dau, wau, newToday, newWeek] = await Promise.all([
+      Deposit.aggregate([{ $group: { _id: '$status', total: { $sum: '$coreAmount' }, count: { $sum: 1 } } }]),
+      Withdraw.aggregate([{ $group: { _id: '$status', total: { $sum: '$coreAmount' }, count: { $sum: 1 } } }]),
+      User.aggregate([{ $group: { _id: null, total: { $sum: '$balance' }, avg: { $avg: '$balance' }, max: { $max: '$balance' }, referralTotal: { $sum: '$referralEarned' } } }]),
+      Halving.getSingleton(),
+      User.countDocuments({ lastActive: { $gte: new Date(now - day) } }),
+      User.countDocuments({ lastActive: { $gte: new Date(now - 7 * day) } }),
+      User.countDocuments({ createdAt: { $gte: new Date(now - day) } }),
+      User.countDocuments({ createdAt: { $gte: new Date(now - 7 * day) } }),
+    ]);
+    const bs = balanceStats[0] || {};
+    res.json({
+      totalBalance: Math.round((bs.total || 0) * 100) / 100,
+      avgBalance: Math.round((bs.avg || 0) * 100) / 100,
+      maxBalance: Math.round((bs.max || 0) * 100) / 100,
+      referralTotal: Math.round((bs.referralTotal || 0) * 100) / 100,
+      dau, wau, newToday, newWeek,
+      halvingCount: halvingState.halvingCount,
+      cycleWithdrawn: halvingState.cycleWithdrawn,
+      multiplier: Math.pow(0.5, halvingState.halvingCount),
+      deposits: depositStats,
+      withdrawals: withdrawStats,
+    });
+  } catch (err) {
+    console.error('finance error', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

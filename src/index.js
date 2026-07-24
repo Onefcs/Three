@@ -32,6 +32,9 @@ app.use('/api/social',           apiLimiter,     require('./routes/social'));
 app.use('/api/halving',          apiLimiter,     require('./routes/halving'));
 app.use('/api',                  apiLimiter,     require('./routes/mining'));
 
+app.use('/api/promo',      apiLimiter, require('./routes/promo'));
+app.use('/api/leaderboard', apiLimiter, require('./routes/leaderboard'));
+
 // Admin routes
 app.use('/api/admin', require('./routes/admin'));
 
