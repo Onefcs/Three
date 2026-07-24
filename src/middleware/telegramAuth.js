@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { botToken, jwtSecret } = require('../config');
+const User = require('../models/User');
 
 function verifyTelegramInitData(initData) {
   const params = new URLSearchParams(initData);
@@ -34,6 +35,15 @@ function requireAuth(req, res, next) {
   const token = authHeader.slice(7);
   try {
     req.user = jwt.verify(token, jwtSecret);
+    const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+      || req.socket?.remoteAddress || '';
+    if (ip) {
+      req.clientIp = ip;
+      User.findOneAndUpdate(
+        { telegramId: req.user.telegramId },
+        { $set: { lastIp: ip }, $addToSet: { knownIps: ip } }
+      ).catch(() => {});
+    }
     next();
   } catch {
     return res.status(401).json({ error: 'Invalid token' });

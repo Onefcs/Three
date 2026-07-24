@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const UserLog = require('../models/UserLog');
 const { verifyTelegramInitData } = require('../middleware/telegramAuth');
 const { jwtSecret, botUsername, appUrl, COLLECT_COOLDOWN_MS } = require('../config');
 
@@ -15,7 +16,11 @@ router.post('/', async (req, res) => {
     if (!tgUser) return res.status(401).json({ error: 'Invalid initData' });
 
     const telegramId = String(tgUser.id);
+    const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+      || req.socket?.remoteAddress || '';
+
     let user = await User.findOne({ telegramId });
+    let isNew = false;
 
     if (!user) {
       const data = {
@@ -24,6 +29,8 @@ router.post('/', async (req, res) => {
         firstName: tgUser.first_name || '',
         lastName:  tgUser.last_name  || '',
         photoUrl:  tgUser.photo_url  || '',
+        lastIp:    ip,
+        knownIps:  ip ? [ip] : [],
       };
 
       // Validate referral
@@ -33,14 +40,24 @@ router.post('/', async (req, res) => {
       }
 
       user = await User.create(data);
+      isNew = true;
     } else {
+      if (user.isBanned) {
+        return res.status(403).json({ error: 'Account banned', reason: user.banReason });
+      }
       // Update profile info on each login
       user.username  = tgUser.username  || user.username;
       user.firstName = tgUser.first_name || user.firstName;
       user.lastName  = tgUser.last_name  || user.lastName;
       user.lastActive = new Date();
+      if (ip) {
+        user.lastIp = ip;
+        if (!user.knownIps.includes(ip)) user.knownIps.push(ip);
+      }
       await user.save();
     }
+
+    UserLog.create({ telegramId, action: 'login', details: { isNew }, ip }).catch(() => {});
 
     const token = jwt.sign({ telegramId }, jwtSecret, { expiresIn: '30d' });
 

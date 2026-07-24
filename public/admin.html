@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Core Mining — Admin</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;
+  --sidebar:#161b22;
+  --card:#21262d;
+  --border:#30363d;
+  --text:#e6edf3;
+  --muted:#8b949e;
+  --accent:#58a6ff;
+  --accent-dim:#1f6feb33;
+  --success:#3fb950;
+  --danger:#f85149;
+  --warning:#d29922;
+  --radius:8px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --mono:'SF Mono','Fira Code','Cascadia Code',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+
+/* ── LAYOUT ── */
+#app{display:flex;min-height:100vh}
+#sidebar{width:220px;min-height:100vh;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10}
+#main{margin-left:220px;flex:1;padding:24px;min-height:100vh}
+#login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)}
+
+/* ── SIDEBAR ── */
+.sb-logo{padding:20px 16px 16px;font-size:16px;font-weight:700;color:var(--text);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.sb-logo span{color:var(--accent)}
+.sb-nav{flex:1;padding:8px 0}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;color:var(--muted);transition:background .15s,color .15s;border-radius:0;font-size:13.5px}
+.sb-item:hover{background:var(--accent-dim);color:var(--text)}
+.sb-item.active{background:var(--accent-dim);color:var(--accent)}
+.sb-item svg{width:16px;height:16px;flex-shrink:0}
+.sb-footer{padding:12px 16px;border-top:1px solid var(--border)}
+.sb-logout{width:100%;padding:8px 12px;background:transparent;border:1px solid var(--border);border-radius:var(--radius);color:var(--muted);cursor:pointer;font-size:13px;transition:border-color .15s,color .15s}
+.sb-logout:hover{border-color:var(--danger);color:var(--danger)}
+
+/* ── LOGIN ── */
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:40px;width:340px}
+.login-box h1{font-size:20px;font-weight:700;margin-bottom:4px}
+.login-box p{color:var(--muted);font-size:13px;margin-bottom:28px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group textarea,.form-group select{width:100%;background:#010409;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;color:var(--text);font-size:14px;font-family:var(--font);transition:border-color .15s}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{outline:none;border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:90px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s,filter .15s}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:not(:disabled):hover{filter:brightness(1.1)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:not(:disabled):hover{filter:brightness(1.1)}
+.btn-success{background:var(--success);color:#fff}
+.btn-success:not(:disabled):hover{filter:brightness(1.1)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.err{color:var(--danger);font-size:13px;margin-top:8px}
+.w-full{width:100%}
+
+/* ── PAGE HEADER ── */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.page-title{font-size:20px;font-weight:700}
+.page-sub{color:var(--muted);font-size:13px;margin-top:2px}
+
+/* ── STATS GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:28px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+.stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;font-weight:600}
+.stat-val{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat-val.accent{color:var(--accent)}
+.stat-val.success{color:var(--success)}
+.stat-val.danger{color:var(--danger)}
+.stat-val.warning{color:var(--warning)}
+
+/* ── HALVING BAR ── */
+.halving-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:28px}
+.halving-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.halving-title{font-size:13px;font-weight:600}
+.halving-sub{font-size:12px;color:var(--muted)}
+.progress-track{height:8px;background:#010409;border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--success));border-radius:4px;transition:width .4s}
+
+/* ── SEARCH BAR ── */
+.search-row{display:flex;gap:10px;margin-bottom:16px}
+.search-row input{flex:1;background:#010409;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;color:var(--text);font-size:14px}
+.search-row input:focus{outline:none;border-color:var(--accent)}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:2px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:hover{background:rgba(255,255,255,.03)}
+th{padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+td{padding:10px 12px;font-size:13px;vertical-align:middle}
+td.mono{font-family:var(--mono);font-size:12px}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-active{background:rgba(63,185,80,.15);color:var(--success)}
+.badge-banned{background:rgba(248,81,73,.15);color:var(--danger)}
+.badge-pending{background:rgba(210,153,34,.15);color:var(--warning)}
+.badge-admin{background:var(--accent-dim);color:var(--accent)}
+.cursor{cursor:pointer}
+
+/* ── PAGINATION ── */
+.pagination{display:flex;align-items:center;gap:8px;margin-top:16px;justify-content:center}
+.pg-btn{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);color:var(--text);cursor:pointer;font-size:13px}
+.pg-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.pg-btn:disabled{opacity:.4;cursor:default}
+.pg-info{font-size:13px;color:var(--muted)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:12px;width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.modal-title{font-size:16px;font-weight:700}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:0}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+
+/* ── TABS ── */
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:18px}
+.tab{padding:8px 16px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;font-size:13px;font-weight:500;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ── INFO GRID ── */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.info-item{background:#010409;border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px}
+.info-item .label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px;font-weight:600}
+.info-item .value{font-size:14px;font-weight:600;word-break:break-all}
+.info-item .value.mono{font-family:var(--mono);font-size:12px}
+.info-full{grid-column:1/-1}
+
+/* ── GPU LIST ── */
+.gpu-list{display:flex;flex-direction:column;gap:8px}
+.gpu-row{display:flex;align-items:center;justify-content:space-between;background:#010409;border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px}
+.gpu-name{font-weight:600;font-size:13px}
+.gpu-count{color:var(--muted);font-size:12px}
+.gpu-income{font-family:var(--mono);font-size:12px;color:var(--accent)}
+
+/* ── LOG TABLE ── */
+.log-action{font-family:var(--mono);font-size:11px;padding:2px 7px;background:var(--accent-dim);color:var(--accent);border-radius:4px}
+.log-time{color:var(--muted);font-size:11px}
+.log-ip{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.log-detail{font-family:var(--mono);font-size:11px;color:var(--text);max-width:200px;word-break:break-all}
+
+/* ── RELATED IPS ── */
+.ip-block{margin-bottom:14px}
+.ip-label{font-family:var(--mono);font-size:12px;color:var(--accent);margin-bottom:8px;font-weight:600}
+.ip-users{display:flex;flex-wrap:wrap;gap:6px}
+.ip-user{padding:4px 10px;background:#010409;border:1px solid var(--border);border-radius:20px;font-size:12px;cursor:pointer;transition:border-color .15s}
+.ip-user:hover{border-color:var(--accent)}
+.ip-user.banned{border-color:var(--danger);color:var(--danger)}
+
+/* ── TASKS ── */
+.task-create-form{background:#010409;border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px}
+.task-create-form h3{font-size:14px;font-weight:600;margin-bottom:14px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── BROADCAST ── */
+.broadcast-form{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;max-width:600px}
+.broadcast-preview{background:#010409;border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-top:14px;font-size:13px;color:var(--muted)}
+.broadcast-result{margin-top:14px;padding:12px 14px;border-radius:var(--radius);font-size:13px}
+.broadcast-result.ok{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3);color:var(--success)}
+.broadcast-result.err{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:var(--danger)}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+
+/* ── SPINNER ── */
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── BAN SECTION ── */
+.ban-section{border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:16px}
+.ban-section.banned{border-color:rgba(248,81,73,.4);background:rgba(248,81,73,.05)}
+.ban-title{font-size:13px;font-weight:600;margin-bottom:10px}
+.ban-reason-text{font-size:13px;color:var(--danger);margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ LOGIN -->
+<div id="login-wrap">
+  <div class="login-box">
+    <h1>⛏ Core Mining</h1>
+    <p>Панель администратора</p>
+    <div class="form-group">
+      <label>Логин</label>
+      <input type="text" id="login-user" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Пароль</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div id="login-err" class="err" style="display:none"></div>
+    <button class="btn btn-primary w-full" id="login-btn" style="margin-top:4px" onclick="doLogin()">Войти</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ ADMIN APP -->
+<div id="app" style="display:none">
+
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="sb-logo">⛏ <span>Core</span> Admin</div>
+    <div class="sb-nav">
+      <div class="sb-item active" data-page="dashboard" onclick="gotoPage('dashboard')">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3A1.5 1.5 0 0 1 15 10.5v3A1.5 1.5 0 0 1 13.5 15h-3A1.5 1.5 0 0 1 9 13.5v-3z"/></svg>
+        Дашборд
+      </div>
+      <div class="sb-item" data-page="players" onclick="gotoPage('players')">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/><path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>
+        Игроки
+      </div>
+      <div class="sb-item" data-page="tasks" onclick="gotoPage('tasks')">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2.5A.5.5 0 0 1 2.5 2h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 2.5zm0 4A.5.5 0 0 1 2.5 6h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 6.5zm0 4A.5.5 0 0 1 2.5 10h6a.5.5 0 0 1 0 1h-6A.5.5 0 0 1 2 10.5z"/></svg>
+        Задания
+      </div>
+      <div class="sb-item" data-page="broadcast" onclick="gotoPage('broadcast')">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 8a8 8 0 1 0 16 0A8 8 0 0 0 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5H8.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5h2.49zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4h2.355z"/></svg>
+        Рассылка
+      </div>
+    </div>
+    <div class="sb-footer">
+      <button class="sb-logout" onclick="doLogout()">Выйти</button>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main id="main">
+
+    <!-- ── DASHBOARD ── -->
+    <div id="page-dashboard" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Дашборд</div>
+          <div class="page-sub">Общая статистика Core Mining</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">↻ Обновить</button>
+      </div>
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="stat-label">Загрузка...</div><div class="stat-val"><span class="spin"></span></div></div>
+      </div>
+      <div class="halving-card" id="halving-card" style="display:none">
+        <div class="halving-row">
+          <div class="halving-title">Прогресс халвинга</div>
+          <div class="halving-sub" id="halving-sub"></div>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="halving-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- ── PLAYERS ── -->
+    <div id="page-players" class="page" style="display:none">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Игроки</div>
+          <div class="page-sub" id="players-sub">Загрузка...</div>
+        </div>
+      </div>
+      <div class="search-row">
+        <input type="text" id="player-search" placeholder="Поиск по имени, username, Telegram ID или IP…" oninput="debouncedSearch()">
+        <button class="btn btn-ghost btn-sm" onclick="loadPlayers(1)">Найти</button>
+      </div>
+      <div class="table-wrap">
+        <table id="players-table">
+          <thead><tr>
+            <th>Игрок</th><th>Telegram ID</th><th>Баланс</th><th>Доход/сек</th><th>Майнеры</th><th>Рефер.</th><th>IP</th><th>Статус</th><th>Активен</th><th></th>
+          </tr></thead>
+          <tbody id="players-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="players-pagination"></div>
+    </div>
+
+    <!-- ── TASKS ── -->
+    <div id="page-tasks" class="page" style="display:none">
+      <div class="page-header">
+        <div class="page-title">Задания</div>
+      </div>
+      <div class="task-create-form">
+        <h3>+ Создать задание (без списания баланса)</h3>
+        <div class="form-row" style="margin-bottom:10px">
+          <div class="form-group" style="margin:0">
+            <label>Название (до 60 символов)</label>
+            <input type="text" id="t-title" placeholder="Подписаться на канал" maxlength="60">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Описание (до 50 символов)</label>
+            <input type="text" id="t-desc" placeholder="Краткое описание" maxlength="50">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:10px">
+          <label>Ссылка</label>
+          <input type="url" id="t-link" placeholder="https://...">
+        </div>
+        <div class="form-row" style="margin-bottom:14px">
+          <div class="form-group" style="margin:0">
+            <label>Макс. выполнений</label>
+            <input type="number" id="t-clicks" placeholder="100" min="1" value="100">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Награда за выполнение (CORE)</label>
+            <input type="number" id="t-reward" placeholder="50" min="1" value="50">
+          </div>
+        </div>
+        <div id="task-create-err" class="err" style="display:none"></div>
+        <button class="btn btn-primary" onclick="createTask()">Создать задание</button>
+      </div>
+
+      <div class="table-wrap">
+        <table id="tasks-table">
+          <thead><tr>
+            <th>Название</th><th>Ссылка</th><th>Прогресс</th><th>Награда</th><th>Создатель</th><th>Статус</th><th></th>
+          </tr></thead>
+          <tbody id="tasks-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── BROADCAST ── -->
+    <div id="page-broadcast" class="page" style="display:none">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Рассылка</div>
+          <div class="page-sub">Отправка сообщений всем пользователям через бота</div>
+        </div>
+      </div>
+      <div class="broadcast-form">
+        <div class="form-group">
+          <label>Текст сообщения (поддерживается *Markdown*)</label>
+          <textarea id="bc-text" placeholder="Привет! 🎉 Новое обновление..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>URL изображения (необязательно)</label>
+          <input type="url" id="bc-img" placeholder="https://example.com/image.jpg">
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="margin:0">
+            <label>Ссылка кнопки (необязательно)</label>
+            <input type="url" id="bc-link" placeholder="https://...">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Текст кнопки</label>
+            <input type="text" id="bc-link-text" placeholder="Открыть">
+          </div>
+        </div>
+        <div id="bc-result" style="display:none"></div>
+        <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
+          <button class="btn btn-primary" id="bc-btn" onclick="sendBroadcast()">📢 Отправить всем</button>
+          <span id="bc-spinner" style="display:none"><span class="spin"></span> Отправка...</span>
+        </div>
+        <p style="margin-top:10px;font-size:12px;color:var(--muted)">⚠️ Рассылка отправляется всем активным (не забаненным) пользователям. Скорость ~25 сообщений/сек.</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ PLAYER MODAL -->
+<div class="modal-overlay hidden" id="player-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="pm-name"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px" id="pm-id"></div>
+      </div>
+      <button class="modal-close" onclick="closePlayerModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('overview')">Обзор</div>
+        <div class="tab" onclick="switchTab('gpus')">Майнеры</div>
+        <div class="tab" onclick="switchTab('logs')">Логи</div>
+        <div class="tab" onclick="switchTab('ips')">IP / Связи</div>
+      </div>
+      <!-- Overview -->
+      <div class="tab-pane active" id="tab-overview">
+        <div class="info-grid" id="pm-overview"></div>
+        <div class="ban-section" id="pm-ban-section">
+          <div class="ban-title" id="pm-ban-title">Блокировка</div>
+          <div class="ban-reason-text" id="pm-ban-reason" style="display:none"></div>
+          <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+            <input type="text" id="pm-ban-input" placeholder="Причина бана…" style="flex:1;min-width:160px;background:#010409;border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-size:13px">
+            <button class="btn btn-danger btn-sm" id="pm-ban-btn" onclick="banPlayer()">Забанить</button>
+            <button class="btn btn-success btn-sm" id="pm-unban-btn" onclick="unbanPlayer()" style="display:none">Разбанить</button>
+          </div>
+          <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+            <div class="ban-title" style="margin-bottom:8px">Изменить баланс</div>
+            <div style="display:flex;gap:10px">
+              <input type="number" id="pm-bal-input" placeholder="0" min="0" style="width:160px;background:#010409;border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-size:13px">
+              <button class="btn btn-ghost btn-sm" onclick="setBalance()">Установить</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- GPUs -->
+      <div class="tab-pane" id="tab-gpus">
+        <div class="gpu-list" id="pm-gpus"></div>
+      </div>
+      <!-- Logs -->
+      <div class="tab-pane" id="tab-logs">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Время</th><th>Действие</th><th>Детали</th><th>IP</th></tr></thead>
+            <tbody id="pm-logs-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <!-- IPs -->
+      <div class="tab-pane" id="tab-ips">
+        <div id="pm-ips-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let adminToken = localStorage.getItem('admin_token') || '';
+let currentPage = 'dashboard';
+let playersCurrentPage = 1;
+let playersTotalPages = 1;
+let currentPlayerData = null;
+let searchTimer = null;
+
+const GPU_NAMES = {
+  rtx3060:'RTX 3060', rtx3060ti:'RTX 3060 Ti', rtx3070:'RTX 3070',
+  rtx4070ti:'RTX 4070 Ti', rtx4080:'RTX 4080', rtx4090:'RTX 4090',
+};
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+(async function init() {
+  if (!adminToken) return;
+  // Verify token
+  try {
+    await apiFetch('/api/admin/stats');
+    showAdmin();
+    gotoPage('dashboard');
+  } catch {
+    adminToken = '';
+    localStorage.removeItem('admin_token');
+  }
+})();
+
+function showAdmin() {
+  document.getElementById('login-wrap').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+}
+
+// ══════════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════════
+async function doLogin() {
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-err');
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  err.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Вход…';
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ username: user, password: pass }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Ошибка');
+    adminToken = data.token;
+    localStorage.setItem('admin_token', adminToken);
+    showAdmin();
+    gotoPage('dashboard');
+  } catch(e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Войти';
+  }
+}
+
+document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('login-user').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogout() {
+  adminToken = '';
+  localStorage.removeItem('admin_token');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-wrap').style.display = 'flex';
+}
+
+// ══════════════════════════════════════════════════════════
+// API HELPER
+// ══════════════════════════════════════════════════════════
+async function apiFetch(url, opts = {}) {
+  const res = await fetch(url, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + adminToken,
+      ...(opts.headers || {}),
+    },
+    body: opts.body ? (typeof opts.body === 'string' ? opts.body : JSON.stringify(opts.body)) : undefined,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+// ══════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════
+function gotoPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('page-' + id).style.display = 'block';
+  document.querySelector('[data-page="' + id + '"]').classList.add('active');
+  currentPage = id;
+  if (id === 'dashboard') loadDashboard();
+  if (id === 'players') loadPlayers(1);
+  if (id === 'tasks') loadTasks();
+}
+
+// ══════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════
+async function loadDashboard() {
+  const grid = document.getElementById('stats-grid');
+  grid.innerHTML = '<div class="stat-card"><div class="stat-label">Загрузка</div><div class="stat-val"><span class="spin"></span></div></div>';
+  try {
+    const d = await apiFetch('/api/admin/stats');
+    const HALVING_POOL = 2_000_000;
+    const pct = Math.min(100, (d.cycleWithdrawn / HALVING_POOL) * 100);
+    grid.innerHTML = `
+      <div class="stat-card"><div class="stat-label">Пользователей</div><div class="stat-val accent">${fmt(d.userCount)}</div></div>
+      <div class="stat-card"><div class="stat-label">Заблокировано</div><div class="stat-val danger">${fmt(d.bannedCount)}</div></div>
+      <div class="stat-card"><div class="stat-label">Общий баланс</div><div class="stat-val">${fmtC(d.totalBalance)}</div></div>
+      <div class="stat-card"><div class="stat-label">Задепонировано</div><div class="stat-val success">${fmtC(d.totalDeposited)}</div></div>
+      <div class="stat-card"><div class="stat-label">Выведено</div><div class="stat-val warning">${fmtC(d.totalWithdrawn)}</div></div>
+      <div class="stat-card"><div class="stat-label">Халвингов</div><div class="stat-val">${d.halvingCount}</div></div>
+    `;
+    const hc = document.getElementById('halving-card');
+    hc.style.display = 'block';
+    document.getElementById('halving-sub').textContent = `${fmtC(d.cycleWithdrawn)} / ${fmtC(HALVING_POOL)} CORE (${pct.toFixed(1)}%)`;
+    document.getElementById('halving-fill').style.width = pct + '%';
+  } catch(e) {
+    grid.innerHTML = `<div class="stat-card"><div class="stat-label">Ошибка</div><div class="stat-val danger">${e.message}</div></div>`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// PLAYERS
+// ══════════════════════════════════════════════════════════
+function debouncedSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => loadPlayers(1), 400);
+}
+
+async function loadPlayers(page = 1) {
+  playersCurrentPage = page;
+  const search = document.getElementById('player-search').value.trim();
+  const tbody = document.getElementById('players-tbody');
+  tbody.innerHTML = '<tr><td colspan="10" class="empty"><span class="spin"></span></td></tr>';
+  try {
+    const d = await apiFetch(`/api/admin/players?page=${page}&limit=25&search=${encodeURIComponent(search)}`);
+    playersTotalPages = d.pages;
+    document.getElementById('players-sub').textContent = `Всего: ${fmt(d.total)} игроков`;
+    if (!d.users.length) {
+      tbody.innerHTML = '<tr><td colspan="10" class="empty">Игроки не найдены</td></tr>';
+    } else {
+      tbody.innerHTML = d.users.map(u => `
+        <tr class="cursor" onclick="openPlayer('${u.telegramId}')">
+          <td><b>${esc(u.firstName || u.username || '—')}</b>${u.username ? `<br><span style="color:var(--muted);font-size:11px">@${esc(u.username)}</span>` : ''}</td>
+          <td class="mono">${esc(u.telegramId)}</td>
+          <td class="mono">${fmtC(u.balance)}</td>
+          <td class="mono" style="color:var(--accent)">${fmtRate(u.perSec)}</td>
+          <td>${u.gpuCount}</td>
+          <td class="mono" style="font-size:11px">${u.referralEarned > 0 ? fmtC(u.referralEarned) : '—'}</td>
+          <td class="mono" style="font-size:11px">${esc(u.lastIp || '—')}</td>
+          <td><span class="badge ${u.isBanned ? 'badge-banned' : 'badge-active'}">${u.isBanned ? 'БАН' : 'Активен'}</span></td>
+          <td style="color:var(--muted);font-size:11px">${timeAgo(u.lastActive)}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openPlayer('${u.telegramId}')">Открыть</button></td>
+        </tr>
+      `).join('');
+    }
+    renderPagination(d.total, page, d.pages);
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="10" class="empty" style="color:var(--danger)">${e.message}</td></tr>`;
+  }
+}
+
+function renderPagination(total, page, pages) {
+  const el = document.getElementById('players-pagination');
+  if (pages <= 1) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <button class="pg-btn" onclick="loadPlayers(${page-1})" ${page<=1?'disabled':''}>← Назад</button>
+    <span class="pg-info">Страница ${page} из ${pages}</span>
+    <button class="pg-btn" onclick="loadPlayers(${page+1})" ${page>=pages?'disabled':''}>Вперёд →</button>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════
+// PLAYER MODAL
+// ══════════════════════════════════════════════════════════
+async function openPlayer(telegramId) {
+  document.getElementById('player-modal').classList.remove('hidden');
+  document.getElementById('pm-name').textContent = 'Загрузка…';
+  document.getElementById('pm-id').textContent = telegramId;
+  switchTab('overview');
+  try {
+    const u = await apiFetch('/api/admin/players/' + telegramId);
+    currentPlayerData = u;
+    renderPlayerModal(u);
+    // Pre-load logs
+    loadPlayerLogs(telegramId);
+  } catch(e) {
+    document.getElementById('pm-name').textContent = 'Ошибка: ' + e.message;
+  }
+}
+
+function closePlayerModal() {
+  document.getElementById('player-modal').classList.add('hidden');
+  currentPlayerData = null;
+}
+
+function renderPlayerModal(u) {
+  const displayName = u.firstName || u.username || u.telegramId;
+  document.getElementById('pm-name').textContent = displayName + (u.isBanned ? ' 🚫' : '');
+  document.getElementById('pm-id').textContent = `Telegram ID: ${u.telegramId}`;
+
+  // Overview
+  const refStr = u.referrer ? `${u.referrer.name} (${u.referrer.telegramId})` : '—';
+  document.getElementById('pm-overview').innerHTML = `
+    <div class="info-item"><div class="label">Имя</div><div class="value">${esc(displayName)}</div></div>
+    <div class="info-item"><div class="label">Username</div><div class="value">${u.username ? '@' + esc(u.username) : '—'}</div></div>
+    <div class="info-item"><div class="label">Telegram ID</div><div class="value mono">${esc(u.telegramId)}</div></div>
+    <div class="info-item"><div class="label">Баланс</div><div class="value" style="color:var(--accent)">${fmtC(u.balance)} CORE</div></div>
+    <div class="info-item"><div class="label">Доход/сек</div><div class="value">${fmtRate(u.perSec)}</div></div>
+    <div class="info-item"><div class="label">Накоплено (ожидает)</div><div class="value">${fmtC(u.pending)} CORE</div></div>
+    <div class="info-item"><div class="label">Рефер. заработано</div><div class="value">${fmtC(u.referralEarned)} CORE</div></div>
+    <div class="info-item"><div class="label">Рефералов привлечено</div><div class="value">${u.referralCount}</div></div>
+    <div class="info-item info-full"><div class="label">Пригласил</div><div class="value">${esc(refStr)}</div></div>
+    <div class="info-item"><div class="label">Зарегистрирован</div><div class="value">${formatDate(u.createdAt)}</div></div>
+    <div class="info-item"><div class="label">Последняя активность</div><div class="value">${timeAgo(u.lastActive)}</div></div>
+    <div class="info-item info-full"><div class="label">IP (последний)</div><div class="value mono">${esc(u.lastIp || '—')}</div></div>
+  `;
+
+  // Ban section
+  const banSection = document.getElementById('pm-ban-section');
+  const banBtn = document.getElementById('pm-ban-btn');
+  const unbanBtn = document.getElementById('pm-unban-btn');
+  const banReasonEl = document.getElementById('pm-ban-reason');
+  if (u.isBanned) {
+    banSection.classList.add('banned');
+    document.getElementById('pm-ban-title').textContent = '🚫 Аккаунт заблокирован';
+    banReasonEl.textContent = 'Причина: ' + (u.banReason || 'не указана');
+    banReasonEl.style.display = 'block';
+    banBtn.style.display = 'none';
+    unbanBtn.style.display = 'inline-flex';
+    document.getElementById('pm-ban-input').style.display = 'none';
+  } else {
+    banSection.classList.remove('banned');
+    document.getElementById('pm-ban-title').textContent = 'Блокировка';
+    banReasonEl.style.display = 'none';
+    banBtn.style.display = 'inline-flex';
+    unbanBtn.style.display = 'none';
+    document.getElementById('pm-ban-input').style.display = 'block';
+  }
+
+  document.getElementById('pm-bal-input').value = Math.round(u.balance);
+
+  // GPUs
+  const gpuList = document.getElementById('pm-gpus');
+  if (!u.gpus || !u.gpus.length) {
+    gpuList.innerHTML = '<div class="empty">Нет майнеров</div>';
+  } else {
+    const mult = 1; // multiplier already applied in perSec
+    gpuList.innerHTML = u.gpus.map(g => {
+      const name = GPU_NAMES[g.gpuId] || g.gpuId;
+      return `
+        <div class="gpu-row">
+          <div><div class="gpu-name">${name}</div><div class="gpu-count">× ${g.count} шт.</div></div>
+          <div class="gpu-income">${g.count} шт.</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // IPs
+  const ipsContent = document.getElementById('pm-ips-content');
+  if (!u.knownIps || !u.knownIps.length) {
+    ipsContent.innerHTML = '<div class="empty">Нет данных об IP</div>';
+  } else {
+    let html = '';
+    u.knownIps.forEach(ip => {
+      html += `<div class="ip-block"><div class="ip-label">📍 ${esc(ip)}</div>`;
+      const related = u.relatedByIp.filter(r => true); // show all related for primary IP
+      if (ip === u.lastIp && related.length) {
+        html += '<div class="ip-users">' + related.map(r =>
+          `<div class="ip-user ${r.isBanned ? 'banned' : ''}" onclick="closePlayerModal();openPlayer('${r.telegramId}')">${esc(r.name || r.telegramId)}${r.isBanned ? ' 🚫' : ''}</div>`
+        ).join('') + '</div>';
+      } else if (ip === u.lastIp) {
+        html += '<div style="font-size:12px;color:var(--muted)">Других аккаунтов с этим IP не найдено</div>';
+      }
+      html += '</div>';
+    });
+    ipsContent.innerHTML = html;
+  }
+}
+
+async function loadPlayerLogs(telegramId) {
+  const tbody = document.getElementById('pm-logs-tbody');
+  tbody.innerHTML = '<tr><td colspan="4" class="empty"><span class="spin"></span></td></tr>';
+  try {
+    const d = await apiFetch('/api/admin/players/' + telegramId + '/logs');
+    if (!d.logs.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="empty">Нет логов</td></tr>';
+    } else {
+      tbody.innerHTML = d.logs.map(l => `
+        <tr>
+          <td class="log-time">${formatDate(l.createdAt)}</td>
+          <td><span class="log-action">${esc(l.action)}</span></td>
+          <td class="log-detail">${esc(JSON.stringify(l.details || {}))}</td>
+          <td class="log-ip">${esc(l.ip || '—')}</td>
+        </tr>
+      `).join('');
+    }
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="4" class="empty" style="color:var(--danger)">${e.message}</td></tr>`;
+  }
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const names = ['overview','gpus','logs','ips'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+async function banPlayer() {
+  if (!currentPlayerData) return;
+  const reason = document.getElementById('pm-ban-input').value.trim();
+  if (!confirm(`Забанить ${currentPlayerData.firstName || currentPlayerData.telegramId}?`)) return;
+  try {
+    await apiFetch('/api/admin/players/' + currentPlayerData.telegramId + '/ban', { method: 'POST', body: { reason } });
+    currentPlayerData.isBanned = true;
+    currentPlayerData.banReason = reason;
+    renderPlayerModal(currentPlayerData);
+    loadPlayers(playersCurrentPage);
+  } catch(e) { alert('Ошибка: ' + e.message); }
+}
+
+async function unbanPlayer() {
+  if (!currentPlayerData) return;
+  try {
+    await apiFetch('/api/admin/players/' + currentPlayerData.telegramId + '/unban', { method: 'POST', body: {} });
+    currentPlayerData.isBanned = false;
+    currentPlayerData.banReason = '';
+    renderPlayerModal(currentPlayerData);
+    loadPlayers(playersCurrentPage);
+  } catch(e) { alert('Ошибка: ' + e.message); }
+}
+
+async function setBalance() {
+  if (!currentPlayerData) return;
+  const bal = parseFloat(document.getElementById('pm-bal-input').value);
+  if (isNaN(bal) || bal < 0) return alert('Введите корректный баланс');
+  if (!confirm(`Установить баланс ${fmtC(bal)} CORE для ${currentPlayerData.firstName || currentPlayerData.telegramId}?`)) return;
+  try {
+    await apiFetch('/api/admin/players/' + currentPlayerData.telegramId + '/balance', { method: 'POST', body: { balance: bal } });
+    currentPlayerData.balance = bal;
+    renderPlayerModal(currentPlayerData);
+    loadPlayers(playersCurrentPage);
+  } catch(e) { alert('Ошибка: ' + e.message); }
+}
+
+// ══════════════════════════════════════════════════════════
+// TASKS
+// ══════════════════════════════════════════════════════════
+async function loadTasks() {
+  const tbody = document.getElementById('tasks-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" class="empty"><span class="spin"></span></td></tr>';
+  try {
+    const d = await apiFetch('/api/admin/tasks');
+    if (!d.tasks.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">Нет заданий</td></tr>';
+    } else {
+      tbody.innerHTML = d.tasks.map(t => {
+        const pct = t.maxClicks > 0 ? Math.round(t.clickCount / t.maxClicks * 100) : 0;
+        return `
+          <tr>
+            <td><b>${esc(t.title)}</b>${t.description ? `<br><span style="color:var(--muted);font-size:11px">${esc(t.description)}</span>` : ''}</td>
+            <td><a href="${esc(t.link)}" target="_blank" style="color:var(--accent);font-size:12px;word-break:break-all">${esc(t.link.slice(0,40))}…</a></td>
+            <td style="font-size:12px;white-space:nowrap">
+              <div style="font-variant-numeric:tabular-nums">${t.clickCount} / ${t.maxClicks}</div>
+              <div style="height:4px;background:#010409;border-radius:2px;margin-top:4px;overflow:hidden;width:80px">
+                <div style="height:100%;width:${pct}%;background:var(--accent);border-radius:2px"></div>
+              </div>
+            </td>
+            <td class="mono">${t.rewardPerClick} CORE</td>
+            <td><span class="badge ${t.creatorId === 'admin' ? 'badge-admin' : ''}">${esc(t.creatorId === 'admin' ? '👑 Admin' : t.creatorId)}</span></td>
+            <td><span class="badge ${t.status === 'active' ? 'badge-active' : 'badge-pending'}">${t.status === 'active' ? 'Активно' : 'Завершено'}</span></td>
+            <td><button class="btn btn-danger btn-sm" onclick="deleteTask('${t._id}', '${esc(t.title)}')">Удалить</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty" style="color:var(--danger)">${e.message}</td></tr>`;
+  }
+}
+
+async function createTask() {
+  const errEl = document.getElementById('task-create-err');
+  errEl.style.display = 'none';
+  const body = {
+    title: document.getElementById('t-title').value.trim(),
+    description: document.getElementById('t-desc').value.trim(),
+    link: document.getElementById('t-link').value.trim(),
+    maxClicks: document.getElementById('t-clicks').value,
+    rewardPerClick: document.getElementById('t-reward').value,
+  };
+  try {
+    await apiFetch('/api/admin/tasks', { method: 'POST', body });
+    document.getElementById('t-title').value = '';
+    document.getElementById('t-desc').value = '';
+    document.getElementById('t-link').value = '';
+    loadTasks();
+  } catch(e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+  }
+}
+
+async function deleteTask(id, title) {
+  if (!confirm(`Удалить задание "${title}"?`)) return;
+  try {
+    await apiFetch('/api/admin/tasks/' + id, { method: 'DELETE' });
+    loadTasks();
+  } catch(e) { alert('Ошибка: ' + e.message); }
+}
+
+// ══════════════════════════════════════════════════════════
+// BROADCAST
+// ══════════════════════════════════════════════════════════
+async function sendBroadcast() {
+  const text = document.getElementById('bc-text').value.trim();
+  if (!text) return alert('Введите текст сообщения');
+  const total_q = 'Вы уверены? Сообщение будет отправлено ВСЕМ незабаненным пользователям.';
+  if (!confirm(total_q)) return;
+
+  const btn = document.getElementById('bc-btn');
+  const spinner = document.getElementById('bc-spinner');
+  const result = document.getElementById('bc-result');
+  btn.disabled = true;
+  spinner.style.display = 'inline-flex';
+  result.style.display = 'none';
+
+  try {
+    const d = await apiFetch('/api/admin/broadcast', {
+      method: 'POST',
+      body: {
+        text,
+        imageUrl: document.getElementById('bc-img').value.trim() || null,
+        linkUrl: document.getElementById('bc-link').value.trim() || null,
+        linkText: document.getElementById('bc-link-text').value.trim() || null,
+      },
+    });
+    result.className = 'broadcast-result ok';
+    result.textContent = `✅ Отправлено: ${d.sent} | Ошибок: ${d.failed} | Всего получателей: ${d.total}`;
+    result.style.display = 'block';
+  } catch(e) {
+    result.className = 'broadcast-result err';
+    result.textContent = '❌ Ошибка: ' + e.message;
+    result.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════
+function fmt(n) {
+  return Number(n).toLocaleString('ru-RU');
+}
+function fmtC(n) {
+  const v = Number(n);
+  if (v >= 1e6) return (v/1e6).toFixed(2) + 'M';
+  if (v >= 1e3) return (v/1e3).toFixed(1) + 'K';
+  return v.toFixed(2);
+}
+function fmtRate(perSec) {
+  if (perSec <= 0) return '0/сек';
+  if (perSec < 0.001) return (perSec * 3600).toFixed(4) + '/час';
+  return perSec.toFixed(6) + '/сек';
+}
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function timeAgo(date) {
+  if (!date) return '—';
+  const d = Math.round((Date.now() - new Date(date)) / 1000);
+  if (d < 60) return d + 'с назад';
+  if (d < 3600) return Math.round(d/60) + 'м назад';
+  if (d < 86400) return Math.round(d/3600) + 'ч назад';
+  return Math.round(d/86400) + 'д назад';
+}
+function formatDate(date) {
+  if (!date) return '—';
+  return new Date(date).toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+}
+
+// Close modal on overlay click
+document.getElementById('player-modal').addEventListener('click', function(e) {
+  if (e.target === this) closePlayerModal();
+});
+</script>
+</body>
+</html>

@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema({
   referralPending: { type: Number, default: 0 },      // earned from referrals, not yet collected
   referralEarned:  { type: Number, default: 0 },      // lifetime total from referrals
 
+  isBanned:   { type: Boolean, default: false },
+  banReason:  { type: String, default: '' },
+  lastIp:     { type: String, default: '' },
+  knownIps:   { type: [String], default: [] },
+
   createdAt:  { type: Date, default: Date.now },
   lastActive: { type: Date, default: Date.now },
 }, { versionKey: false });

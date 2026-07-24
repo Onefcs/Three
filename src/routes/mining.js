@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const User = require('../models/User');
 const Halving = require('../models/Halving');
+const UserLog = require('../models/UserLog');
 const { requireAuth } = require('../middleware/telegramAuth');
 const { GPU_CATALOG, REFERRAL_PERCENT, COLLECT_COOLDOWN_MS } = require('../config');
 
@@ -49,6 +50,7 @@ router.post('/collect', requireAuth, async (req, res) => {
     }
 
     const nextCollectAt = new Date(now.getTime() + COLLECT_COOLDOWN_MS);
+    UserLog.create({ telegramId: req.user.telegramId, action: 'collect', details: { earned: Math.round(earned * 1000) / 1000, balance: updated.balance }, ip: req.clientIp || '' }).catch(() => {});
     res.json({ collected: earned, balance: updated.balance, nextCollectAt });
   } catch (err) {
     console.error('collect error', err);
@@ -96,6 +98,7 @@ router.post('/buy-gpu', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Insufficient balance', price, balance: fresh ? fresh.balance : 0 });
     }
 
+    UserLog.create({ telegramId: req.user.telegramId, action: 'buy_gpu', details: { gpuId, price }, ip: req.clientIp || '' }).catch(() => {});
     res.json({ gpus: updated.gpus, balance: updated.balance, boughtGpuId: gpuId });
   } catch (err) {
     console.error('buy-gpu error', err);

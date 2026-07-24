@@ -32,6 +32,12 @@ app.use('/api/social',           apiLimiter,     require('./routes/social'));
 app.use('/api/halving',          apiLimiter,     require('./routes/halving'));
 app.use('/api',                  apiLimiter,     require('./routes/mining'));
 
+// Admin routes
+app.use('/api/admin', require('./routes/admin'));
+
+// Admin panel
+app.get('/admin', (_, res) => res.sendFile(path.join(__dirname, '../public/admin.html')));
+
 // Health check
 app.get('/health', (_, res) => res.json({ ok: true }));
 

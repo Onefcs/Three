@@ -18,6 +18,8 @@ module.exports = {
   },
 
   adminTelegramId: process.env.ADMIN_TELEGRAM_ID || '',
+  adminUsername: process.env.ADMIN_USERNAME || 'admin',
+  adminPassword: process.env.ADMIN_PASSWORD || 'admin123',
   depositTonAddress: process.env.DEPOSIT_TON_ADDRESS || '',
   appUrl: process.env.APP_URL || 'https://two-production-eb6f.up.railway.app',
 
