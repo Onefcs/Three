@@ -956,7 +956,6 @@ async function buyGpu(idx){
     perSec=calcPerSec();
     buildCards();
     updateUI();
-    saveLocal();
   }catch(e){
     showToast(t('err.conn'));
   }
@@ -1121,7 +1120,7 @@ async function collect(){
         if(d.lastCollectTime) collectTime=new Date(d.lastCollectTime).getTime();
         showToast(t('toast.collect_other_device'));
       }
-      updateUI();saveLocal();
+      updateUI();
     }
   }catch(e){
     showToast(t('err.conn'));
@@ -1470,42 +1469,12 @@ async function socSubmit(){
   }catch(e){showToast(t('err.conn'));btn.disabled=false;btn.textContent='Отправить';}
 }
 
-/* ── LOCAL PERSISTENCE ── */
-const SAVE_KEY='core_mining_v1';
+/* ── JWT (session credential only — all game state lives on server) ── */
 let collectTime=Date.now();
-
-function saveLocal(){
-  try{
-    localStorage.setItem(SAVE_KEY,JSON.stringify({
-      collectTime,
-      gpus:GPUS.map(g=>({id:g.id,count:g.count})),
-      // balance is server-only — never saved locally
-    }));
-  }catch(e){}
-}
-function loadLocal(){
-  try{
-    const raw=localStorage.getItem(SAVE_KEY);
-    if(!raw)return;
-    const d=JSON.parse(raw);
-    if(d.gpus){
-      d.gpus.forEach(slot=>{
-        const g=GPUS.find(x=>x.id===slot.id);
-        if(g)g.count=slot.count;
-      });
-      perSec=calcPerSec();
-    }
-    // st.balance stays 0 until server responds
-    collectTime=d.collectTime||Date.now();
-    const elapsed=Math.min((Date.now()-collectTime)/1000,5*3600);
-    st.pending=perSec*elapsed;
-  }catch(e){}
-}
-// Persist JWT so authToken survives page reloads and cold initData
+try{localStorage.removeItem('core_mining_v1');}catch(e){} // clear old local cache
 function saveJwt(token){try{localStorage.setItem('core_jwt',token);}catch(e){}}
 function loadJwt(){try{return localStorage.getItem('core_jwt');}catch(e){return null;}}
 function clearJwt(){try{localStorage.removeItem('core_jwt');}catch(e){}}
-setInterval(saveLocal,30000);
 
 /* ── SPLASH ── */
 function setSplashProgress(pct){const b=document.getElementById('spl-bar');if(b)b.style.width=pct+'%';}
@@ -1616,7 +1585,6 @@ async function initAuth(){
       collectCooldownUntil=new Date(data.user.nextCollectAt).getTime();
     }
     updateUI();
-    saveLocal();
     setSplashProgress(100);
     setSplashStatus(t('spl.done'));
     setTimeout(hideSplash,350);
@@ -1737,7 +1705,6 @@ setInterval(syncStatus,15000);
 // Also sync immediately when the user switches back to this device/tab
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncStatus();});
 
-loadLocal();
 initAuth();
 
 buildCards();
